@@ -827,7 +827,7 @@ div#mapWrap ~ #storeList{margin-top:14px;}
     </svg>
   </div>
   <div class="splashBrand">Unutilmas Ta'm</div>
-  <div style="position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:rgba(255,255,255,.55);font-size:11px;font-weight:700;letter-spacing:.08em;">v2.3</div>
+  <div style="position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:rgba(255,255,255,.55);font-size:11px;font-weight:700;letter-spacing:.08em;">v2.4</div>
 </div>
 
 <div id="appShell">
@@ -1621,8 +1621,18 @@ const FIREBASE_CONFIG = {
 };
 
 let fsDb = null;
-let fsHashes = {};      // oxirgi yozilgan holat (kalit -> json) — keraksiz yozuvlarni oldini oladi
-let fsApplying = false; // serverdan kelgan yangilanishni qo'llash paytida qayta yozmaslik
+let fsHashes = {};            // oxirgi ma'lum bulut holati (echo'ni oldini oladi)
+let fsApplying = false;
+
+/* Har bir kalitning lokal o'zgargan vaqti — eski bulut yangi lokalni BOSA OLMAYDI */
+let keyTimes = {};
+try{ keyTimes = JSON.parse(localStorage.getItem('utam_tmap') || '{}'); }catch(e){ keyTimes = {}; }
+function saveKeyTimes(){ try{ localStorage.setItem('utam_tmap', JSON.stringify(keyTimes)); }catch(e){} }
+
+/* Bulutga yuborilmagan kalitlar navbati (oflayn bo'lsa ham yo'qolmaydi) */
+let dirtyKeys = {};
+try{ dirtyKeys = JSON.parse(localStorage.getItem('utam_dirty') || '{}'); }catch(e){ dirtyKeys = {}; }
+function saveDirty(){ try{ localStorage.setItem('utam_dirty', JSON.stringify(dirtyKeys)); }catch(e){} }
 
 function cloudOn(){ return !!fsDb; }
 
@@ -1648,78 +1658,134 @@ function localSave(){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
 }
 
-async function loadState(){
-  // 1) Avval lokal kesh — ilova bir zumda ochiladi
-  if(!localLoad()){ state = seedState(); localSave(); }
+function rerenderAfterCloud(){
+  try{
+    normalizeState(); localSave();
+    const active = document.querySelector('.view.active');
+    if(active) renderView(active.id.replace('v-',''));
+    if(typeof renderNotifBadge==='function') try{ renderNotifBadge(); }catch(e){}
+    if(typeof applyHeroText==='function') try{ applyHeroText(); }catch(e){}
+  }catch(e){}
+}
 
-  // 2) Firebase ulangan bo'lsa — bulutga ulanamiz
-  if(FIREBASE_CONFIG && window.firebase){
-    try{
-      firebase.initializeApp(FIREBASE_CONFIG);
-      fsDb = firebase.firestore();
-      try{ fsDb.settings({ignoreUndefinedProperties:true}); }catch(e){}
+/* Bulutdan kelgan hujjatni qabul qilish: faqat lokaldan YANGI bo'lsa */
+function acceptCloudDoc(key, raw, t){
+  if(fsHashes[key] === raw) return false;            // o'zimiz yozganmiz
+  const localT = keyTimes[key] || 0;
+  if((t||0) < localT){                                // bulut eskiroq — lokalni yuboramiz
+    dirtyKeys[key] = true; saveDirty(); scheduleFlush(200);
+    return false;
+  }
+  try{
+    state[key] = JSON.parse(raw);
+    fsHashes[key] = raw;
+    keyTimes[key] = t||Date.now(); saveKeyTimes();
+    return true;
+  }catch(e){ return false; }
+}
 
-      // Bulutdagi to'liq holatni olib kelamiz
-      const snap = await fsDb.collection('app').get();
-      if(!snap.empty){
-        snap.forEach(doc=>{
-          try{
-            const v = JSON.parse(doc.data().v);
-            state[doc.id] = v;
-            fsHashes[doc.id] = doc.data().v;
-          }catch(e){}
-        });
-        normalizeState();
-        localSave();
-      } else {
-        // Bulut bo'm-bo'sh — lokal holatni birinchi bor yuklaymiz
-        await saveState();
-      }
-
-      // Realtime: boshqa qurilma nimadir o'zgartirsa — shu zahoti bu yerda ko'rinadi
-      fsDb.collection('app').onSnapshot(s=>{
-        let changed = false;
-        s.docChanges().forEach(ch=>{
-          const key = ch.doc.id, raw = ch.doc.data().v;
-          if(fsHashes[key] === raw) return; // o'zimiz yozgan
-          try{
-            state[key] = JSON.parse(raw);
-            fsHashes[key] = raw;
-            changed = true;
-          }catch(e){}
-        });
-        if(changed && !fsApplying){
-          fsApplying = true;
-          try{
-            normalizeState(); localSave();
-            const active = document.querySelector('.view.active');
-            if(active) renderView(active.id.replace('v-',''));
-            if(typeof renderNotifBadge==='function') try{ renderNotifBadge(); }catch(e){}
-          } finally { fsApplying = false; }
-        }
-      }, err=>console.warn('Firestore listen xatosi:', err));
-    }catch(e){
-      console.warn('Firebase ulanmadi, lokal rejimda davom etamiz:', e);
-      fsDb = null;
+/* ---------- Bulutga fon rejimida yuborish (UI hech qachon kutmaydi) ---------- */
+let flushTimer = null, flushing = false;
+function scheduleFlush(delay){
+  if(!cloudOn()) return;
+  clearTimeout(flushTimer);
+  flushTimer = setTimeout(flushCloud, delay==null?600:delay);
+}
+async function flushCloud(){
+  if(!cloudOn() || flushing) return;
+  const keys = Object.keys(dirtyKeys);
+  if(!keys.length) return;
+  flushing = true;
+  try{
+    const batch = fsDb.batch();
+    const sent = [];
+    keys.forEach(key=>{
+      if(!(key in state)) { delete dirtyKeys[key]; return; }
+      const raw = JSON.stringify(state[key]);
+      batch.set(fsDb.collection('app').doc(key), {v: raw, t: keyTimes[key]||Date.now()});
+      sent.push([key, raw]);
+    });
+    if(sent.length){
+      await batch.commit();
+      sent.forEach(([key, raw])=>{
+        fsHashes[key] = raw;
+        delete dirtyKeys[key];
+      });
+      saveDirty();
     }
+  }catch(e){
+    console.warn('Bulutga yuborish kechikdi, qayta urinamiz:', e && e.code || e);
+    scheduleFlush(8000); // qayta urinish
+  }finally{
+    flushing = false;
+    if(Object.keys(dirtyKeys).length) scheduleFlush(8000);
+  }
+}
+window.addEventListener('online', ()=>scheduleFlush(300));
+setInterval(()=>{ if(Object.keys(dirtyKeys).length) scheduleFlush(0); }, 20000);
+
+/* ---------- Bulutga ulanish — ILOVANI KUTDIRMAYDI (fonda) ---------- */
+function connectCloud(){
+  if(!FIREBASE_CONFIG || !window.firebase) return;
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    fsDb = firebase.firestore();
+    try{
+      fsDb.settings({
+        ignoreUndefinedProperties: true,
+        experimentalAutoDetectLongPolling: true,  // O'zbekiston tarmoqlarida osilishni tuzatadi
+        useFetchStreams: false
+      });
+    }catch(e){}
+
+    // Real vaqt: birinchi snapshot to'liq holatni ham olib keladi
+    fsDb.collection('app').onSnapshot(s=>{
+      let changed = false;
+      s.docChanges().forEach(ch=>{
+        if(ch.type === 'removed') return;
+        const d = ch.doc.data() || {};
+        if(acceptCloudDoc(ch.doc.id, d.v, d.t)) changed = true;
+      });
+      // Bulut bo'm-bo'sh bo'lsa — lokal holatni birinchi bor yuklaymiz
+      if(s.empty && !s.metadata.fromCache){
+        Object.keys(state).forEach(k=>{ dirtyKeys[k]=true; keyTimes[k]=keyTimes[k]||Date.now(); });
+        saveDirty(); saveKeyTimes(); scheduleFlush(300);
+      }
+      if(changed && !fsApplying){
+        fsApplying = true;
+        try{ rerenderAfterCloud(); } finally { fsApplying = false; }
+      }
+    }, err=>console.warn('Firestore listen xatosi:', err && err.code || err));
+
+    // Yuborilmagan o'zgarishlar bo'lsa — darhol jo'natishga urinamiz
+    if(Object.keys(dirtyKeys).length) scheduleFlush(1500);
+  }catch(e){
+    console.warn('Firebase ulanmadi, lokal rejimda davom etamiz:', e);
+    fsDb = null;
   }
 }
 
+async function loadState(){
+  // 1) Lokal — ilova BIR ZUMDA ochiladi
+  if(!localLoad()){ state = seedState(); localSave(); }
+  // 2) Bulut — fonda ulanadi, ochilishni kutdirmaydi
+  connectCloud();
+}
+
 async function saveState(){
-  localSave(); // har doim — oflayn kafolati
-  if(!cloudOn()) return;
-  try{
-    const batch = fsDb.batch();
-    let writes = 0;
-    Object.keys(state).forEach(key=>{
-      const raw = JSON.stringify(state[key]);
-      if(fsHashes[key] === raw) return;      // o'zgarmagan — yozmaymiz
-      fsHashes[key] = raw;
-      batch.set(fsDb.collection('app').doc(key), {v: raw, t: Date.now()});
-      writes++;
-    });
-    if(writes) await batch.commit();
-  }catch(e){ console.error('Bulutga saqlashda xato:', e); }
+  // BIR ZUMDA: lokalga yozamiz, kalit vaqtlarini yangilaymiz
+  const now = Date.now();
+  Object.keys(state).forEach(key=>{
+    const raw = JSON.stringify(state[key]);
+    if(fsHashes['L:'+key] === raw) return;   // lokal o'zgarish aniqlash keshi
+    fsHashes['L:'+key] = raw;
+    keyTimes[key] = now;
+    dirtyKeys[key] = true;
+  });
+  saveKeyTimes(); saveDirty();
+  localSave();
+  // Bulutga — fonda, UI'ni bloklamasdan
+  scheduleFlush(400);
 }
 
 /* ---- Parollarni xesh qilib saqlash (ochiq matnda saqlanmaydi) ---- */
