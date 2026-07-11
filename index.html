@@ -883,7 +883,7 @@ div#mapWrap ~ #storeList{margin-top:14px;}
         <button id="modeBtnIn" class="active" onclick="setScanMode('in')"><span id="ic-mode-in"></span>Kirim (+)</button>
         <button id="modeBtnOut" onclick="setScanMode('out')"><span id="ic-mode-out"></span>Sotish (−)</button>
       </div>
-      <div class="videoWrap"><video id="video" playsinline muted></video><div class="scanFrame"></div></div>
+      <div class="videoWrap"><video id="video" playsinline autoplay muted></video><div class="scanFrame"></div></div>
       <div class="scanBtnRow">
         <button class="primaryBtn" onclick="startScanner()"><span id="ic-cam-on"></span>Kamerani yoqish</button>
         <button class="ghostBtn" onclick="stopScanner()"><span id="ic-cam-off"></span>To'xtatish</button>
@@ -1283,11 +1283,15 @@ div#mapWrap ~ #storeList{margin-top:14px;}
   <div class="field"><label>Do'kon nomi</label><input id="nsName" placeholder="Masalan: Anvar do'koni"></div>
   <div class="field"><label>Telefon</label><input id="nsPhone" placeholder="+998 90 000 00 00"></div>
   <div class="field"><label>Manzil (matn)</label><input id="nsAddr" placeholder="Ko'cha, mo'ljal"></div>
-  <button class="ghostBtn" onclick="useMyLocation()"><span id="ic-pin"></span>Joriy joylashuvni olish</button>
+  <div style="display:flex;gap:8px;">
+    <button class="ghostBtn" style="flex:1;" onclick="useMyLocation()"><span id="ic-pin"></span>Joriy joylashuvni olish</button>
+    <button class="ghostBtn" style="flex:1;" onclick="openHomeLocationPicker('newstore')"><span id="ic-ns-pin"></span>Xaritadan belgilash</button>
+  </div>
   <div style="display:flex;gap:8px;margin-top:8px;">
     <div class="field" style="flex:1;"><label>Kenglik (lat)</label><input id="nsLat" type="number" step="any"></div>
     <div class="field" style="flex:1;"><label>Uzunlik (lng)</label><input id="nsLng" type="number" step="any"></div>
   </div>
+  <div class="smallMuted" id="nsLocStatus" style="margin-top:-2px;margin-bottom:6px;"></div>
   <button class="primaryBtn" onclick="saveStore()" id="storeSaveBtn">Do'konni saqlash</button>
   <button class="dangerGhostBtn hidden" style="margin-top:8px;width:100%;" id="storeDeleteBtn" onclick="deleteStore()"><span id="ic-trash-store"></span>Do'konni o'chirish</button>
 </div></div>
@@ -1461,7 +1465,7 @@ function mountIcons(){
     'ic-search-go':['search',17,'stroke:#fff'],
     'ic-mode-in':['box',15],'ic-mode-out':['cart',15],
     'ic-cam-on':['camera',15],'ic-cam-off':['camOff',15],
-    'ic-pin':['pin',15],'ic-ot-pin':['pin',15],'ic-ot-pin2':['pin',15],'ic-bell':['bell',17,'stroke:#fff'],'ic-photo-default':['user',22],'ic-photo-upload2':['camera',14],'ic-store-auto':['check',13],'ic-recenter-mini':['locate',20],'ic-recenter-full':['locate',20],
+    'ic-pin':['pin',15],'ic-ns-pin':['pin',15],'ic-ot-pin':['pin',15],'ic-ot-pin2':['pin',15],'ic-bell':['bell',17,'stroke:#fff'],'ic-photo-default':['user',22],'ic-photo-upload2':['camera',14],'ic-store-auto':['check',13],'ic-recenter-mini':['locate',20],'ic-recenter-full':['locate',20],
     'ic-bo-phone':['phone',12],'ic-pl-pin1':['pin',15],'ic-pl-pin2':['pin',15],
     'ic-upload':['upload',22],
     'ic-basket':['cart',15],
@@ -2615,6 +2619,10 @@ function showProductQr(productId){
 let scanMode = 'in';
 let scanStream = null;
 let scanLoopId = null;
+let scanLoopTimer = null;
+let scanCanvas = null, scanCtx = null;
+let nativeDetector = null;
+let scanTrack = null;
 let sessionQty = 0, sessionRevenue = 0;
 let sessionItems = {};
 
@@ -2626,12 +2634,49 @@ function setScanMode(mode){
   renderScanSession();
 }
 function renderScanStoreOptions(){ renderScanSession(); }
+function scanBeep(){
+  try{
+    if(navigator.vibrate) navigator.vibrate(60);
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(!Ctx) return;
+    const actx = new Ctx();
+    const osc = actx.createOscillator();
+    const gain = actx.createGain();
+    osc.frequency.value = 1500;
+    gain.gain.setValueAtTime(0.18, actx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.14);
+    osc.connect(gain); gain.connect(actx.destination);
+    osc.start(); osc.stop(actx.currentTime + 0.14);
+  }catch(e){}
+}
 async function startScanner(){
   const video = document.getElementById('video');
+  document.getElementById('scanResultBox').innerHTML = `<div class="scanResult">${ic('check',16)}Kamera ochilmoqda...</div>`;
   try{
-    scanStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    // Real skanerlardagidek: yuqori aniqlik + avtofokus, orqa kamera
+    const constraints = {
+      video:{
+        facingMode:{ideal:'environment'},
+        width:{ideal:1280}, height:{ideal:720},
+        advanced:[{focusMode:'continuous'}]
+      }
+    };
+    let stream;
+    try{ stream = await navigator.mediaDevices.getUserMedia(constraints); }
+    catch(e){ stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); }
+    scanStream = stream;
+    scanTrack = stream.getVideoTracks()[0];
     video.srcObject = scanStream;
     await video.play();
+    // Iloji bo'lsa qurilmaning tabiiy (native) barkod skaneridan foydalanamiz — tezroq va aniqroq
+    if('BarcodeDetector' in window){
+      try{ nativeDetector = new BarcodeDetector({formats:['qr_code']}); }
+      catch(e){ nativeDetector = null; }
+    } else {
+      nativeDetector = null;
+    }
+    if(!scanCanvas){ scanCanvas = document.createElement('canvas'); scanCtx = scanCanvas.getContext('2d', {willReadFrequently:true}); }
+    document.getElementById('scanResultBox').innerHTML = `<div class="scanResult">${ic('check',16)}Kamera tayyor — QR kodni ramka ichiga tuting.</div>`;
     scanLoopTick();
   }catch(e){
     document.getElementById('scanResultBox').innerHTML = `<div class="scanResult err">${ic('alert',16)}Kameraga ruxsat berilmadi yoki topilmadi.</div>`;
@@ -2639,30 +2684,53 @@ async function startScanner(){
 }
 function stopScanner(){
   if(scanLoopId) cancelAnimationFrame(scanLoopId);
+  if(scanLoopTimer) clearTimeout(scanLoopTimer);
+  scanLoopId = null; scanLoopTimer = null;
   if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
-}
-let lastScanTime = 0;
-function scanLoopTick(){
+  scanTrack = null;
   const video = document.getElementById('video');
-  if(video.readyState === video.HAVE_ENOUGH_DATA){
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video,0,0,canvas.width,canvas.height);
-    const imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
-    const code = jsQR(imgData.data, imgData.width, imgData.height);
-    if(code && Date.now()-lastScanTime > 1200){
-      lastScanTime = Date.now();
-      handleScannedCode(code.data);
-    }
+  if(video) video.srcObject = null;
+}
+let lastScanTime = 0, lastScanText = '';
+async function scanLoopTick(){
+  const video = document.getElementById('video');
+  if(!video || !video.srcObject){ return; } // to'xtatilgan
+  if(video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth > 0){
+    try{
+      if(nativeDetector){
+        const codes = await nativeDetector.detect(video);
+        if(codes && codes.length){ maybeHandleScan(codes[0].rawValue); }
+      } else if(typeof jsQR === 'function'){
+        scanCanvas.width = video.videoWidth; scanCanvas.height = video.videoHeight;
+        scanCtx.drawImage(video,0,0,scanCanvas.width,scanCanvas.height);
+        const imgData = scanCtx.getImageData(0,0,scanCanvas.width,scanCanvas.height);
+        const code = jsQR(imgData.data, imgData.width, imgData.height, {inversionAttempts:'attemptBoth'});
+        if(code && code.data){ maybeHandleScan(code.data); }
+      }
+    }catch(e){ /* bir freym xato bo'lsa ham skanerlashni davom ettiramiz */ }
   }
-  scanLoopId = requestAnimationFrame(scanLoopTick);
+  // Real skaner tezligiga yaqin: sekundiga ~8 marta tekshiramiz — batareya/CPU tejaydi va barqaror ishlaydi
+  scanLoopTimer = setTimeout(()=>{ scanLoopId = requestAnimationFrame(scanLoopTick); }, 110);
+}
+function maybeHandleScan(text){
+  if(!text) return;
+  const now = Date.now();
+  if(text === lastScanText && now - lastScanTime < 1800) return; // bir xil kodni ketma-ket qayta o'qimaslik
+  lastScanTime = now; lastScanText = text;
+  scanBeep();
+  handleScannedCode(text);
 }
 async function handleScannedCode(text){
-  if(!text.startsWith('UTAM:')) return;
+  if(!text.startsWith('UTAM:')){
+    document.getElementById('scanResultBox').innerHTML = `<div class="scanResult err">${ic('alert',16)}Bu QR kod tanilmadi.</div>`;
+    return;
+  }
   const productId = text.split(':')[1];
   const p = state.products.find(x=>x.id===productId);
-  if(!p) return;
+  if(!p){
+    document.getElementById('scanResultBox').innerHTML = `<div class="scanResult err">${ic('alert',16)}Mahsulot topilmadi.</div>`;
+    return;
+  }
   if(scanMode==='in'){
     p.stock += 1;
     await saveState();
@@ -2868,6 +2936,7 @@ function plotStoresOnMap(mapInstance, markersRef, onStoreClick){
 }
 function openStoreModal(storeId){
   editingStoreId = storeId;
+  document.getElementById('nsLocStatus').textContent = '';
   if(storeId){
     const s = state.stores.find(x=>x.id===storeId);
     document.getElementById('storeModalTitle').textContent = 'Do\'konni tahrirlash';
@@ -3733,11 +3802,14 @@ function locateMeOnPicker(){
 function openHomeLocationPicker(mode){
   locPickerMode = mode || 'home';
   if(locPickerMode==='register') closeModal('modalAuth');
+  if(locPickerMode==='newstore') closeModal('modalAddStore');
   openModal('modalHomeLocation');
-  document.getElementById('homeLocTitle').textContent = locPickerMode==='dokon' ? 'Do\'kon manzilini xaritadan tanlang' : (locPickerMode==='register' ? 'Turgan joyingizni xaritadan tanlang' : 'Uy manzilini xaritadan tanlang');
+  document.getElementById('homeLocTitle').textContent = locPickerMode==='dokon' ? 'Do\'kon manzilini xaritadan tanlang' : (locPickerMode==='register' ? 'Turgan joyingizni xaritadan tanlang' : (locPickerMode==='newstore' ? 'Do\'kon manzilini xaritadan tanlang' : 'Uy manzilini xaritadan tanlang'));
   const u = currentUser ? state.users.find(x=>x.id===currentUser.id) : null;
-  const startLat = (locPickerMode==='register' ? regPickLat : orderLat) || (u&&u.homeLat) || 41.3111;
-  const startLng = (locPickerMode==='register' ? regPickLng : orderLng) || (u&&u.homeLng) || 69.2797;
+  const nsLatVal = parseFloat((document.getElementById('nsLat')||{}).value);
+  const nsLngVal = parseFloat((document.getElementById('nsLng')||{}).value);
+  const startLat = (locPickerMode==='register' ? regPickLat : (locPickerMode==='newstore' ? (isFinite(nsLatVal)?nsLatVal:null) : orderLat)) || (u&&u.homeLat) || 41.3111;
+  const startLng = (locPickerMode==='register' ? regPickLng : (locPickerMode==='newstore' ? (isFinite(nsLngVal)?nsLngVal:null) : orderLng)) || (u&&u.homeLng) || 69.2797;
   setTimeout(()=>{
     if(!homeLocMap){
       homeLocMap = L.map('homeLocMapWrap').setView([startLat,startLng], 14);
@@ -3753,6 +3825,7 @@ function openHomeLocationPicker(mode){
 }
 function cancelHomeLocationPicker(){
   closeModal('modalHomeLocation');
+  if(locPickerMode==='newstore'){ openModal('modalAddStore'); return; }
   openModal(locPickerMode==='register' ? 'modalAuth' : 'modalBasket');
 }
 async function confirmHomeLocationPicker(){
@@ -3764,6 +3837,14 @@ async function confirmHomeLocationPicker(){
     st.innerHTML = `${ic('check',13)} Joylashuv tanlandi (${ll.lat.toFixed(4)}, ${ll.lng.toFixed(4)})`;
     closeModal('modalHomeLocation');
     openModal('modalAuth');
+    return;
+  }
+  if(locPickerMode==='newstore'){
+    document.getElementById('nsLat').value = ll.lat.toFixed(6);
+    document.getElementById('nsLng').value = ll.lng.toFixed(6);
+    document.getElementById('nsLocStatus').innerHTML = `${ic('check',13)} Manzil xaritadan tanlandi`;
+    closeModal('modalHomeLocation');
+    openModal('modalAddStore');
     return;
   }
   orderLat = ll.lat; orderLng = ll.lng;
