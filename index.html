@@ -385,6 +385,8 @@ main{max-width:960px;margin:0 auto;padding:18px 16px 20px;}
 }
 .navBtn{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;color:var(--muted);border-radius:20px;flex:1;transition:color .2s,background .25s,transform .35s var(--spring-pop);}
 .navBtn:active{transform:scale(.9);}
+.navBtn.bump{animation:pop .35s ease;}
+.navBadge{position:absolute;top:-6px;right:-9px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--danger);color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px var(--bg);}
 .navBtn svg{stroke:var(--muted);transition:stroke .2s,transform .35s var(--spring-pop);}
 .navBtn.active{color:var(--forest);background:var(--leaf-soft);}
 .navBtn.active svg{stroke:var(--forest);transform:translateY(-1px) scale(1.06);}
@@ -575,6 +577,18 @@ textarea.note:focus{outline:none;border-color:var(--leaf);background:#fff;box-sh
 .debtDetailBody{margin-top:0;max-height:0;overflow:hidden;transition:max-height .3s var(--spring);}
 .debtDetailBody.open{margin-top:9px;max-height:650px;}
 .debtDetailInner{padding-top:9px;border-top:1px dashed var(--line);}
+/* ---- Qarz daftari: colorful compact list ---- */
+.qarzStatRow{display:flex;gap:9px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;}
+.qarzStatPill{flex:1;min-width:104px;border-radius:16px;padding:12px 14px;color:#fff;box-shadow:var(--shadow-sm);}
+.qarzStatPill .v{font-size:17px;font-weight:800;font-family:inherit;}
+.qarzStatPill .k{font-size:10.5px;opacity:.9;font-weight:600;margin-top:2px;}
+.qarzAvatar{width:36px;height:36px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13.5px;}
+.qarzRow{padding:11px 12px;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.qarzRow .mid{flex:1;min-width:0;}
+.qarzRow .nm{font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.qarzRow .sub{font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.qarzRow .amt{font-family:inherit;font-weight:800;font-size:13px;flex-shrink:0;text-align:right;}
+.qarzRow .amt small{display:block;font-size:9.5px;font-weight:600;color:var(--muted);}
 
 /* footer: social + seller info */
 .footerWrap{margin-top:30px;}
@@ -854,7 +868,7 @@ div#mapWrap ~ #storeList{margin-top:14px;}
       <div class="statGrid">
         <div class="statCard"><div class="top"><div class="icWrap" id="ic-stat-products"></div></div><div class="num" id="statProducts">0</div><div class="lbl">Mahsulot turi</div></div>
         <div class="statCard"><div class="top"><div class="icWrap" id="ic-stat-stock"></div></div><div class="num" id="statStock">0</div><div class="lbl">Ombordagi dona</div></div>
-        <div class="statCard warn clickable" onclick="showView('stores')"><div class="top"><div class="icWrap" id="ic-stat-debt"></div></div><div class="num" id="statDebt">0</div><div class="lbl">Jami qarz (so'm)</div></div>
+        <div class="statCard warn clickable" onclick="showView('qarz')"><div class="top"><div class="icWrap" id="ic-stat-debt"></div></div><div class="num" id="statDebt">0</div><div class="lbl">Jami qarz (so'm)</div></div>
         <div class="statCard clickable" onclick="showView('orders')"><div class="top"><div class="icWrap" id="ic-stat-orders"></div></div><div class="num" id="statOrders">0</div><div class="lbl">Yangi buyurtmalar</div></div>
         <div class="statCard clickable" onclick="openUsersModal()"><div class="top"><div class="icWrap" id="ic-stat-users"></div></div><div class="num" id="statUsers">0</div><div class="lbl">Ro'yxatdan o'tganlar</div></div>
         <div class="statCard blue"><div class="top"><div class="icWrap" id="ic-stat-revenue"></div></div><div class="num" id="statRevenueToday">0</div><div class="lbl">Bugungi savdo (so'm)</div></div>
@@ -930,7 +944,12 @@ div#mapWrap ~ #storeList{margin-top:14px;}
         <button class="mapRecenterBtn" id="mapRecenterMini" onclick="recenterMap(false)" title="Hozirgi joylashuvga qaytish"><span id="ic-recenter-mini"></span></button>
       </div>
       <div id="storeList" style="margin-top:14px;"></div>
-      <div class="sectionHead" style="margin-top:18px;"><h2>Qarzdorlar</h2></div>
+    </div>
+
+    <!-- ===== ADMIN: QARZ DAFTARI (dedicated debt ledger section) ===== -->
+    <div class="view" id="v-qarz">
+      <div class="sectionHead"><h2>Qarz daftari</h2></div>
+      <div class="qarzStatRow" id="qarzStatRow"></div>
       <div class="tabRowSlim">
         <button id="debtsTabAll" class="active" onclick="setDebtsAdminFilter('all')">Barchasi</button>
         <button id="debtsTabSoon" onclick="setDebtsAdminFilter('soon')">Muddati yaqinlashgan</button>
@@ -1004,8 +1023,6 @@ div#mapWrap ~ #storeList{margin-top:14px;}
       </div>
     </div>
   </main>
-
-  <button class="floatBasket hidden" id="floatBasketBtn"><span id="ic-basket"></span>Savat (<span id="basketCount">0</span>)</button>
 
   <nav class="bottomNav" id="bottomNav"></nav>
 </div>
@@ -1225,7 +1242,10 @@ div#mapWrap ~ #storeList{margin-top:14px;}
       <button onclick="pdChangeQty(1)"><span id="ic-pd-plus"></span></button>
     </div>
   </div>
-  <button class="primaryBtn" id="pdAddBtn" onclick="pdAddToBasket()"><span id="ic-pd-cart"></span>Savatga qo'shish</button>
+  <div style="display:flex;gap:8px;">
+    <button class="ghostBtn" style="flex:1;" id="pdAddBtn" onclick="pdAddToBasket()"><span id="ic-pd-cart"></span>Savatga qo'shish</button>
+    <button class="primaryBtn" style="flex:1;" onclick="pdBuyNow()"><span id="ic-pd-buy"></span>Hoziroq buyurtma berish</button>
+  </div>
 </div></div>
 
 <!-- ============ PRODUCT MODAL (admin: create / edit) ============ -->
@@ -1386,6 +1406,19 @@ div#mapWrap ~ #storeList{margin-top:14px;}
   <button class="primaryBtn" onclick="submitOrder()" id="basketSubmitBtn" style="margin-top:14px;">Buyurtma berish</button>
 </div></div>
 
+<!-- ============ EDIT ORDER MODAL (customer: change qty / remove items / cancel — only while status is 'yangi') ============ -->
+<div class="modalBg hidden" id="modalEditOrder"><div class="modalCard">
+  <button class="modalClose" onclick="closeModal('modalEditOrder')" id="close-eo"></button>
+  <h3>Buyurtmani tahrirlash</h3>
+  <p class="smallMuted" style="margin-top:-4px;">Admin buyurtmani "Tayyor" deb belgilaguncha o'zgartirishingiz mumkin.</p>
+  <div id="eoItemsList" style="margin-top:8px;"></div>
+  <div class="row" style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);">
+    <span style="font-weight:700;">Jami</span><b id="eoTotal">0 so'm</b>
+  </div>
+  <button class="primaryBtn" style="margin-top:14px;" onclick="confirmEditOrder()">O'zgarishlarni saqlash</button>
+  <button class="dangerGhostBtn" style="margin-top:8px;width:100%;" onclick="customerCancelOrder(editingOrderId)"><span id="ic-eo-trash"></span>Buyurtmani bekor qilish</button>
+</div></div>
+
 <!-- ============ HOME LOCATION PICKER MODAL (customer: pick delivery point on map) ============ -->
 <div class="modalBg hidden" id="modalHomeLocation"><div class="modalCard">
   <button class="modalClose" onclick="cancelHomeLocationPicker()" id="close-homeloc"></button>
@@ -1470,7 +1503,7 @@ function mountIcons(){
     'ic-upload':['upload',22],
     'ic-basket':['cart',15],
     'ic-trash-prod':['trash',14],'ic-trash-store':['trash',14],'ic-trash-ledger':['trash',14],
-    'ic-pd-minus':['minus',15],'ic-pd-plus':['plus',15],'ic-pd-cart':['cart',16],
+    'ic-pd-minus':['minus',15],'ic-pd-plus':['plus',15],'ic-pd-cart':['cart',16],'ic-pd-buy':['check',16],'ic-eo-trash':['trash',15],
     'ic-ot-personal':['user',15],'ic-ot-store':['store',15],
     'ic-an-qty':['box',16],'ic-an-kg':['scale',16],'ic-an-rev':['card',16],'ic-an-cmp':['trend',16],
   };
@@ -2330,16 +2363,19 @@ function openInstallModal(){
 const NAVS = {
   guest: [
     {id:'catalog', icon:'cart', tx:'Katalog'},
+    {id:'savat', icon:'cart', tx:'Savat'},
     {id:'cabinet', icon:'user', tx:'Kabinet'},
   ],
   user: [
     {id:'catalog', icon:'cart', tx:'Katalog'},
+    {id:'savat', icon:'cart', tx:'Savat'},
     {id:'cabinet', icon:'user', tx:'Kabinet'},
   ],
   admin: [
     {id:'dash', icon:'grid', tx:'Bosh sahifa'},
     {id:'products', icon:'box', tx:'Mahsulot'},
     {id:'scan', icon:'qr', tx:'QR skan'},
+    {id:'qarz', icon:'card', tx:'Qarz daftari'},
     {id:'analytics', icon:'chart', tx:'Analitika'},
     {id:'stores', icon:'store', tx:"Do'konlar"},
     {id:'orders', icon:'receipt', tx:'Buyurtma'},
@@ -2364,13 +2400,19 @@ function buildNav(){
   NAVS[currentRoleKey()].forEach(n=>{
     const b = document.createElement('button');
     b.className = 'navBtn'; b.id = 'nav-'+n.id;
-    b.innerHTML = `${ic(n.icon,19)}<div class="tx">${n.tx}</div>`;
+    if(n.id==='savat'){
+      b.innerHTML = `<span style="position:relative;display:inline-flex;">${ic(n.icon,19)}<span class="navBadge hidden" id="navBasketBadge">0</span></span><div class="tx">${n.tx}</div>`;
+    } else {
+      b.innerHTML = `${ic(n.icon,19)}<div class="tx">${n.tx}</div>`;
+    }
     b.onclick = ()=>showView(n.id);
     nav.appendChild(b);
   });
+  updateBasketCount();
 }
 
 function showView(id){
+  if(id==='savat'){ renderBasketModal(); openModal('modalBasket'); return; }
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const el = document.getElementById('v-'+id);
   if(el) el.classList.add('active');
@@ -2384,6 +2426,7 @@ function renderView(id){
   if(id==='dash') renderDash();
   if(id==='products') renderProducts();
   if(id==='scan') renderScanStoreOptions();
+  if(id==='qarz') renderDebtsAdmin();
   if(id==='analytics') renderAnalytics();
   if(id==='stores') renderStores();
   if(id==='orders') renderOrdersAdmin();
@@ -3357,21 +3400,27 @@ function openLedgerDetail(ledgerId){
   const l = state.ledger.find(x=>x.id===ledgerId);
   if(!l) return;
   const s = state.stores.find(x=>x.id===l.partyId);
+  const overdue = l.debt>0 && l.due && l.due < todayISO();
   document.getElementById('ledgerDetailBody').innerHTML = `
     <div class="statGrid" style="grid-template-columns:1fr;">
       <div class="statCard ${l.debt>0?'warn':''}"><div class="num">${l.debt>0?fmt(l.debt)+" so'm":'To\'langan'}</div><div class="lbl">${l.debt>0?'Qolgan qarz':'Holati'}</div></div>
     </div>
     <div class="card">
-      <div class="meta"><b>Do'kon:</b> ${l.partyName}</div>
+      <div class="meta"><b>Do'kon / mijoz:</b> ${l.partyName}</div>
       ${l.ownerName?`<div class="meta"><b>Egasi:</b> ${l.ownerName}</div>`:''}
       ${s&&s.phone?`<div class="meta"><b>Telefon:</b> ${s.phone}</div>`:''}
       ${s&&s.address?`<div class="meta"><b>Manzil:</b> ${s.address}</div>`:''}
       <div class="meta" style="margin-bottom:2px;"><b>Mahsulotlar:</b></div>
       ${itemChipsHtml(l.items)}
-      ${moneyPillsHtml(l)}
+      ${moneyPillsHtml(l,{overdue})}
       <div class="meta" style="margin-top:10px;"><b>Sana:</b> ${l.date}</div>
       ${l.deliveryTime?`<div class="meta"><b>Yetkazib berish vaqti:</b> ${fmtDeliveryTime(l.deliveryTime)}</div>`:''}
-      ${l.due?`<div class="meta"><b>Qarz muddati:</b> ${l.due}</div>`:''}
+      ${l.due?`<div class="meta"><b>Qarz muddati:</b> ${l.due}${overdue?' · <b style="color:var(--danger);">muddati o\'tgan!</b>':''}</div>`:''}
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+      ${l.debt>0?`<button class="ghostBtn" style="flex:1;" onclick="closeModal('modalLedgerDetail');openPay('${l.partyType}','${l.partyId}','${l.partyName}')">${ic('card',13)}To'lov qabul qilish</button>`:''}
+      <button class="ghostBtn" style="flex:1;" onclick="closeModal('modalLedgerDetail');openEditLedger('${l.id}')">${ic('edit',13)}Tahrirlash</button>
+      ${l.debt>0?`<button class="ghostBtn" style="flex:1;" onclick="closeModal('modalLedgerDetail');openDebtMessageModal('${l.id}')">${ic('bell',13)}Xabar yuborish</button>`:''}
     </div>
     ${s?`<button class="primaryBtn" onclick="openYandexNavigator(${s.lat}, ${s.lng}, '${(s.name||'').replace(/'/g,"")}')">${ic('pin',15)}Magazinga borish</button>`:''}
   `;
@@ -3413,45 +3462,41 @@ function setDebtsAdminFilter(f){
   if(bSoon) bSoon.classList.toggle('active', f==='soon');
   renderDebtsAdmin();
 }
-let openDebtRowId = null;
-function toggleDebtRow(id){
-  openDebtRowId = (openDebtRowId===id) ? null : id;
-  const detail = document.getElementById('detail-'+id);
-  const chev = document.getElementById('chev-'+id);
-  if(detail) detail.classList.toggle('open', openDebtRowId===id);
-  if(chev) chev.classList.toggle('open', openDebtRowId===id);
+const QARZ_COLORS = ['#EA5A1F','#0A7AFF','#2FA968','#F7A928','#6D3FC8','#EF4B62','#0E7C74','#B8430F'];
+function qarzColorFor(name){
+  let h=0; for(let i=0;i<(name||'').length;i++) h = (h*31 + name.charCodeAt(i))>>>0;
+  return QARZ_COLORS[h % QARZ_COLORS.length];
+}
+function initialsOf(name){
+  const parts=(name||'?').trim().split(/\s+/);
+  return ((parts[0]||'')[0]||'?').toUpperCase() + ((parts[1]||'')[0]||'').toUpperCase();
 }
 function renderDebtsAdmin(){
   const box = document.getElementById('debtsAdminList');
-  let rows = state.ledger.filter(l=>l.debt>0).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999'));
+  const statBox = document.getElementById('qarzStatRow');
+  const allDebts = state.ledger.filter(l=>l.debt>0);
+  if(statBox){
+    const totalSum = allDebts.reduce((s,l)=>s+l.debt,0);
+    const overdueCount = allDebts.filter(l=>l.due && l.due<todayISO()).length;
+    statBox.innerHTML = `
+      <div class="qarzStatPill" style="background:linear-gradient(135deg,#EA5A1F,#B8430F);"><div class="v">${allDebts.length}</div><div class="k">Qarzdorlar soni</div></div>
+      <div class="qarzStatPill" style="background:linear-gradient(135deg,#0A7AFF,#0A5FCC);"><div class="v">${fmt(totalSum)}</div><div class="k">Jami qarz, so'm</div></div>
+      <div class="qarzStatPill" style="background:linear-gradient(135deg,#EF4B62,#C22B2B);"><div class="v">${overdueCount}</div><div class="k">Muddati o'tgan</div></div>
+    `;
+  }
+  let rows = [...allDebts].sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999'));
   if(debtsAdminFilter==='soon') rows = rows.filter(isDebtDueSoon);
   box.innerHTML = rows.map(l=>{
     const overdue = l.due && l.due < todayISO();
-    const isOpen = openDebtRowId===l.id;
+    const color = qarzColorFor(l.partyName);
     return `
-    <div class="card debtRow debtRowCompact">
-      <div class="row" onclick="toggleDebtRow('${l.id}')">
-        <div class="debtRowHead">
-          <span class="debtRowName">${l.partyName}</span>
-          ${overdue?'<span class="badge red" style="font-size:10px;padding:2px 6px;">Muddati o\'tgan</span>':''}
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-          <span class="badge red" style="font-size:11.5px;">${fmt(l.debt)} so'm</span>
-          <span class="debtChev${isOpen?' open':''}" id="chev-${l.id}">${ic('chev',14)}</span>
-        </div>
+    <div class="card qarzRow" onclick="openLedgerDetail('${l.id}')">
+      <div class="qarzAvatar" style="background:${color};">${initialsOf(l.partyName)}</div>
+      <div class="mid">
+        <div class="nm">${l.partyName}</div>
+        <div class="sub">${l.ownerName?l.ownerName+' · ':''}${overdue?'Muddati o\'tgan!':(l.due?('Muddat: '+l.due):'Muddat belgilanmagan')}</div>
       </div>
-      <div class="debtDetailBody${isOpen?' open':''}" id="detail-${l.id}">
-        <div class="debtDetailInner">
-          ${itemChipsHtml(l.items)}
-          ${moneyPillsHtml(l,{overdue})}
-          <div class="meta" style="margin-top:8px;">Berilgan: ${l.date} · Muddat: ${l.due||'—'}</div>
-          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
-            <button class="ghostBtn" style="flex:1;" onclick="event.stopPropagation();openPay('${l.partyType}','${l.partyId}','${l.partyName}')">To'lov qabul qilish</button>
-            <button class="ghostBtn" style="flex:1;" onclick="event.stopPropagation();openEditLedger('${l.id}')">${ic('edit',13)}Tahrirlash</button>
-            <button class="ghostBtn" style="flex:1;" onclick="event.stopPropagation();openDebtMessageModal('${l.id}')">${ic('bell',13)}Xabar yuborish</button>
-          </div>
-        </div>
-      </div>
+      <div class="amt" style="color:${overdue?'var(--danger)':'var(--terracotta-deep, #B8430F)'};">${fmt(l.debt)}<small>so'm qarz</small></div>
     </div>
   `;
   }).join('') || emptyHtml('check', debtsAdminFilter==='soon' ? 'Muddati yaqinlashgan qarz yo\'q' : 'Hech kim qarzdor emas');
@@ -3748,14 +3793,91 @@ function pdAddToBasket(){
   basket[pdCurrentProduct.id] = (basket[pdCurrentProduct.id]||0) + pdQty;
   updateBasketCount();
   closeModal('modalProductDetail');
-  const fb = document.getElementById('floatBasketBtn');
-  fb.classList.add('bump');
-  setTimeout(()=>fb.classList.remove('bump'), 350);
+  const navSavat = document.getElementById('nav-savat');
+  if(navSavat){ navSavat.classList.add('bump'); setTimeout(()=>navSavat.classList.remove('bump'), 350); }
 }
+function pdBuyNow(){
+  if(!pdCurrentProduct || pdCurrentProduct.stock<=0) return;
+  basket[pdCurrentProduct.id] = (basket[pdCurrentProduct.id]||0) + pdQty;
+  updateBasketCount();
+  closeModal('modalProductDetail');
+  renderBasketModal();
+  openModal('modalBasket');
+}
+
+/* ==================== CUSTOMER: EDIT / CANCEL OWN ORDER (only while status === 'yangi') ==================== */
+let editingOrderId = null;
+let editingOrderItems = [];
+function openEditOrder(orderId){
+  const o = state.orders.find(x=>x.id===orderId);
+  if(!o) return;
+  if(o.status!=='yangi'){ alert("Admin bu buyurtmani allaqachon qabul qilgan, shuning uchun uni o'zgartirib bo'lmaydi."); return; }
+  editingOrderId = orderId;
+  editingOrderItems = o.items.map(i=>({...i}));
+  renderEditOrderModal();
+  openModal('modalEditOrder');
+}
+function renderEditOrderModal(){
+  const list = document.getElementById('eoItemsList');
+  list.innerHTML = editingOrderItems.map((i,idx)=>`
+    <div class="sessionRow">
+      <span style="display:flex;align-items:center;gap:8px;min-width:0;"><b style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${i.name}</b></span>
+      <span style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <div class="pdQtyBox" style="padding:2px;">
+          <button onclick="eoChangeQty(${idx},-1)" style="width:28px;height:28px;">${ic('minus',12)}</button>
+          <span style="font-size:14px;min-width:20px;">${i.qty}</span>
+          <button onclick="eoChangeQty(${idx},1)" style="width:28px;height:28px;">${ic('plus',12)}</button>
+        </div>
+        <button class="ghostBtn" style="padding:7px 9px;" onclick="eoRemoveItem(${idx})">${ic('trash',13)}</button>
+      </span>
+    </div>`).join('') || emptyHtml('cart',"Barcha mahsulotlar olib tashlandi — saqlasangiz buyurtma bekor bo'ladi");
+  const total = editingOrderItems.reduce((s,i)=>s+i.price*i.qty,0);
+  document.getElementById('eoTotal').textContent = fmt(total)+" so'm";
+}
+function eoChangeQty(idx,d){
+  editingOrderItems[idx].qty = Math.max(1, editingOrderItems[idx].qty+d);
+  renderEditOrderModal();
+}
+function eoRemoveItem(idx){
+  editingOrderItems.splice(idx,1);
+  renderEditOrderModal();
+}
+async function confirmEditOrder(){
+  const o = state.orders.find(x=>x.id===editingOrderId);
+  if(!o) return;
+  if(o.status!=='yangi'){ alert("Admin bu buyurtmani allaqachon qabul qilgan, shuning uchun uni o'zgartirib bo'lmaydi."); closeModal('modalEditOrder'); renderCabinet(); return; }
+  if(!editingOrderItems.length){
+    if(confirm("Barcha mahsulotlar olib tashlandi. Buyurtmani butunlay bekor qilasizmi?")) await customerCancelOrder(editingOrderId, true);
+    return;
+  }
+  o.items = editingOrderItems;
+  o.total = editingOrderItems.reduce((s,i)=>s+i.price*i.qty,0);
+  await saveState();
+  closeModal('modalEditOrder');
+  renderCabinet();
+  pushNotification('admin', 'Buyurtma o\'zgartirildi', `${o.customerName} o'z buyurtmasini yangiladi (${fmt(o.total)} so'm).`, 'order');
+}
+async function customerCancelOrder(orderId, skipConfirm){
+  const o = state.orders.find(x=>x.id===orderId);
+  if(!o) return;
+  if(o.status!=='yangi'){ alert("Admin bu buyurtmani allaqachon qabul qilgan, shuning uchun uni bekor qila olmaysiz."); return; }
+  if(!skipConfirm && !confirm("Buyurtmani bekor qilmoqchimisiz?")) return;
+  const custName = o.customerName;
+  state.orders = state.orders.filter(x=>x.id!==orderId);
+  await saveState();
+  closeModal('modalEditOrder');
+  renderCabinet();
+  try{ renderOrdersAdmin(); renderDash(); refreshOrderPinsOnMaps(); }catch(e){}
+  pushNotification('admin', 'Buyurtma bekor qilindi', `${custName} o'z buyurtmasini bekor qildi.`, 'order');
+}
+
 function updateBasketCount(){
   const count = Object.values(basket).reduce((s,q)=>s+q,0);
-  document.getElementById('basketCount').textContent = count;
-  document.getElementById('floatBasketBtn').classList.toggle('hidden', count===0 || (currentUser && currentUser.role==='admin'));
+  const badge = document.getElementById('navBasketBadge');
+  if(badge){
+    badge.textContent = count;
+    badge.classList.toggle('hidden', count===0);
+  }
 }
 
 let currentOrderType = 'shaxsiy';
@@ -3897,7 +4019,7 @@ function renderBasketModal(){
     document.getElementById('boUseSavedHomeBtn').classList.toggle('hidden', !(u && u.homeLat));
   }
 }
-document.getElementById('floatBasketBtn').addEventListener('click', ()=>{ renderBasketModal(); openModal('modalBasket'); });
+
 
 async function submitOrder(){
   const entries = Object.entries(basket);
@@ -4004,11 +4126,19 @@ function renderCabinet(){
 }
 function orderCardHtmlSimple(o){
   const statusBadge = {yangi:'amber', tayyor:'green', yetkazildi:'gray'}[o.status]||'gray';
+  const statusTxt = {yangi:'Yangi', tayyor:'Tayyor', yetkazildi:'Yetkazildi'}[o.status]||o.status;
   const typeBadge = o.orderType==='dokon' ? `<span class="badge blue">Do'kon uchun</span>` : `<span class="badge gray">Shaxsiy</span>`;
+  const canEdit = o.status==='yangi';
   return `<div class="card">
-    <div class="row"><div class="title">Buyurtma · ${o.date}</div><span class="badge ${statusBadge}">${o.status}</span></div>
+    <div class="row"><div class="title">Buyurtma · ${o.date}</div><span class="badge ${statusBadge}">${statusTxt}</span></div>
     ${itemChipsHtml(o.items,{gram:true})}
     <div class="meta" style="margin-top:8px;">${typeBadge} · Jami: <b style="color:var(--forest-dark);">${fmt(o.total)} so'm</b></div>
+    ${canEdit
+      ? `<div style="display:flex;gap:6px;margin-top:9px;">
+           <button class="ghostBtn" style="flex:1;" onclick="openEditOrder('${o.id}')">${ic('edit',13)}Tahrirlash</button>
+           <button class="ghostBtn" style="flex:1;color:#EF4B62;" onclick="customerCancelOrder('${o.id}')">${ic('trash',13)}Bekor qilish</button>
+         </div>`
+      : `<div class="smallMuted" style="margin-top:8px;">${ic('check',12)} Admin tomonidan qabul qilingan — endi o'zgartirib bo'lmaydi</div>`}
   </div>`;
 }
 
