@@ -84,14 +84,17 @@ window.L = (function(){
     const cls = ic._cls || '';
     const size = ic._size || [30,38];
     const anchor = ic._anchor || [Math.round(size[0]/2), size[1]-2];
+    const tipH = 30; // taxminan yorliq balandligi — bosish maydonini shuncha yuqoriga kengaytiramiz
     const tip = this._tt
-      ? `<div class="${this._ttCls||'mapNameLabel'}" style="position:absolute;left:50%;transform:translateX(-50%);bottom:${size[1]+6}px;white-space:nowrap;pointer-events:none;padding:3.5px 9px;border-radius:9px;">${this._tt}</div>`
+      ? `<div class="${this._ttCls||'mapNameLabel'}" style="position:absolute;left:50%;transform:translateX(-50%);bottom:${size[1]+6}px;white-space:nowrap;padding:3.5px 9px;border-radius:9px;cursor:pointer;">${this._tt}</div>`
       : '';
-    const tpl = `<div style="position:relative;width:${size[0]}px;height:${size[1]}px;">${tip}<div class="${cls}" style="width:${size[0]}px;height:${size[1]}px;">${html}</div></div>`;
+    const tpl = `<div style="position:relative;width:${size[0]}px;height:${size[1]}px;cursor:pointer;">${tip}<div class="${cls}" style="width:${size[0]}px;height:${size[1]}px;">${html}</div></div>`;
+    const extraTop = this._tt ? (tipH+8) : 0;
+    const pad = 6; // taxminan — belgining o'zini bosishni osonlashtirish uchun qo'shimcha bosish maydoni
     return {
       layout: ymaps.templateLayoutFactory.createClass(tpl),
       offset: [-anchor[0], -anchor[1]],
-      shape: {type:'Rectangle', coordinates:[[-anchor[0],-anchor[1]],[size[0]-anchor[0], size[1]-anchor[1]]]}
+      shape: {type:'Rectangle', coordinates:[[-anchor[0]-pad,-anchor[1]-extraTop-pad],[size[0]-anchor[0]+pad, size[1]-anchor[1]+pad]]}
     };
   };
   MarkerW.prototype._make = function(){
@@ -589,6 +592,19 @@ textarea.note:focus{outline:none;border-color:var(--leaf);background:#fff;box-sh
 .qarzRow .sub{font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .qarzRow .amt{font-family:inherit;font-weight:800;font-size:13px;flex-shrink:0;text-align:right;}
 .qarzRow .amt small{display:block;font-size:9.5px;font-weight:600;color:var(--muted);}
+/* ---- Chat (mijoz ↔ admin) ---- */
+.chatThread{max-height:min(50vh,420px);overflow-y:auto;display:flex;flex-direction:column;gap:9px;padding:6px 2px;}
+.chatBubble{max-width:80%;padding:9px 13px;border-radius:15px;font-size:13.5px;line-height:1.42;word-break:break-word;}
+.chatBubble.mine{align-self:flex-end;background:var(--forest);color:#fff;border-bottom-right-radius:4px;}
+.chatBubble.theirs{align-self:flex-start;background:var(--fill);color:var(--ink);border-bottom-left-radius:4px;}
+.chatBubble .t{display:block;font-size:9.5px;opacity:.65;margin-top:4px;}
+.chatRow{display:flex;align-items:center;gap:8px;margin-top:12px;}
+.chatRow input{flex:1;}
+.chatSendBtn{flex-shrink:0;width:44px;height:44px;border-radius:50%;background:var(--forest);color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.chatListItem{display:flex;align-items:center;gap:10px;padding:12px;cursor:pointer;margin-bottom:8px;}
+.chatListItem .nm{font-weight:700;font-size:13.5px;}
+.chatListItem .prev{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;max-width:220px;}
+.chatUnreadDot{width:9px;height:9px;border-radius:50%;background:var(--danger);flex-shrink:0;}
 
 /* footer: social + seller info */
 .footerWrap{margin-top:30px;}
@@ -957,6 +973,12 @@ div#mapWrap ~ #storeList{margin-top:14px;}
       <div id="debtsAdminList"></div>
     </div>
 
+    <!-- ===== ADMIN: CHAT (mijozlar bilan yozishmalar) ===== -->
+    <div class="view" id="v-chat">
+      <div class="sectionHead"><h2>Chat</h2></div>
+      <div id="chatAdminList"></div>
+    </div>
+
     <!-- ===== ADMIN: FULLSCREEN-STYLE MAP (dedicated view, not a modal — so it can never get stuck on top of anything else) ===== -->
     <div class="view" id="v-fullmap">
       <button class="ghostBtn" style="margin-bottom:12px;" onclick="showView('stores')"><span id="ic-fullmap-back"></span>Orqaga</button>
@@ -993,7 +1015,7 @@ div#mapWrap ~ #storeList{margin-top:14px;}
       </div>
       <div class="searchBarRow">
         <div class="searchBar">
-          <span id="ic-catalog-search"></span><input id="catalogSearch" placeholder="Mahsulot qidirish..." oninput="renderCatalog()" onkeydown="if(event.key==='Enter') renderCatalog()">
+          <span id="ic-catalog-search"></span><input id="catalogSearch" placeholder="Mahsulot qidirish..." oninput="renderCatalog()" onkeydown="if(event.key==='Enter') renderCatalog()" autocomplete="off">
         </div>
         <button class="searchGoBtn" onclick="renderCatalog()" title="Qidirish"><span id="ic-search-go"></span></button>
       </div>
@@ -1041,16 +1063,16 @@ div#mapWrap ~ #storeList{margin-top:14px;}
       <button id="regTypeBtnCustomer" class="active" onclick="setRegType('customer')">Iste'molchi</button>
       <button id="regTypeBtnStore" onclick="setRegType('store')">Magazin egasi</button>
     </div>
-    <div class="field hidden" id="regStoreNameWrap"><label>Magazin nomi</label><input id="authStoreName" placeholder="Masalan: Anvar do'koni"></div>
-    <div class="field"><label id="authNameLabel">Ism va familya</label><input id="authName" placeholder="Ismingiz va familyangiz"></div>
-    <div class="field hidden" id="regStoreAddrWrap"><label>Shahar / manzil</label><input id="authStoreAddr" placeholder="Shahar, ko'cha, mo'ljal"></div>
+    <div class="field hidden" id="regStoreNameWrap"><label>Magazin nomi</label><input id="authStoreName" placeholder="Do'kon nomi" autocomplete="off"></div>
+    <div class="field"><label id="authNameLabel">Ism va familya</label><input id="authName" placeholder="Ismingiz va familyangiz" autocomplete="off"></div>
+    <div class="field hidden" id="regStoreAddrWrap"><label>Shahar / manzil</label><input id="authStoreAddr" placeholder="Shahar, ko'cha, mo'ljal" autocomplete="off"></div>
     <div class="field">
       <label>Profil rasmi (ixtiyoriy)</label>
       <div style="display:flex;align-items:center;gap:12px;">
         <div class="avatarPreview" id="authPhotoPreview"><span id="ic-photo-default"></span></div>
         <label class="ghostBtn" style="cursor:pointer;flex:1;justify-content:center;">
           <span id="ic-photo-upload2"></span>&nbsp;Rasm tanlash
-          <input type="file" accept="image/*" id="authPhotoInput" style="display:none;" onchange="previewAuthPhoto(event)">
+          <input type="file" accept="image/*" id="authPhotoInput" style="display:none;" onchange="previewAuthPhoto(event)" autocomplete="off">
         </label>
       </div>
     </div>
@@ -1064,8 +1086,8 @@ div#mapWrap ~ #storeList{margin-top:14px;}
     </div>
   </div>
   <div id="authMainFields">
-  <div class="field"><label>Telefon raqam yoki email</label><input id="authContact" placeholder="+998 90 123 45 67 yoki email"></div>
-  <div class="field"><label>Parol</label><input id="authPassword" type="password" placeholder="••••••••"></div>
+  <div class="field"><label>Telefon raqam yoki email</label><input id="authContact" placeholder="+998 90 123 45 67 yoki email" autocomplete="off"></div>
+  <div class="field"><label>Parol</label><input id="authPassword" type="password" placeholder="••••••••" autocomplete="off"></div>
   <div id="authForgotLink" class="hidden" style="text-align:right;margin:-8px 0 12px;">
     <button type="button" class="linkBtn" style="font-size:12px;padding:0;" onclick="openForgotFlow()">Parolni unutdingizmi?</button>
   </div>
@@ -1074,7 +1096,7 @@ div#mapWrap ~ #storeList{margin-top:14px;}
 
   <button class="linkBtn" style="margin-top:10px;" onclick="toggleAdminPane()">Men ishlab chiqaruvchiman</button>
   <div class="hidden" id="authAdminPane" style="margin-top:6px;">
-    <div class="field"><label>Admin kodi</label><input id="authAdminCode" type="password" placeholder="••••••••"></div>
+    <div class="field"><label>Admin kodi</label><input id="authAdminCode" type="password" placeholder="••••••••" autocomplete="off"></div>
     <button class="primaryBtn" onclick="authAdminLogin()">Admin sifatida kirish</button>
     <div id="authAdminErr" class="hidden" style="color:var(--danger);font-size:12.5px;font-weight:600;margin-top:8px;">Kod noto'g'ri.</div>
     <button class="linkBtn" style="margin-top:8px;" onclick="openForgotFlow()">Admin kodini unutdingizmi?</button>
@@ -1084,8 +1106,8 @@ div#mapWrap ~ #storeList{margin-top:14px;}
   <!-- Parolni telefon raqam yoki email orqali tiklash -->
   <div class="hidden" id="authForgotPane">
     <p class="smallMuted" style="margin:-4px 0 12px;">Ro'yxatdan o'tgan telefon raqamingiz yoki emailingizni kiriting, so'ng yangi parol o'rnating.</p>
-    <div class="field"><label>Telefon raqam yoki email</label><input id="forgotContact" placeholder="+998 90 123 45 67 yoki email"></div>
-    <div class="field"><label>Yangi parol</label><input id="forgotNewPass" type="password" placeholder="Yangi parol"></div>
+    <div class="field"><label>Telefon raqam yoki email</label><input id="forgotContact" placeholder="+998 90 123 45 67 yoki email" autocomplete="off"></div>
+    <div class="field"><label>Yangi parol</label><input id="forgotNewPass" type="password" placeholder="Yangi parol" autocomplete="off"></div>
     <div id="forgotErr" class="hidden" style="color:var(--danger);font-size:12.5px;font-weight:600;margin:-4px 0 8px;"></div>
     <div id="forgotOk" class="hidden" style="color:var(--success);font-size:12.5px;font-weight:600;margin:-4px 0 8px;">Parol muvaffaqiyatli yangilandi. Endi kirishingiz mumkin.</div>
     <button class="primaryBtn" onclick="submitForgotPassword()">Parolni tiklash</button>
@@ -1188,16 +1210,16 @@ div#mapWrap ~ #storeList{margin-top:14px;}
 <div class="modalBg hidden" id="modalSellerSettings"><div class="modalCard">
   <button class="modalClose" onclick="closeModal('modalSellerSettings')" id="close-seller"></button>
   <h3>Sotuvchi ma'lumotlari</h3>
-  <div class="field"><label>Telegram (havola)</label><input id="siTelegram" placeholder="https://t.me/username"></div>
-  <div class="field"><label>Instagram (havola)</label><input id="siInstagram" placeholder="https://instagram.com/username"></div>
-  <div class="field"><label>Telegram kanal (havola)</label><input id="siChannel" placeholder="https://t.me/kanal"></div>
-  <div class="field"><label>YouTube (havola)</label><input id="siYoutube" placeholder="https://youtube.com/@kanal"></div>
-  <div class="field"><label>Telefon raqam</label><input id="siPhone" placeholder="+998 90 123 45 67"></div>
-  <div class="field"><label>Manzil</label><input id="siAddress" placeholder="Shahar, ko'cha, mo'ljal"></div>
+  <div class="field"><label>Telegram (havola)</label><input id="siTelegram" placeholder="https://t.me/username" autocomplete="off"></div>
+  <div class="field"><label>Instagram (havola)</label><input id="siInstagram" placeholder="https://instagram.com/username" autocomplete="off"></div>
+  <div class="field"><label>Telegram kanal (havola)</label><input id="siChannel" placeholder="https://t.me/kanal" autocomplete="off"></div>
+  <div class="field"><label>YouTube (havola)</label><input id="siYoutube" placeholder="https://youtube.com/@kanal" autocomplete="off"></div>
+  <div class="field"><label>Telefon raqam</label><input id="siPhone" placeholder="+998 90 123 45 67" autocomplete="off"></div>
+  <div class="field"><label>Manzil</label><input id="siAddress" placeholder="Shahar, ko'cha, mo'ljal" autocomplete="off"></div>
   <div class="field"><label>Qisqacha ma'lumot</label><textarea id="siAbout" placeholder="Biz haqimizda qisqacha..."></textarea></div>
   <div class="modalDivider"></div>
-  <div class="field"><label>🏷️ Banner kichik yozuvi (sariq)</label><input id="siHeroEyebrow" placeholder="Unutilmas Ta'm"></div>
-  <div class="field"><label>🖼️ Banner katta yozuvi</label><input id="siHeroTitle" placeholder="Har kuni yangi, uydek issiq taomlar"></div>
+  <div class="field"><label>🏷️ Banner kichik yozuvi (sariq)</label><input id="siHeroEyebrow" placeholder="Unutilmas Ta'm" autocomplete="off"></div>
+  <div class="field"><label>🖼️ Banner katta yozuvi</label><input id="siHeroTitle" placeholder="Har kuni yangi, uydek issiq taomlar" autocomplete="off"></div>
   <div class="modalDivider"></div>
   <div class="field"><label>💻 «Dastur yaratish» tugmasi</label>
     <select id="siDevBtnShow">
@@ -1205,9 +1227,9 @@ div#mapWrap ~ #storeList{margin-top:14px;}
       <option value="0">Yashirilsin</option>
     </select>
   </div>
-  <div class="field"><label>Tugma yozuvi</label><input id="siDevBtnText" placeholder="Dastur yaratish"></div>
+  <div class="field"><label>Tugma yozuvi</label><input id="siDevBtnText" placeholder="Dastur yaratish" autocomplete="off"></div>
   <div class="modalDivider"></div>
-  <div class="field"><label>📲 Ilova havolasi (Firebase / hosting)</label><input id="siInstallUrl" placeholder="https://unutilmastam.web.app"></div>
+  <div class="field"><label>📲 Ilova havolasi (Firebase / hosting)</label><input id="siInstallUrl" placeholder="https://unutilmastam.web.app" autocomplete="off"></div>
   <p class="smallMuted" style="margin:-6px 0 12px;">Bu havola kiritilsa, katalog pastidagi sotuvchi kartasida iPhone'ga o'rnatish tugmasi paydo bo'ladi.</p>
   <button class="primaryBtn" onclick="saveSellerInfo()">Saqlash</button>
 </div></div>
@@ -1217,10 +1239,10 @@ div#mapWrap ~ #storeList{margin-top:14px;}
   <button class="modalClose" onclick="closeModal('modalAdminAccount')" id="close-adminacc"></button>
   <h3>Mening hisobim</h3>
   <p class="smallMuted" style="margin-top:-6px;">Telefon raqam yoki email kiritilsa, admin kodini unutgan holatda tiklash uchun ishlatiladi.</p>
-  <div class="field"><label>Telefon raqam</label><input id="aaPhone" placeholder="+998 90 123 45 67"></div>
-  <div class="field"><label>Elektron pochta</label><input id="aaEmail" type="email" placeholder="email@misol.uz"></div>
-  <div class="field"><label>Joriy kod (tasdiqlash uchun)</label><input id="aaCurrentCode" type="password" placeholder="Joriy admin kodi"></div>
-  <div class="field"><label>Yangi kod (ixtiyoriy — o'zgartirmoqchi bo'lsangiz kiriting)</label><input id="aaNewCode" type="password" placeholder="Yangi admin kodi"></div>
+  <div class="field"><label>Telefon raqam</label><input id="aaPhone" placeholder="+998 90 123 45 67" autocomplete="off"></div>
+  <div class="field"><label>Elektron pochta</label><input id="aaEmail" type="email" placeholder="email@misol.uz" autocomplete="off"></div>
+  <div class="field"><label>Joriy kod (tasdiqlash uchun)</label><input id="aaCurrentCode" type="password" placeholder="Joriy admin kodi" autocomplete="off"></div>
+  <div class="field"><label>Yangi kod (ixtiyoriy — o'zgartirmoqchi bo'lsangiz kiriting)</label><input id="aaNewCode" type="password" placeholder="Yangi admin kodi" autocomplete="off"></div>
   <div id="aaErr" class="hidden" style="color:var(--danger);font-size:12.5px;font-weight:600;margin:-4px 0 8px;"></div>
   <div id="aaOk" class="hidden" style="color:var(--success);font-size:12.5px;font-weight:600;margin:-4px 0 8px;">Ma'lumotlar saqlandi.</div>
   <button class="primaryBtn" onclick="saveAdminAccount()">Saqlash</button>
@@ -1256,20 +1278,20 @@ div#mapWrap ~ #storeList{margin-top:14px;}
     <span id="ic-upload"></span>
     <div style="font-size:12.5px;font-weight:700;">Mahsulot rasmini yuklash</div>
     <div class="smallMuted">JPG yoki PNG</div>
-    <input type="file" id="npImageInput" accept="image/*" class="hidden" onchange="previewProductImage(event)">
+    <input type="file" id="npImageInput" accept="image/*" class="hidden" onchange="previewProductImage(event)" autocomplete="off">
   </div>
   <div class="imgPreview hidden" id="npImagePreview"></div>
-  <div class="field" style="margin-top:12px;"><label>Nomi</label><input id="npName" placeholder="Masalan: Manti"></div>
+  <div class="field" style="margin-top:12px;"><label>Nomi</label><input id="npName" placeholder="Mahsulot nomi" autocomplete="off"></div>
   <div class="field"><label>Mahsulot turi</label>
     <div style="display:flex;gap:8px;">
       <select id="npCategory" style="flex:1;"></select>
       <button type="button" class="tinyIconBtn" style="flex-shrink:0;" onclick="openAddCategoryModal('product')" title="Yangi turkum qo'shish"><span id="ic-add-cat"></span></button>
     </div>
   </div>
-  <div class="field"><label>Og'irligi (gram)</label><input id="npGram" type="number" placeholder="500"></div>
-  <div class="field"><label>Narxi (so'm)</label><input id="npPrice" type="number" placeholder="35000"></div>
+  <div class="field"><label>Og'irligi (gram)</label><input id="npGram" type="number" placeholder="500" autocomplete="off"></div>
+  <div class="field"><label>Narxi (so'm)</label><input id="npPrice" type="number" placeholder="35000" autocomplete="off"></div>
   <div class="field"><label>Tavsif (ixtiyoriy)</label><textarea id="npDesc" placeholder="Mahsulot haqida qisqacha..."></textarea></div>
-  <div class="field hidden" id="npStockWrap"><label>Ombordagi dona (qo'lda tuzatish)</label><input id="npStock" type="number" placeholder="0"></div>
+  <div class="field hidden" id="npStockWrap"><label>Ombordagi dona (qo'lda tuzatish)</label><input id="npStock" type="number" placeholder="0" autocomplete="off"></div>
   <button class="primaryBtn" onclick="saveProduct()" id="productSaveBtn">Yaratish va QR kod chiqarish</button>
   <button class="dangerGhostBtn hidden" style="margin-top:8px;width:100%;" id="productDeleteBtn" onclick="deleteProduct()"><span id="ic-trash-prod"></span>Mahsulotni o'chirish</button>
 </div></div>
@@ -1278,7 +1300,7 @@ div#mapWrap ~ #storeList{margin-top:14px;}
 <div class="modalBg center hidden" id="modalAddCategory"><div class="modalCard">
   <button class="modalClose" onclick="closeModal('modalAddCategory')" id="close-cat"></button>
   <h3>Yangi turkum</h3>
-  <div class="field"><label>Turkum nomi</label><input id="acName" placeholder="Masalan: Ichimliklar"></div>
+  <div class="field"><label>Turkum nomi</label><input id="acName" placeholder="Kategoriya nomi" autocomplete="off"></div>
   <button class="primaryBtn" onclick="saveNewCategory()">Qo'shish</button>
   <div class="sectionHead" style="margin:18px 0 8px;"><h2>Mavjud turkumlar</h2></div>
   <div id="categoryManageList"></div>
@@ -1300,16 +1322,17 @@ div#mapWrap ~ #storeList{margin-top:14px;}
       <option value="">— Yangi do'kon (ro'yxatdan o'tmagan) —</option>
     </select>
   </div>
-  <div class="field"><label>Do'kon nomi</label><input id="nsName" placeholder="Masalan: Anvar do'koni"></div>
-  <div class="field"><label>Telefon</label><input id="nsPhone" placeholder="+998 90 000 00 00"></div>
-  <div class="field"><label>Manzil (matn)</label><input id="nsAddr" placeholder="Ko'cha, mo'ljal"></div>
+  <div class="field"><label>Do'kon nomi</label><input id="nsName" placeholder="Do'kon nomi" autocomplete="off"></div>
+  <div class="field"><label>Do'kon egasining ism familyasi</label><input id="nsOwnerName" placeholder="Ism va familiya" autocomplete="off"></div>
+  <div class="field"><label>Telefon</label><input id="nsPhone" placeholder="+998 90 000 00 00" autocomplete="off"></div>
+  <div class="field"><label>Manzil (matn)</label><input id="nsAddr" placeholder="Ko'cha, mo'ljal" autocomplete="off"></div>
   <div style="display:flex;gap:8px;">
     <button class="ghostBtn" style="flex:1;" onclick="useMyLocation()"><span id="ic-pin"></span>Joriy joylashuvni olish</button>
     <button class="ghostBtn" style="flex:1;" onclick="openHomeLocationPicker('newstore')"><span id="ic-ns-pin"></span>Xaritadan belgilash</button>
   </div>
   <div style="display:flex;gap:8px;margin-top:8px;">
-    <div class="field" style="flex:1;"><label>Kenglik (lat)</label><input id="nsLat" type="number" step="any"></div>
-    <div class="field" style="flex:1;"><label>Uzunlik (lng)</label><input id="nsLng" type="number" step="any"></div>
+    <div class="field" style="flex:1;"><label>Kenglik (lat)</label><input id="nsLat" type="number" step="any" autocomplete="off"></div>
+    <div class="field" style="flex:1;"><label>Uzunlik (lng)</label><input id="nsLng" type="number" step="any" autocomplete="off"></div>
   </div>
   <div class="smallMuted" id="nsLocStatus" style="margin-top:-2px;margin-bottom:6px;"></div>
   <button class="primaryBtn" onclick="saveStore()" id="storeSaveBtn">Do'konni saqlash</button>
@@ -1327,7 +1350,7 @@ div#mapWrap ~ #storeList{margin-top:14px;}
   <button class="modalClose" onclick="closeModal('modalPay')" id="close-6"></button>
   <h3>To'lov qabul qilish</h3>
   <p class="smallMuted" id="payWho"></p>
-  <div class="field"><label>To'lov summasi (so'm)</label><input id="payAmount" type="number"></div>
+  <div class="field"><label>To'lov summasi (so'm)</label><input id="payAmount" type="number" autocomplete="off"></div>
   <button class="primaryBtn" onclick="confirmPay()">To'lovni saqlash</button>
 </div></div>
 
@@ -1343,9 +1366,9 @@ div#mapWrap ~ #storeList{margin-top:14px;}
   <button class="modalClose" onclick="closeModal('modalEditLedger')" id="close-8"></button>
   <h3>Yozuvni tahrirlash</h3>
   <div id="editLedgerSummary" class="smallMuted" style="margin-bottom:10px;"></div>
-  <div class="field"><label>Jami summa (so'm)</label><input id="elTotal" type="number"></div>
-  <div class="field"><label>To'langan summa (so'm)</label><input id="elPaid" type="number"></div>
-  <div class="field"><label>Muddat</label><input id="elDue" type="date"></div>
+  <div class="field"><label>Jami summa (so'm)</label><input id="elTotal" type="number" autocomplete="off"></div>
+  <div class="field"><label>To'langan summa (so'm)</label><input id="elPaid" type="number" autocomplete="off"></div>
+  <div class="field"><label>Muddat</label><input id="elDue" type="date" autocomplete="off"></div>
   <button class="primaryBtn" onclick="confirmEditLedger()">Saqlash</button>
   <button class="dangerGhostBtn" style="margin-top:8px;width:100%;" onclick="deleteLedger()"><span id="ic-trash-ledger"></span>Yozuvni o'chirish</button>
 </div></div>
@@ -1355,9 +1378,9 @@ div#mapWrap ~ #storeList{margin-top:14px;}
   <button class="modalClose" onclick="closeModal('modalOrderPayment')" id="close-9"></button>
   <h3>To'lovni belgilash</h3>
   <div id="opSummary" class="smallMuted" style="margin-bottom:10px;"></div>
-  <div class="field"><label>Jami summa (so'm)</label><input id="opTotal" type="number"></div>
-  <div class="field"><label>Hozir to'langan summa (so'm)</label><input id="opPaid" type="number"></div>
-  <div class="field"><label>Qolgan qarzni qachon berishi kerak?</label><input id="opDue" type="date"></div>
+  <div class="field"><label>Jami summa (so'm)</label><input id="opTotal" type="number" autocomplete="off"></div>
+  <div class="field"><label>Hozir to'langan summa (so'm)</label><input id="opPaid" type="number" autocomplete="off"></div>
+  <div class="field"><label>Qolgan qarzni qachon berishi kerak?</label><input id="opDue" type="date" autocomplete="off"></div>
   <button class="primaryBtn" onclick="confirmOrderPayment()">Saqlash</button>
 </div></div>
 
@@ -1379,7 +1402,7 @@ div#mapWrap ~ #storeList{margin-top:14px;}
         <div class="meta"><span id="ic-bo-phone"></span> <span id="boPersonalPhoneVal">-</span></div>
       </div></div>
     </div>
-    <div class="field"><label>Aloqa uchun telefon raqam</label><input id="boPersonalPhone" placeholder="+998 90 123 45 67"></div>
+    <div class="field"><label>Aloqa uchun telefon raqam</label><input id="boPersonalPhone" placeholder="+998 90 123 45 67" autocomplete="off"></div>
     <div class="field">
       <label>Yetkazish manzili</label>
       <div style="display:flex;gap:8px;">
@@ -1393,9 +1416,9 @@ div#mapWrap ~ #storeList{margin-top:14px;}
 
   <div id="storeOrderFields" class="hidden">
     <div class="smallMuted hidden" id="boStoreAutoNote" style="display:flex;align-items:center;gap:6px;background:var(--leaf-soft);border:1px solid var(--line);border-radius:10px;padding:7px 10px;margin-bottom:8px;color:var(--forest-dark);font-weight:600;"><span id="ic-store-auto"></span>Ma'lumotlar ro'yxatingizdan avtomatik olindi — kerak bo'lsa tahrirlashingiz mumkin</div>
-    <div class="field"><label>Do'kon nomi</label><input id="boStoreName" placeholder="Do'koningiz nomi"></div>
-    <div class="field"><label>Do'kon manzili</label><input id="boStoreAddr" placeholder="Ko'cha, mo'ljal"></div>
-    <div class="field"><label>Do'kon telefon raqami</label><input id="boStorePhone" placeholder="+998 90 000 00 00"></div>
+    <div class="field"><label>Do'kon nomi</label><input id="boStoreName" placeholder="Do'koningiz nomi" autocomplete="off"></div>
+    <div class="field"><label>Do'kon manzili</label><input id="boStoreAddr" placeholder="Ko'cha, mo'ljal" autocomplete="off"></div>
+    <div class="field"><label>Do'kon telefon raqami</label><input id="boStorePhone" placeholder="+998 90 000 00 00" autocomplete="off"></div>
     <div style="display:flex;gap:8px;">
       <button type="button" class="ghostBtn" style="flex:1;" onclick="useOrderLocation()"><span id="ic-ot-pin"></span>Joriy joylashuvim</button>
       <button type="button" class="ghostBtn" style="flex:1;" onclick="openHomeLocationPicker('dokon')"><span id="ic-ot-pin2"></span>Xaritadan tanlash</button>
@@ -1417,6 +1440,17 @@ div#mapWrap ~ #storeList{margin-top:14px;}
   </div>
   <button class="primaryBtn" style="margin-top:14px;" onclick="confirmEditOrder()">O'zgarishlarni saqlash</button>
   <button class="dangerGhostBtn" style="margin-top:8px;width:100%;" onclick="customerCancelOrder(editingOrderId)"><span id="ic-eo-trash"></span>Buyurtmani bekor qilish</button>
+</div></div>
+
+<!-- ============ CHAT MODAL (mijoz ↔ admin yozishmasi) ============ -->
+<div class="modalBg hidden" id="modalChat"><div class="modalCard">
+  <button class="modalClose" onclick="closeModal('modalChat')" id="close-chat"></button>
+  <h3 id="chatTitle">Ishlab chiqaruvchiga yozish</h3>
+  <div class="chatThread" id="chatThread"></div>
+  <div class="chatRow">
+    <input id="chatInput" placeholder="Xabar yozing..." onkeydown="if(event.key==='Enter'){sendChatMessage();}">
+    <button class="chatSendBtn" onclick="sendChatMessage()"><span id="ic-chat-send"></span></button>
+  </div>
 </div></div>
 
 <!-- ============ HOME LOCATION PICKER MODAL (customer: pick delivery point on map) ============ -->
@@ -1479,6 +1513,7 @@ const ICONS = {
   shieldCheck: '<path d="M12 3 4.5 6v6c0 5 3.4 8 7.5 9 4.1-1 7.5-4 7.5-9V6L12 3Z"/><path d="M9 12l2.2 2.2L15.5 9.5"/>',
   block: '<circle cx="12" cy="12" r="9"/><path d="M5.5 5.5l13 13"/>',
   locate: '<circle cx="12" cy="12" r="9.2"/><path d="M12 5.2l3.6 10.6-3.6-2.4-3.6 2.4L12 5.2z" fill="currentColor" stroke="none"/>',
+  chat: '<path d="M4 4.5h16A1.5 1.5 0 0 1 21.5 6v9A1.5 1.5 0 0 1 20 16.5H9L4.5 20v-3.8A1.5 1.5 0 0 1 2.5 15V6A1.5 1.5 0 0 1 4 4.5Z"/><path d="M7.5 9h9M7.5 12.2h6"/>',
 };
 function ic(name, size=18, cls=''){
   return `<svg class="icon ${cls}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||''}</svg>`;
@@ -1503,7 +1538,7 @@ function mountIcons(){
     'ic-upload':['upload',22],
     'ic-basket':['cart',15],
     'ic-trash-prod':['trash',14],'ic-trash-store':['trash',14],'ic-trash-ledger':['trash',14],
-    'ic-pd-minus':['minus',15],'ic-pd-plus':['plus',15],'ic-pd-cart':['cart',16],'ic-pd-buy':['check',16],'ic-eo-trash':['trash',15],
+    'ic-pd-minus':['minus',15],'ic-pd-plus':['plus',15],'ic-pd-cart':['cart',16],'ic-pd-buy':['check',16],'ic-eo-trash':['trash',15],'ic-chat-send':['chev',18,'transform:rotate(-90deg);stroke:#fff'],
     'ic-ot-personal':['user',15],'ic-ot-store':['store',15],
     'ic-an-qty':['box',16],'ic-an-kg':['scale',16],'ic-an-rev':['card',16],'ic-an-cmp':['trend',16],
   };
@@ -1626,14 +1661,13 @@ function seedState(){
       {id:'p2', name:'Tiftel', gram:400, price:28000, stock:18, image:null, category:'gosht', description:'Yumshoq va mazali go\'sht kotletlari, sousga tayyor.'},
       {id:'p3', name:'Lavash bazasi', gram:300, price:15000, stock:0, image:null, category:'xamir', description:'Yumshoq, yupqa lavash uchun tayyor baza.'},
     ],
-    stores: [
-      {id:'s1', name:'Anvar do\'koni', phone:'+998901112233', address:'Chilonzor, 12-uy', lat:41.2856, lng:69.2034},
-    ],
+    stores: [],
     users: [],
     orders: [],
     ledger: [],
     sales: [],
     notifications: [],
+    chats: [],
     categories: INITIAL_CATEGORIES.map(c=>({...c})),
     sellerInfo: {
       telegram:'', instagram:'', channel:'', youtube:'', phone:'', address:'', installUrl:'', heroEyebrow:'', heroTitle:'', devBtnHide:false, devBtnText:'', about:'Unutilmas Ta\'m — har kuni yangi tayyorlangan milliy taomlar ishlab chiqarish sexi.'
@@ -1676,6 +1710,7 @@ function cloudOn(){ return !!fsDb; }
 function normalizeState(){
   if(!state.sales) state.sales = [];
   if(!state.notifications) state.notifications = [];
+  if(!state.chats) state.chats = [];
   if(!state.sellerInfo) state.sellerInfo = seedState().sellerInfo;
   if(!state.adminSettings) state.adminSettings = seedState().adminSettings;
   if(!state.users) state.users = [];
@@ -2362,12 +2397,12 @@ function openInstallModal(){
 /* ==================== APP SHELL / NAV ==================== */
 const NAVS = {
   guest: [
-    {id:'catalog', icon:'cart', tx:'Katalog'},
+    {id:'catalog', icon:'bowl', tx:'Mahsulot'},
     {id:'savat', icon:'cart', tx:'Savat'},
     {id:'cabinet', icon:'user', tx:'Kabinet'},
   ],
   user: [
-    {id:'catalog', icon:'cart', tx:'Katalog'},
+    {id:'catalog', icon:'bowl', tx:'Mahsulot'},
     {id:'savat', icon:'cart', tx:'Savat'},
     {id:'cabinet', icon:'user', tx:'Kabinet'},
   ],
@@ -2376,6 +2411,7 @@ const NAVS = {
     {id:'products', icon:'box', tx:'Mahsulot'},
     {id:'scan', icon:'qr', tx:'QR skan'},
     {id:'qarz', icon:'card', tx:'Qarz daftari'},
+    {id:'chat', icon:'chat', tx:'Chat'},
     {id:'analytics', icon:'chart', tx:'Analitika'},
     {id:'stores', icon:'store', tx:"Do'konlar"},
     {id:'orders', icon:'receipt', tx:'Buyurtma'},
@@ -2427,6 +2463,7 @@ function renderView(id){
   if(id==='products') renderProducts();
   if(id==='scan') renderScanStoreOptions();
   if(id==='qarz') renderDebtsAdmin();
+  if(id==='chat') renderChatList();
   if(id==='analytics') renderAnalytics();
   if(id==='stores') renderStores();
   if(id==='orders') renderOrdersAdmin();
@@ -2876,7 +2913,7 @@ let editingStoreId = null;
 let __pinGradSeq = 0;
 function pinDivIcon(color){
   const gid = 'pg' + (++__pinGradSeq);
-  const svg = `<svg width="32" height="40" viewBox="0 0 24 30" class="pinIcon">
+  const svg = `<svg width="52" height="64" viewBox="0 0 24 30" class="pinIcon">
     <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="${color}" stop-opacity="1"/>
       <stop offset="100%" stop-color="${color}" stop-opacity=".78"/>
@@ -2886,7 +2923,7 @@ function pinDivIcon(color){
     <circle cx="12" cy="11" r="4.4" fill="#fff"/>
     <circle cx="12" cy="11" r="2" fill="${color}"/>
   </svg>`;
-  return L.divIcon({html:svg, className:'', iconSize:[32,40], iconAnchor:[16,38], popupAnchor:[0,-34]});
+  return L.divIcon({html:svg, className:'', iconSize:[52,64], iconAnchor:[26,62], popupAnchor:[0,-54]});
 }
 /* ---- Yangi kelgan buyurtmalarning manzili: xaritada QORA rangda yonib-o'chib turuvchi belgi ---- */
 function orderPinDivIcon(){
@@ -2985,6 +3022,7 @@ function openStoreModal(storeId){
     document.getElementById('storeModalTitle').textContent = 'Do\'konni tahrirlash';
     document.getElementById('nsOwnerPickWrap').classList.add('hidden');
     document.getElementById('nsName').value = s.name;
+    document.getElementById('nsOwnerName').value = s.ownerName||'';
     document.getElementById('nsPhone').value = s.phone||'';
     document.getElementById('nsAddr').value = s.address||'';
     document.getElementById('nsLat').value = s.lat;
@@ -2993,7 +3031,7 @@ function openStoreModal(storeId){
     document.getElementById('storeDeleteBtn').classList.remove('hidden');
   } else {
     document.getElementById('storeModalTitle').textContent = 'Yangi do\'kon';
-    ['nsName','nsPhone','nsAddr','nsLat','nsLng'].forEach(id=>document.getElementById(id).value='');
+    ['nsName','nsOwnerName','nsPhone','nsAddr','nsLat','nsLng'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('storeSaveBtn').textContent = 'Do\'konni saqlash';
     document.getElementById('storeDeleteBtn').classList.add('hidden');
     document.getElementById('nsOwnerPickWrap').classList.remove('hidden');
@@ -3010,11 +3048,13 @@ function pickNsOwner(){
     const u = state.users.find(x=>x.id===pickedId);
     if(u){
       document.getElementById('nsName').value = u.storeName || '';
+      document.getElementById('nsOwnerName').value = u.name || '';
       document.getElementById('nsAddr').value = u.address || '';
       document.getElementById('nsPhone').value = /^[+\d]/.test(u.contact||'') ? u.contact : '';
     }
   } else {
     document.getElementById('nsName').value = '';
+    document.getElementById('nsOwnerName').value = '';
     document.getElementById('nsAddr').value = '';
     document.getElementById('nsPhone').value = '';
   }
@@ -3074,6 +3114,7 @@ async function useMyLocation(){
 }
 async function saveStore(){
   const name = document.getElementById('nsName').value.trim();
+  const ownerName = document.getElementById('nsOwnerName').value.trim();
   const phone = document.getElementById('nsPhone').value.trim();
   const address = document.getElementById('nsAddr').value.trim();
   const lat = parseFloat(document.getElementById('nsLat').value) || (41.3111+(Math.random()-0.5)*0.08);
@@ -3081,10 +3122,10 @@ async function saveStore(){
   if(!name){ alert('Nomini kiriting'); return; }
   if(editingStoreId){
     const s = state.stores.find(x=>x.id===editingStoreId);
-    s.name=name; s.phone=phone; s.address=address; s.lat=lat; s.lng=lng;
+    s.name=name; s.ownerName=ownerName; s.phone=phone; s.address=address; s.lat=lat; s.lng=lng;
   } else {
     const ownerUserId = (document.getElementById('nsOwnerPick')||{}).value || null;
-    state.stores.push({id:uid('s'), name, phone, address, lat, lng, ownerUserId});
+    state.stores.push({id:uid('s'), name, ownerName, phone, address, lat, lng, ownerUserId});
   }
   await saveState();
   closeModal('modalAddStore');
@@ -3152,6 +3193,19 @@ function renderStoreDetailShell(s, isNew){
   const navName = isNew ? 'Yangi joylashuv' : s.name;
 
   document.getElementById('storeDetailBody').innerHTML = `
+    ${!isNew?`
+    <div class="card" style="margin-bottom:10px;">
+      <div class="row" style="align-items:flex-start;">
+        <div style="min-width:0;">
+          <div style="font-weight:800;font-size:15px;margin-bottom:6px;">${s.name}</div>
+          ${s.ownerName?`<div class="meta"><b>Egasi:</b> ${s.ownerName}</div>`:''}
+          ${s.phone?`<div class="meta"><b>Telefon:</b> ${s.phone}</div>`:''}
+          ${s.address?`<div class="meta"><b>Manzil:</b> ${s.address}</div>`:''}
+        </div>
+        ${isAdmin?`<button class="ghostBtn" style="flex-shrink:0;padding:8px 10px;" onclick="closeModal('modalStoreDetail');openStoreModal('${s.id}')">${ic('edit',14)}Tahrirlash</button>`:''}
+      </div>
+    </div>
+    `:''}
     ${(lat!=null)?`<button class="ghostBtn" style="width:100%;margin-bottom:10px;" onclick="openYandexNavigator(${lat}, ${lng}, '${escName(navName)}')">${ic('pin',15)}Navigator — manzilga borish</button>`:''}
     ${!isNew?`<div class="statGrid" style="grid-template-columns:1fr;margin-bottom:10px;">
       <div class="statCard ${debt>0?'warn':''}"><div class="num">${fmt(debt)}</div><div class="lbl">Umumiy qarz (so'm)</div></div>
@@ -3170,19 +3224,19 @@ function renderStoreDetailShell(s, isNew){
         </select>
         <div id="sdOwnerLocNote" class="smallMuted" style="margin-top:6px;display:none;color:#7C4DD8;font-weight:700;"></div>
       </div>`:''}
-      <div class="field"><label>Do'kon nomi</label><input id="sdStoreName" value="${isNew?'':(s.name||'')}" placeholder="Masalan: Anvar do'koni"></div>
-      <div class="field"><label>Do'kon egasining ism familyasi</label><input id="sdOwnerName" value="${isNew?'':(s.ownerName||'')}" placeholder="Masalan: Anvar Karimov"></div>
-      <div class="field hidden" id="sdPhoneWrap"><label>Telefon (ixtiyoriy)</label><input id="sdPhone" value="${isNew?'':(s.phone||'')}" placeholder="+998 90 000 00 00"></div>
-      <div class="field hidden" id="sdAddrWrap"><label>Manzil (ixtiyoriy)</label><input id="sdAddr" value="${isNew?'':(s.address||'')}" placeholder="Ko'cha, mo'ljal"></div>
+      <div class="field"><label>Do'kon nomi</label><input id="sdStoreName" value="${isNew?'':(s.name||'')}" placeholder="Do'kon nomi" autocomplete="off"></div>
+      <div class="field"><label>Do'kon egasining ism familyasi</label><input id="sdOwnerName" value="${isNew?'':(s.ownerName||'')}" placeholder="Ism va familiya" autocomplete="off"></div>
+      <div class="field hidden" id="sdPhoneWrap"><label>Telefon (ixtiyoriy)</label><input id="sdPhone" value="${isNew?'':(s.phone||'')}" placeholder="+998 90 000 00 00" autocomplete="off"></div>
+      <div class="field hidden" id="sdAddrWrap"><label>Manzil (ixtiyoriy)</label><input id="sdAddr" value="${isNew?'':(s.address||'')}" placeholder="Ko'cha, mo'ljal" autocomplete="off"></div>
       <button type="button" class="ghostBtn" style="width:100%;margin-bottom:8px;" onclick="toggleSdProductPicker()">${ic('box',14)}Tovar tanlash</button>
       <div id="sdProductPicker" class="hidden" style="margin-bottom:8px;"></div>
       <div class="smallMuted" style="margin:2px 0 6px;font-weight:700;">Tanlangan tovarlar:</div>
       <div id="sdProductList"></div>
-      <div class="field"><label>Tovarlar summasi (avtomatik, so'm)</label><input id="sdTotal" readonly value="0"></div>
-      <div class="field"><label>Shu summadan qanchasini berdi (so'm)</label><input id="sdPaid" type="number" value="0" oninput="updateSdRemaining()"></div>
-      <div class="field"><label>Qolgan qarz (avtomatik, so'm)</label><input id="sdRemaining" readonly value="0"></div>
-      <div class="field" id="sdDueWrap"><label>Qarzni qachon beradi</label><input id="sdDue" type="date"></div>
-      <div class="field hidden" id="sdDeliveryWrap"><label>Buyurtma qachon yetkaziladi</label><input id="sdDelivery" type="datetime-local"></div>
+      <div class="field"><label>Tovarlar summasi (avtomatik, so'm)</label><input id="sdTotal" readonly value="0" autocomplete="off"></div>
+      <div class="field"><label>Shu summadan qanchasini berdi (so'm)</label><input id="sdPaid" type="number" value="0" oninput="updateSdRemaining()" autocomplete="off"></div>
+      <div class="field"><label>Qolgan qarz (avtomatik, so'm)</label><input id="sdRemaining" readonly value="0" autocomplete="off"></div>
+      <div class="field" id="sdDueWrap"><label>Qarzni qachon beradi</label><input id="sdDue" type="date" autocomplete="off"></div>
+      <div class="field hidden" id="sdDeliveryWrap"><label>Buyurtma qachon yetkaziladi</label><input id="sdDelivery" type="datetime-local" autocomplete="off"></div>
       <button class="primaryBtn" id="sdSaveBtn" onclick="confirmSdAction()">Saqlash</button>
       <button class="ghostBtn" style="margin-top:8px;width:100%;" onclick="closeModal('modalStoreDetail')">Bekor qilish</button>
     </div>
@@ -3871,6 +3925,88 @@ async function customerCancelOrder(orderId, skipConfirm){
   pushNotification('admin', 'Buyurtma bekor qilindi', `${custName} o'z buyurtmasini bekor qildi.`, 'order');
 }
 
+/* ==================== CHAT: mijoz ↔ ishlab chiqaruvchi (admin) yozishmasi ==================== */
+let activeChatUserId = null; // hozir ochilgan suhbat qaysi mijozga tegishli
+function getOrCreateChat(userId, userName){
+  let c = state.chats.find(x=>x.userId===userId);
+  if(!c){ c = {id:uid('ch'), userId, userName, messages:[], unreadAdmin:false, unreadUser:false}; state.chats.push(c); }
+  return c;
+}
+function openOrderChat(orderId){
+  if(!currentUser || currentUser.role==='admin') return;
+  const o = state.orders.find(x=>x.id===orderId);
+  const chat = getOrCreateChat(currentUser.id, currentUser.name);
+  activeChatUserId = currentUser.id;
+  chat.unreadUser = false;
+  document.getElementById('chatTitle').textContent = "Ishlab chiqaruvchiga yozish";
+  const input = document.getElementById('chatInput');
+  input.value = o ? `Buyurtma (${o.date}) haqida: ` : '';
+  renderChatThread();
+  openModal('modalChat');
+  saveState();
+  setTimeout(()=>input.focus(), 200);
+}
+function adminOpenChat(userId){
+  const chat = state.chats.find(x=>x.userId===userId);
+  if(!chat) return;
+  activeChatUserId = userId;
+  chat.unreadAdmin = false;
+  document.getElementById('chatTitle').textContent = chat.userName || 'Mijoz';
+  document.getElementById('chatInput').value = '';
+  renderChatThread();
+  openModal('modalChat');
+  saveState();
+  renderChatList();
+}
+function renderChatThread(){
+  const chat = state.chats.find(x=>x.userId===activeChatUserId);
+  const box = document.getElementById('chatThread');
+  const isAdmin = currentUser && currentUser.role==='admin';
+  const msgs = chat ? chat.messages : [];
+  box.innerHTML = msgs.map(m=>{
+    const mine = isAdmin ? m.from==='admin' : m.from==='user';
+    return `<div class="chatBubble ${mine?'mine':'theirs'}">${(m.text||'').replace(/</g,'&lt;')}<span class="t">${new Date(m.time).toLocaleString('uz-UZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span></div>`;
+  }).join('') || `<div class="smallMuted" style="text-align:center;padding:20px 0;">Hali xabar yo'q. Birinchi bo'lib yozing!</div>`;
+  box.scrollTop = box.scrollHeight;
+}
+async function sendChatMessage(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text || !activeChatUserId) return;
+  const isAdmin = currentUser && currentUser.role==='admin';
+  const chat = getOrCreateChat(activeChatUserId, isAdmin ? (state.chats.find(x=>x.userId===activeChatUserId)||{}).userName : currentUser.name);
+  chat.messages.push({from: isAdmin?'admin':'user', text, time: new Date().toISOString()});
+  if(isAdmin){ chat.unreadUser = true; } else { chat.unreadAdmin = true; }
+  input.value = '';
+  await saveState();
+  renderChatThread();
+  if(isAdmin){
+    pushNotification(activeChatUserId, 'Ishlab chiqaruvchidan javob', text, 'chat');
+  } else {
+    pushNotification('admin', `${currentUser.name} yozdi`, text, 'chat');
+    try{ renderChatList(); }catch(e){}
+  }
+}
+function renderChatList(){
+  const box = document.getElementById('chatAdminList');
+  if(!box) return;
+  const list = [...state.chats].filter(c=>c.messages.length>0).sort((a,b)=>{
+    const at = a.messages[a.messages.length-1].time, bt = b.messages[b.messages.length-1].time;
+    return bt.localeCompare(at);
+  });
+  box.innerHTML = list.map(c=>{
+    const last = c.messages[c.messages.length-1];
+    return `<div class="card chatListItem" onclick="adminOpenChat('${c.userId}')">
+      <div class="qarzAvatar" style="background:${qarzColorFor(c.userName)};">${initialsOf(c.userName)}</div>
+      <div class="mid" style="flex:1;min-width:0;">
+        <div class="nm">${c.userName||'Mijoz'}</div>
+        <div class="prev">${last.from==='admin'?'Siz: ':''}${(last.text||'').replace(/</g,'&lt;')}</div>
+      </div>
+      ${c.unreadAdmin?'<span class="chatUnreadDot"></span>':''}
+    </div>`;
+  }).join('') || emptyHtml('bell','Hali hech kim yozmagan');
+}
+
 function updateBasketCount(){
   const count = Object.values(basket).reduce((s,q)=>s+q,0);
   const badge = document.getElementById('navBasketBadge');
@@ -4139,6 +4275,7 @@ function orderCardHtmlSimple(o){
            <button class="ghostBtn" style="flex:1;color:#EF4B62;" onclick="customerCancelOrder('${o.id}')">${ic('trash',13)}Bekor qilish</button>
          </div>`
       : `<div class="smallMuted" style="margin-top:8px;">${ic('check',12)} Admin tomonidan qabul qilingan — endi o'zgartirib bo'lmaydi</div>`}
+    <button class="ghostBtn" style="width:100%;margin-top:6px;" onclick="openOrderChat('${o.id}')">${ic('chat',13)}Ishlab chiqaruvchiga yozish</button>
   </div>`;
 }
 
