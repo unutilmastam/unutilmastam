@@ -770,19 +770,25 @@ div#mapWrap ~ #storeList{margin-top:14px;}
 
 /* ---------- iPhone o'rnatish tugmasi (sotuvchi kartasida) ---------- */
 .sellerCard{position:relative;}
+.installFabStack{position:absolute;bottom:14px;right:14px;display:flex;flex-direction:column;gap:8px;align-items:center;z-index:2;}
 .installFab{
-  position:absolute;bottom:14px;right:14px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-  width:56px;height:56px;border-radius:18px;border:none;
+  position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  width:46px;height:46px;border-radius:15px;border:none;
   background:linear-gradient(160deg,#3D3D42 0%,#141417 100%);
   box-shadow:0 8px 20px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.18) inset;
   animation:fabFloat 3.2s ease-in-out infinite;
   transition:transform .35s var(--spring-pop);
 }
 .installFab:active{transform:scale(.9);}
-.installFabTx{font-size:7.5px;font-weight:800;color:#fff;letter-spacing:.04em;text-transform:uppercase;opacity:.85;}
-.installFabRing{position:absolute;inset:0;border-radius:18px;animation:pulseRing 2.4s ease-out infinite;pointer-events:none;}
+.installFabTx{font-size:6px;font-weight:800;color:#fff;letter-spacing:.03em;text-transform:uppercase;opacity:.85;}
+.installFabRing{position:absolute;inset:0;border-radius:15px;animation:pulseRing 2.4s ease-out infinite;pointer-events:none;}
+.installFabAndroid{background:linear-gradient(160deg,#3DDC84 0%,#0F9D58 100%);animation-delay:.4s;}
+.installFabRingGreen{box-shadow:none;}
 @keyframes fabFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+
+/* Android o'rnatish modal */
+.installAppIconAndroid{background:linear-gradient(160deg,#3DDC84 0%,#0F9D58 100%);box-shadow:0 14px 30px rgba(15,157,88,.4),0 1px 0 rgba(255,255,255,.35) inset;}
 
 /* o'rnatish modal hero */
 .installHero{text-align:center;padding-top:4px;}
@@ -857,7 +863,7 @@ div#mapWrap ~ #storeList{margin-top:14px;}
     </svg>
   </div>
   <div class="splashBrand">Unutilmas Ta'm</div>
-  <div style="position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:rgba(255,255,255,.55);font-size:11px;font-weight:700;letter-spacing:.08em;">v2.4</div>
+  <div style="position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:rgba(255,255,255,.55);font-size:11px;font-weight:700;letter-spacing:.08em;">v2.8</div>
 </div>
 
 <div id="appShell">
@@ -1178,6 +1184,29 @@ div#mapWrap ~ #storeList{margin-top:14px;}
   <p class="smallMuted" style="text-align:center;margin-top:4px;">Qadamlarni ko'rish uchun rasmlarni chapga suring 👉</p>
 </div></div>
 
+<!-- ============ ANDROID INSTALL MODAL ============ -->
+<div class="modalBg hidden" id="modalAndroid"><div class="modalCard">
+  <button class="modalClose" onclick="closeModal('modalAndroid')" id="close-android"></button>
+  <div class="installHero">
+    <div class="installAppIcon installAppIconAndroid">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993.0005.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.2439 13.8533 7.8508 12 7.8508s-3.5902.3931-5.1367 1.0989L4.841 5.4467a.4161.4161 0 00-.5677-.1521.416.416 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3435-4.1021-2.6892-7.5743-6.1185-9.4396"/></svg>
+    </div>
+    <h3 style="margin:12px 0 3px;">Android'ga yuklab olish</h3>
+    <p class="smallMuted" style="margin:0;">Ilova .apk fayl sifatida telefoningizga yuklanadi</p>
+  </div>
+  <a class="primaryBtn" id="androidDownloadBtn" style="text-decoration:none;margin-top:16px;background:linear-gradient(160deg,#3DDC84 0%,#0F9D58 100%);">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Apk faylni yuklab olish
+  </a>
+  <p class="smallMuted" style="text-align:center;margin:8px 0 4px;"><span id="androidUrlTx"></span></p>
+  <div style="background:var(--amber-soft);border-radius:16px;padding:13px 14px;margin-top:10px;">
+    <div style="font-size:12.5px;font-weight:800;color:#9C640F;margin-bottom:8px;">O'rnatishda yordam:</div>
+    <div class="vcStep" style="margin-bottom:7px;"><div class="vcStepIc" style="background:#fff;"><b style="color:#0A5FCC;font-size:12px;">1</b></div><div class="vcStepTx">Yuklab olingan faylni <b>Fayllar</b> ilovasidan oching</div></div>
+    <div class="vcStep" style="margin-bottom:7px;"><div class="vcStepIc" style="background:#fff;"><b style="color:#1E7A4B;font-size:12px;">2</b></div><div class="vcStepTx">"Noma'lum manbalardan o'rnatish" so'ralsa — <b>ruxsat bering</b></div></div>
+    <div class="vcStep"><div class="vcStepIc" style="background:#fff;"><b style="color:#9C640F;font-size:12px;">3</b></div><div class="vcStepTx"><b>O'rnatish</b> tugmasini bosing</div></div>
+  </div>
+</div></div>
+
 <!-- ============ NOTIFICATIONS MODAL (bildirishnomalar markazi) ============ -->
 <div class="modalBg hidden" id="modalNotifications"><div class="modalCard">
   <button class="modalClose" onclick="closeModal('modalNotifications')" id="close-notif"></button>
@@ -1229,8 +1258,13 @@ div#mapWrap ~ #storeList{margin-top:14px;}
   </div>
   <div class="field"><label>Tugma yozuvi</label><input id="siDevBtnText" placeholder="Dastur yaratish" autocomplete="off"></div>
   <div class="modalDivider"></div>
-  <div class="field"><label>📲 Ilova havolasi (Firebase / hosting)</label><input id="siInstallUrl" placeholder="https://unutilmastam.web.app" autocomplete="off"></div>
-  <p class="smallMuted" style="margin:-6px 0 12px;">Bu havola kiritilsa, katalog pastidagi sotuvchi kartasida iPhone'ga o'rnatish tugmasi paydo bo'ladi.</p>
+  <div class="field"><label>📲 iPhone uchun ilova havolasi (Firebase / hosting)</label><input id="siInstallUrl" placeholder="https://unutilmastam.web.app" autocomplete="off"></div>
+  <p class="smallMuted" style="margin:-6px 0 12px;">Bu havola kiritilsa, katalog pastida iPhone'ga o'rnatish tugmasi paydo bo'ladi.</p>
+  <div class="field"><label>🤖 Android APK fayl manzili</label><input id="siApkUrl" placeholder="https://.../unutilmastam.apk" autocomplete="off"></div>
+  <p class="smallMuted" style="margin:-6px 0 12px;">To'g'ridan-to'g'ri .apk fayl havolasi (GitHub Releases, Firebase Storage va h.k.).</p>
+  <div class="field"><label>🤖 Android tugmasini ko'rsatish</label>
+    <select id="siAndroidBtnShow"><option value="1">Ko'rsatilsin</option><option value="0">Yashirilsin</option></select>
+  </div>
   <button class="primaryBtn" onclick="saveSellerInfo()">Saqlash</button>
 </div></div>
 
@@ -1670,7 +1704,7 @@ function seedState(){
     chats: [],
     categories: INITIAL_CATEGORIES.map(c=>({...c})),
     sellerInfo: {
-      telegram:'', instagram:'', channel:'', youtube:'', phone:'', address:'', installUrl:'', heroEyebrow:'', heroTitle:'', devBtnHide:false, devBtnText:'', about:'Unutilmas Ta\'m — har kuni yangi tayyorlangan milliy taomlar ishlab chiqarish sexi.'
+      telegram:'', instagram:'', channel:'', youtube:'', phone:'', address:'', installUrl:'', apkUrl:'', androidBtnHide:false, heroEyebrow:'', heroTitle:'', devBtnHide:false, devBtnText:'', about:'Unutilmas Ta\'m — har kuni yangi tayyorlangan milliy taomlar ishlab chiqarish sexi.'
     },
     adminSettings: { code: 'TAM-2026', phone:'', email:'' }
   };
@@ -2278,6 +2312,8 @@ function openSellerSettings(){
   document.getElementById('siAddress').value = si.address||'';
   document.getElementById('siAbout').value = si.about||'';
   document.getElementById('siInstallUrl').value = si.installUrl||'';
+  document.getElementById('siApkUrl').value = si.apkUrl||'';
+  document.getElementById('siAndroidBtnShow').value = si.androidBtnHide ? '0' : '1';
   document.getElementById('siHeroEyebrow').value = si.heroEyebrow||'';
   document.getElementById('siHeroTitle').value = si.heroTitle||'';
   document.getElementById('siDevBtnShow').value = si.devBtnHide ? '0' : '1';
@@ -2294,6 +2330,8 @@ async function saveSellerInfo(){
     address: document.getElementById('siAddress').value.trim(),
     about: document.getElementById('siAbout').value.trim(),
     installUrl: document.getElementById('siInstallUrl').value.trim(),
+    apkUrl: document.getElementById('siApkUrl').value.trim(),
+    androidBtnHide: document.getElementById('siAndroidBtnShow').value === '0',
     heroEyebrow: document.getElementById('siHeroEyebrow').value.trim(),
     heroTitle: document.getElementById('siHeroTitle').value.trim(),
     devBtnHide: document.getElementById('siDevBtnShow').value === '0',
@@ -2358,17 +2396,34 @@ function renderFooter(){
     ${si.address?`<div class="metaRow">${ic('pin',13)}<span class="meta" style="color:#E6C9BE;">${si.address}</span></div>`:''}
     ${si.phone?`<div class="metaRow">${ic('phone',13)}<span class="meta" style="color:#E6C9BE;">${si.phone}</span></div>`:''}
     ${si.about?`<p class="meta" style="margin-top:6px;">${si.about}</p>`:''}
-    <div class="socialRow" id="socialRow" style="justify-content:flex-start;margin:10px 0 0;${si.installUrl?'padding-right:64px;':''}">${linksHtml}${si.devBtnHide?'':`<button class="devBtn" onclick="openDevCard()" title="${si.devBtnText||'Dastur yaratish'}">
+    <div class="socialRow" id="socialRow" style="justify-content:flex-start;margin:10px 0 0;${(si.installUrl||(si.apkUrl&&!si.androidBtnHide))?'padding-right:96px;':''}">${linksHtml}${si.devBtnHide?'':`<button class="devBtn" onclick="openDevCard()" title="${si.devBtnText||'Dastur yaratish'}">
       <span class="devBtnIc"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4FD8F0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
       <span class="devBtnTx">${si.devBtnText||'Dastur yaratish'}</span>
     </button>`}</div>
-    ${si.installUrl?`
-    <button class="installFab" onclick="openInstallModal()" title="iPhone'ga o'rnatish">
-      <span class="installFabRing"></span>
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.03 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.702z"/></svg>
-      <span class="installFabTx">O'rnatish</span>
-    </button>`:''}
+    <div class="installFabStack">
+      ${si.installUrl?`
+      <button class="installFab installFabIos" onclick="openInstallModal()" title="iPhone'ga o'rnatish">
+        <span class="installFabRing"></span>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.03 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.702z"/></svg>
+        <span class="installFabTx">iPhone</span>
+      </button>`:''}
+      ${(si.apkUrl && !si.androidBtnHide)?`
+      <button class="installFab installFabAndroid" onclick="openAndroidModal()" title="Android'ga yuklab olish">
+        <span class="installFabRing installFabRingGreen"></span>
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="#fff"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993.0005.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.2439 13.8533 7.8508 12 7.8508s-3.5902.3931-5.1367 1.0989L4.841 5.4467a.4161.4161 0 00-.5677-.1521.416.416 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3435-4.1021-2.6892-7.5743-6.1185-9.4396"/></svg>
+        <span class="installFabTx">Android</span>
+      </button>`:''}
+    </div>
   `;
+}
+
+/* ==================== ANDROID'GA O'RNATISH ==================== */
+function openAndroidModal(){
+  const url = (state.sellerInfo && state.sellerInfo.apkUrl) || '';
+  if(!url) return;
+  document.getElementById('androidDownloadBtn').href = url;
+  document.getElementById('androidUrlTx').textContent = url.replace(/^https?:\/\//,'');
+  openModal('modalAndroid');
 }
 
 /* ==================== iPHONE'GA O'RNATISH ==================== */
