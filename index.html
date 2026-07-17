@@ -878,7 +878,7 @@ div#mapWrap ~ #storeList{margin-top:14px;}
     </svg>
   </div>
   <div class="splashBrand">Unutilmas Ta'm</div>
-  <div style="position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:rgba(255,255,255,.55);font-size:11px;font-weight:700;letter-spacing:.08em;">v2.9</div>
+  <div style="position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:rgba(255,255,255,.55);font-size:11px;font-weight:700;letter-spacing:.08em;">v3.0</div>
 </div>
 
 <div id="appShell">
@@ -1775,8 +1775,20 @@ function localLoad(){
   }catch(e){}
   return false;
 }
+let __quotaWarned = false;
 function localSave(){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){
+    // Xotira to'lib qolsa (masalan juda ko'p siqilmagan rasm), bu ENDI sezilmasdan
+    // o'tmaydi — foydalanuvchiga bir marta ko'rsatiladi, chunki bu holatda o'zgarishlar
+    // butunlay saqlanmay qolishi mumkin.
+    console.error('Lokal saqlashda xato (xotira to\'lgan bo\'lishi mumkin):', e);
+    if(!__quotaWarned){
+      __quotaWarned = true;
+      setTimeout(()=>alert("Diqqat: telefon xotirasi to'lib qoldi, so'nggi o'zgarish saqlanmagan bo'lishi mumkin. Rasmlar hajmini kamaytiring yoki eski mahsulotlarni tozalang."), 300);
+    }
+  }
 }
 
 /* Foydalanuvchi ekranga tegib turgan paytda ro'yxatni almashtirmaslik uchun kuzatuv.
@@ -1906,6 +1918,40 @@ async function loadState(){
   if(!localLoad()){ state = seedState(); localSave(); }
   // 2) Bulut — fonda ulanadi, ochilishni kutdirmaydi
   connectCloud();
+  // 3) Avvaldan saqlangan siqilmagan (juda katta) rasmlarni fonda avtomatik tuzatish
+  setTimeout(migrateOversizedImages, 2500);
+}
+
+/* Eski versiyada mahsulot rasmlari siqilmasdan saqlanardi (ba'zan 2-5MB).
+   Bu Firestore hujjat chegarasi (1MB) va telefon xotirasidan (localStorage) oshib,
+   saqlash sezilmasdan barbod bo'lishiga sabab bo'lgan. Bu funksiya shunday rasmlarni
+   topib, avtomatik siqadi va qayta saqlaydi — foydalanuvchi hech narsa qilishi shart emas. */
+async function migrateOversizedImages(){
+  try{
+    const BIG = 220000; // ~165KB dan katta bo'lsa, demak siqilmagan xom rasm
+    const targets = (state.products||[]).filter(p=>p.image && p.image.length > BIG);
+    if(!targets.length) return;
+    console.warn('Siqilmagan', targets.length, 'ta mahsulot rasmi topildi, avtomatik siqilmoqda...');
+    await Promise.all(targets.map(p=>new Promise(resolve=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const maxSize = 640;
+        let w = img.width, h = img.height;
+        if(w>h){ if(w>maxSize){ h = Math.round(h*maxSize/w); w = maxSize; } }
+        else { if(h>maxSize){ w = Math.round(w*maxSize/h); h = maxSize; } }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        p.image = canvas.toDataURL('image/jpeg', 0.74);
+        resolve();
+      };
+      img.onerror = resolve;
+      img.src = p.image;
+    })));
+    await saveState();
+    try{ renderProducts(); renderCatalog(); }catch(e){}
+    console.warn('Tuzatildi: rasmlar siqildi va qayta saqlandi.');
+  }catch(e){ console.warn('Rasm migratsiyasida xato:', e); }
 }
 
 async function saveState(){
@@ -2715,10 +2761,24 @@ function previewProductImage(e){
   if(!file) return;
   const reader = new FileReader();
   reader.onload = ()=>{
-    pendingImage = reader.result;
-    const box = document.getElementById('npImagePreview');
-    box.innerHTML = `<img src="${pendingImage}">`;
-    box.classList.remove('hidden');
+    const img = new Image();
+    img.onload = ()=>{
+      // MUHIM: kameradan olingan xom rasm 2-5MB bo'lishi mumkin — bu bulut hujjati
+      // chegarasi (1MB) va telefon xotirasidan oshib, saqlash sezilmasdan barbod bo'lishiga
+      // sabab bo'lgan. Shuning uchun har doim siqib, kichraytirib saqlaymiz.
+      const maxSize = 640;
+      let w = img.width, h = img.height;
+      if(w>h){ if(w>maxSize){ h = Math.round(h*maxSize/w); w = maxSize; } }
+      else { if(h>maxSize){ w = Math.round(w*maxSize/h); h = maxSize; } }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      pendingImage = canvas.toDataURL('image/jpeg', 0.74);
+      const box = document.getElementById('npImagePreview');
+      box.innerHTML = `<img src="${pendingImage}">`;
+      box.classList.remove('hidden');
+    };
+    img.src = reader.result;
   };
   reader.readAsDataURL(file);
 }
