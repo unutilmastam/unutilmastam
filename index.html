@@ -458,7 +458,7 @@ main{max-width:960px;margin:0 auto;padding:18px 16px calc(96px + env(safe-area-i
 .prodCard:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);}
 .prodCard:active{transform:scale(.965);}
 .prodImgWrap{display:flex;justify-content:center;padding:14px 0 6px;}
-.prodImg{width:68px;height:68px;border-radius:50%;background:linear-gradient(145deg,var(--leaf-soft),#FFD9B8);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;box-shadow:0 4px 10px rgba(184,67,15,.16),0 0 0 1px rgba(255,255,255,.7) inset;}
+.prodImg{width:68px;height:68px;border-radius:20px;background:linear-gradient(145deg,var(--leaf-soft),#FFD9B8);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;box-shadow:0 4px 10px rgba(184,67,15,.16),0 0 0 1px rgba(255,255,255,.7) inset;}
 .prodImg img{width:100%;height:100%;object-fit:cover;transition:transform .45s var(--spring);}
 .prodCard:hover .prodImg img{transform:scale(1.08);}
 .prodImg svg{stroke:var(--forest);width:26px;height:26px;}
@@ -480,7 +480,7 @@ main{max-width:960px;margin:0 auto;padding:18px 16px calc(96px + env(safe-area-i
 .imgPreview{width:100%;height:130px;border-radius:14px;overflow:hidden;margin-top:8px;box-shadow:var(--shadow-sm);}
 .imgPreview img{width:100%;height:100%;object-fit:cover;}
 
-.prodThumbSm{width:44px;height:44px;border-radius:50%;background:linear-gradient(145deg,var(--leaf-soft),#FFD9B8);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;box-shadow:0 0 0 1px rgba(255,255,255,.7) inset;}
+.prodThumbSm{width:44px;height:44px;border-radius:13px;background:linear-gradient(145deg,var(--leaf-soft),#FFD9B8);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;box-shadow:0 0 0 1px rgba(255,255,255,.7) inset;}
 .prodThumbSm img{width:100%;height:100%;object-fit:cover;}
 .prodThumbSm svg{stroke:var(--forest);width:19px;height:19px;}
 
@@ -636,7 +636,7 @@ textarea.note:focus{outline:none;border-color:var(--leaf);background:#fff;box-sh
 /* ---------- item chips : eye-catching product×qty×price ---------- */
 .itemChips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px;}
 .itemChip{display:inline-flex;align-items:center;gap:7px;padding:5px 8px 5px 5px;border-radius:999px;font-size:11.5px;font-weight:700;line-height:1;letter-spacing:-.01em;animation:chipIn .5s var(--spring-pop) backwards;box-shadow:0 1px 2px rgba(28,23,18,.04);}
-.icThumb{width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:0 0 0 1.5px rgba(255,255,255,.7);background:#fff;}
+.icThumb{width:22px;height:22px;border-radius:7px;object-fit:cover;flex-shrink:0;box-shadow:0 0 0 1.5px rgba(255,255,255,.7);background:#fff;}
 .icThumbBlank{display:flex;align-items:center;justify-content:center;opacity:.5;}
 .icThumbBlank svg{width:11px;height:11px;}
 .itemChip .icGram{opacity:.6;font-weight:600;font-size:10px;}
@@ -878,7 +878,7 @@ div#mapWrap ~ #storeList{margin-top:14px;}
     </svg>
   </div>
   <div class="splashBrand">Unutilmas Ta'm</div>
-  <div style="position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:rgba(255,255,255,.55);font-size:11px;font-weight:700;letter-spacing:.08em;">v3.0</div>
+  <div style="position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:rgba(255,255,255,.55);font-size:11px;font-weight:700;letter-spacing:.08em;">v3.1</div>
 </div>
 
 <div id="appShell">
@@ -1643,7 +1643,8 @@ function catName(id){ const c = (state.categories||[]).find(x=>x.id===id); retur
 function populateCategorySelect(selectId, selectedId){
   const sel = document.getElementById(selectId);
   if(!sel) return;
-  sel.innerHTML = (state.categories||[]).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  const placeholder = selectedId ? '' : `<option value="" disabled selected>— Turkumni tanlang —</option>`;
+  sel.innerHTML = placeholder + (state.categories||[]).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
   if(selectedId) sel.value = selectedId;
 }
 let addCategoryContext = null; // 'product' | null — where to return focus after adding
@@ -2805,7 +2806,7 @@ function openProductModal(productId){
   } else {
     document.getElementById('productModalTitle').textContent = 'Yangi mahsulot';
     document.getElementById('npName').value = '';
-    catSel.value = 'pishiriq';
+    catSel.value = '';
     document.getElementById('npGram').value = '';
     document.getElementById('npPrice').value = '';
     document.getElementById('npDesc').value = '';
@@ -2835,22 +2836,35 @@ function adminProdCardHtml(p){
 function renderProducts(){
   const grid = document.getElementById('productGrid');
   if(!state.products.length){ grid.innerHTML = emptyHtml('box','Mahsulot qo\'shilmagan'); return; }
-  grid.innerHTML = (state.categories||[]).map(cat=>{
-    const items = state.products.filter(p=>(p.category||'pishiriq')===cat.id);
+  const knownIds = (state.categories||[]).map(c=>c.id);
+  let html = (state.categories||[]).map(cat=>{
+    const items = state.products.filter(p=>p.category===cat.id);
     if(!items.length) return '';
     return `<div class="catSection">
       <div class="catTitle">${cat.name} <span class="catCount">${items.length}</span></div>
       <div class="prodGrid">${items.map(adminProdCardHtml).join('')}</div>
     </div>`;
   }).join('');
+  // Turkumi yo'q yoki o'chirilgan turkumga tegishli mahsulotlar — hech qachon
+  // ko'rinmay yo'qolib qolmasligi uchun alohida ko'rsatiladi
+  const orphans = state.products.filter(p=>!p.category || !knownIds.includes(p.category));
+  if(orphans.length){
+    html += `<div class="catSection">
+      <div class="catTitle" style="color:#C0392B;">⚠️ Turkumsiz <span class="catCount">${orphans.length}</span></div>
+      <p class="smallMuted" style="margin:-4px 0 10px;">Bu mahsulotlarga turkum belgilanmagan. Tahrirlab turkum tanlang yoki o'chiring.</p>
+      <div class="prodGrid">${orphans.map(adminProdCardHtml).join('')}</div>
+    </div>`;
+  }
+  grid.innerHTML = html;
 }
 async function saveProduct(){
   const name = document.getElementById('npName').value.trim();
-  const category = document.getElementById('npCategory').value || 'pishiriq';
+  const category = document.getElementById('npCategory').value;
   const gram = parseFloat(document.getElementById('npGram').value)||0;
   const price = parseFloat(document.getElementById('npPrice').value)||0;
   const description = document.getElementById('npDesc').value.trim();
   if(!name){ alert('Nomini kiriting'); return; }
+  if(!category){ alert("Mahsulot turini (turkumini) tanlang"); return; }
   if(editingProductId){
     const p = state.products.find(x=>x.id===editingProductId);
     p.name=name; p.category=category; p.gram=gram; p.price=price; p.image=pendingImage; p.description=description;
@@ -3270,9 +3284,23 @@ function renderStores(){
     leafletMap = L.map('mapWrap').setView([41.3111,69.2797], 11);
     mapTileLayer().addTo(leafletMap);
     leafletMap.on('click', (e)=>{ openNewStoreAtLocation(e.latlng.lat, e.latlng.lng); });
+    centerMapOnMyLocation(leafletMap); // Toshkentdan — haqiqiy joyingizga
   }
   plotStoresOnMap(leafletMap, mapMarkers, openStoreDetail);
   plotOrderPinsOnMap(leafletMap, orderMapMarkers);
+}
+/* Xarita birinchi ochilganda avtomatik ravishda foydalanuvchining haqiqiy
+   joylashuviga keladi (ruxsat berilsa). Ruxsat bo'lmasa yoki xato bo'lsa,
+   Toshkent markazida qolaveradi — hech qanday muammo tug'dirmaydi. */
+let __didAutoLocate = false;
+function centerMapOnMyLocation(map){
+  if(__didAutoLocate || !navigator.geolocation) return;
+  __didAutoLocate = true;
+  navigator.geolocation.getCurrentPosition(
+    pos=>{ try{ map.setView([pos.coords.latitude, pos.coords.longitude], 14); }catch(e){} },
+    ()=>{ /* ruxsat berilmadi — Toshkentda qolaveradi */ },
+    {enableHighAccuracy:true, timeout:6000, maximumAge:120000}
+  );
 }
 function openFullMap(){
   showView('fullmap');
