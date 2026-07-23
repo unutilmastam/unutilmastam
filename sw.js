@@ -1,5 +1,5 @@
 /* Unutilmas Ta'm — Service Worker */
-const CACHE = 'unutilmas-v22';
+const CACHE = 'unutilmas-v24';
 const APP_SHELL = ['./index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
