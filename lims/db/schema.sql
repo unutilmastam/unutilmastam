@@ -438,3 +438,51 @@ CREATE OR REPLACE VIEW staff_kpi AS
          (SELECT count(*) FROM patients p WHERE p.created_by = u.id)  AS patients_created,
          (SELECT coalesce(sum(pm.amount),0) FROM payments pm WHERE pm.cashier_id = u.id AND NOT pm.is_refund) AS cash_collected
     FROM users u;
+
+-- ---------------------------------------------------------------------------
+-- Laboratoriya uskunalari (analizatorlar) bilan bog'lanish
+--
+--   hl7    — HL7 v2 (MLLP) TCP orqali: ko'pchilik zamonaviy analizatorlar
+--   astm   — ASTM E1381/E1394 TCP orqali: gematologiya/biokimyo uskunalari
+--   folder — uskuna natijani papkaga CSV/TXT qilib yozadi
+--   http   — vositachi dastur natijani API'ga POST qiladi
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS devices (
+  id           serial PRIMARY KEY,
+  name         text NOT NULL UNIQUE,          -- "Mindray BC-20"
+  protocol     text NOT NULL CHECK (protocol IN ('hl7','astm','folder','http')),
+  host         text,                          -- tinglash manzili (hl7/astm)
+  port         integer,
+  folder       text,                          -- kuzatiladigan papka (folder)
+  api_token    text,                          -- http protokoli uchun kalit
+  branch_id    integer REFERENCES branches(id),
+  is_active    boolean NOT NULL DEFAULT true,
+  last_seen_at timestamptz,
+  created_at   timestamptz NOT NULL DEFAULT now()
+);
+
+-- Uskunadagi kod ↔ katalogdagi analiz. Uskuna "HGB" desa, biz uni
+-- katalogdagi Gemoglobin bilan bog'laymiz; kerak bo'lsa birlik ko'paytiriladi.
+CREATE TABLE IF NOT EXISTS device_mappings (
+  id          serial PRIMARY KEY,
+  device_id   integer NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+  device_code text NOT NULL,
+  test_id     integer NOT NULL REFERENCES test_catalog(id),
+  factor      numeric(14,6) NOT NULL DEFAULT 1,
+  UNIQUE (device_id, device_code)
+);
+
+-- Uskunadan kelgan har bir xabar xom holida saqlanadi — nizo chiqsa
+-- "uskuna nima yuborgan" savoliga aniq javob bo'ladi.
+CREATE TABLE IF NOT EXISTS device_messages (
+  id            bigserial PRIMARY KEY,
+  device_id     integer REFERENCES devices(id),
+  received_at   timestamptz NOT NULL DEFAULT now(),
+  raw           text NOT NULL,
+  status        text NOT NULL DEFAULT 'pending'
+                CHECK (status IN ('pending','applied','partial','failed','ignored')),
+  applied_count integer NOT NULL DEFAULT 0,
+  error         text
+);
+CREATE INDEX IF NOT EXISTS device_messages_idx ON device_messages(device_id, received_at DESC);

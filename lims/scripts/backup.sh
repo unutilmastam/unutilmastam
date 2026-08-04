@@ -59,14 +59,50 @@ echo "  ✓ nazorat summalari yozildi"
 # 4) Eski nusxalarni tozalash
 find "$BACKUP_DIR" -maxdepth 1 -type d -name '20*' -mtime "+$KEEP_DAYS" -exec rm -rf {} + 2>/dev/null || true
 
-# 5) Ixtiyoriy: tashqi serverga nusxa ko'chirish (yong'in/o'g'irlikka qarshi)
+# 5) Shifrlash (bulutga chiqadigan nusxa uchun majburiy tavsiya etiladi).
+#    Tibbiy ma'lumot laboratoriyadan tashqariga faqat shifrlangan holda chiqsin.
+if [ -n "${BACKUP_PASSPHRASE:-}" ]; then
+  for f in "$TARGET/labcore.dump" "$TARGET/patients-files.tar.gz"; do
+    [ -f "$f" ] || continue
+    openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+      -in "$f" -out "$f.enc" -pass env:BACKUP_PASSPHRASE
+    rm -f "$f"
+  done
+  ( cd "$TARGET" && sha256sum ./* > CHECKSUMS.sha256 2>/dev/null || true )
+  echo "  ✓ shifrlandi (AES-256)"
+fi
+
+# 6) Tashqi serverga nusxa (lokal tarmoqdagi ikkinchi kompyuter yoki NAS)
 #    RSYNC_TARGET="user@backup-server:/backups/labcore"
 if [ -n "${RSYNC_TARGET:-}" ]; then
   rsync -az --delete "$BACKUP_DIR/" "$RSYNC_TARGET/" && echo "  ✓ tashqi serverga yuborildi: $RSYNC_TARGET"
 fi
 
+# 7) Bulutga nusxa (rclone: S3, Google Drive, Yandex Disk va h.k.)
+#    rclone config  → "labcloud" nomli remote yarating
+#    RCLONE_REMOTE="labcloud:labcore-backup"
+if [ -n "${RCLONE_REMOTE:-}" ]; then
+  if ! command -v rclone >/dev/null; then
+    echo "  ! rclone o'rnatilmagan — bulutga yuborilmadi (curl https://rclone.org/install.sh | sudo bash)"
+  elif [ -z "${BACKUP_PASSPHRASE:-}" ] && [ "${ALLOW_UNENCRYPTED_CLOUD:-0}" != "1" ]; then
+    echo "  ! BACKUP_PASSPHRASE berilmagan — shifrlanmagan tibbiy ma'lumot bulutga yuborilmadi."
+    echo "    Ataylab shunday xohlasangiz: ALLOW_UNENCRYPTED_CLOUD=1"
+  else
+    rclone copy "$TARGET" "$RCLONE_REMOTE/$STAMP" --transfers 4 \
+      && echo "  ✓ bulutga yuborildi: $RCLONE_REMOTE/$STAMP"
+    # Bulutdagi eski nusxalarni ham tozalaymiz
+    rclone delete "$RCLONE_REMOTE" --min-age "${KEEP_DAYS}d" --rmdirs 2>/dev/null || true
+  fi
+fi
+
 echo "[$(date '+%F %T')] Zaxiralash tugadi. Jami: $(du -sh "$TARGET" | cut -f1)"
 echo
 echo "Tiklash (restore):"
-echo "  pg_restore --clean --if-exists --dbname=\"\$DATABASE_URL\" $TARGET/labcore.dump"
-echo "  tar -xzf $TARGET/patients-files.tar.gz -C \"$DATA_DIR\""
+if [ -n "${BACKUP_PASSPHRASE:-}" ]; then
+  echo "  openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in $TARGET/labcore.dump.enc \\"
+  echo "    -out labcore.dump -pass env:BACKUP_PASSPHRASE"
+  echo "  pg_restore --clean --if-exists --dbname=\"\$DATABASE_URL\" labcore.dump"
+else
+  echo "  pg_restore --clean --if-exists --dbname=\"\$DATABASE_URL\" $TARGET/labcore.dump"
+  echo "  tar -xzf $TARGET/patients-files.tar.gz -C \"$DATA_DIR\""
+fi

@@ -41,6 +41,7 @@ haqiqiy nomini auditga yozadi.
 | **Kassa** | To'lov, chek, qaytarish, qarzdorlar, moliyaviy hisobot |
 | **Fayl arxivi** | `/Patients/<karta>_<F.I.O.>/<yil>/` papkalari, SHA-256 nazorati |
 | **Bildirishnoma** | SMS / Telegram navbati: "natija tayyor", kritik ko'rsatkich ogohlantirishi |
+| **Uskunalar** | Analizatorlardan avtomatik natija: HL7, ASTM, papka yoki HTTP |
 | **Ombor** | Reaktivlar, qoldiq, yaroqlilik muddati ogohlantirishi |
 | **Dashboard** | Bugungi bemorlar, analizlar, onlayn xodimlar, daromad, KPI |
 
@@ -144,7 +145,60 @@ Bemor kartalari va hujjatlar telefonda keshda saqlanmaydi.
 
 ---
 
-## 4. Audit — tizimning yuragi
+## 4. Printer va laboratoriya uskunalari
+
+### Printer — hozir ishlaydi
+
+Natija blankasi, chek va shtrix-kod yorliqlari Windows'ga o'rnatilgan
+**istalgan printerga** chiqadi (Ctrl+P). Alohida sozlash kerak emas —
+tizim Windows printer ro'yxatidan foydalanadi. Chek uchun 58/80 mm termal
+printer, yorliq uchun etiket printeri ham shu tarzda ishlaydi.
+
+### Analizatorlar — to'rt xil ulanish
+
+**Boshqaruv → Uskunalar** bo'limida uskuna qo'shiladi:
+
+| Ulanish | Qachon ishlatiladi | Sozlash |
+|---|---|---|
+| **HL7 (TCP)** | zamonaviy analizatorlar | uskunada LIS IP va portini ko'rsatasiz |
+| **ASTM (TCP)** | gematologiya/biokimyo uskunalari | xuddi shunday |
+| **Papka** | uskuna natijani faylga yozadi | umumiy papkani ko'rsatasiz |
+| **HTTP** | vositachi dastur orqali | uskunaga kalit beriladi |
+
+Ish tartibi:
+
+```
+Analizator natija yuboradi  →  tizim uni probirka shtrix-kodi bo'yicha
+buyurtmaga bog'laydi  →  natija "uskunadan keldi" belgisi bilan laborant
+ekranida turadi  →  laborant tasdiqlaydi  →  bemorga chiqadi
+```
+
+Muhim qoidalar:
+
+* Uskuna natijasi **avtomatik tasdiqlanmaydi** — odam ko'rib tasdiqlaydi.
+* Uskuna **odam kiritgan qiymatni bosib ketmaydi**.
+* Har bir xabar xom holida `device_messages` jadvalida saqlanadi — nizo
+  chiqsa "uskuna aynan nima yuborgan" savoliga aniq javob bo'ladi.
+* Auditda uskuna alohida ko'rinadi: `Uskuna: Mindray BC-20`.
+* Uskuna kodi katalog kodidan farq qilsa, kodlar jadvali orqali bog'lanadi
+  (`HB-01` → Gemoglobin), birlik farqi uchun koeffitsiyent beriladi
+  (g/dL → g/L bo'lsa 10).
+
+Ulashdan oldin **Sinov** tugmasi bilan tekshirish mumkin: uskuna yuboradigan
+xabarni qo'lda kiritib, natija to'g'ri buyurtmaga tushishini ko'rasiz.
+
+### Rentgen va UTT (ultratovush)
+
+Bu qurilmalar odatda **DICOM** protokolida ishlaydi va tasvir yuboradi —
+raqamli natija emas. Hozircha ular tizimga to'g'ridan-to'g'ri ulanmaydi:
+rentgen/UTT rasmi va shifokor xulosasi bemor kartasiga **fayl sifatida
+yuklanadi** (`Fayllar` bo'limi, yil bo'yicha papkalarga tushadi). To'liq
+DICOM ulanishi (PACS) alohida bosqich — qurilma modeli aniq bo'lgach
+qo'shiladi.
+
+---
+
+## 5. Audit — tizimning yuragi
 
 Har bir muhim amal `audit_log` jadvaliga yoziladi va **hech qachon
 o'zgartirilmaydi**: baza darajasidagi trigger `UPDATE` va `DELETE` ni bloklaydi.
@@ -178,7 +232,7 @@ ochdi), `SEARCH`, `CREATE`, `UPDATE`, `DELETE`, `CONFIRM`, `PRINT`, `PAYMENT`,
 
 ---
 
-## 5. Fayl arxivi
+## 6. Fayl arxivi
 
 ```
 /var/lib/labcore/Patients/
@@ -197,7 +251,7 @@ ochdi), `SEARCH`, `CREATE`, `UPDATE`, `DELETE`, `CONFIRM`, `PRINT`, `PAYMENT`,
 
 ---
 
-## 6. Zaxira nusxa (100 yil saqlash uchun eng muhim qism)
+## 7. Zaxira nusxa: lokal + bulut
 
 ```bash
 ./scripts/backup.sh                      # baza + fayllar + nazorat summalari
@@ -218,16 +272,38 @@ pg_restore --clean --if-exists --dbname="$DATABASE_URL" backups/2026-08-04_0130/
 tar -xzf backups/2026-08-04_0130/patients-files.tar.gz -C /var/lib/labcore
 ```
 
-**Uch nusxa qoidasi:** server diskida + tashqi diskda + boshqa binoda
-(`RSYNC_TARGET` sozlamasi). Zaxirani yiliga kamida bir marta haqiqiy tiklab ko'ring —
-tekshirilmagan zaxira zaxira emas.
+### Bulutga nusxa
+
+```bash
+sudo -v ; curl https://rclone.org/install.sh | sudo bash   # bir marta
+rclone config          # "labcloud" nomli remote yarating (S3, Google Drive, Yandex Disk…)
+```
+
+`.env` da:
+
+```
+RCLONE_REMOTE=labcloud:labcore-backup
+BACKUP_PASSPHRASE=uzun-va-maxfiy-parol
+```
+
+**Bulutga faqat shifrlangan nusxa chiqadi** (AES-256). `BACKUP_PASSPHRASE`
+bo'sh bo'lsa skript bulutga yuborishni ataylab rad etadi — tibbiy ma'lumot
+shifrlanmagan holda binodan chiqmasligi kerak. Parolni yo'qotmang: usiz
+zaxirani ochib bo'lmaydi.
+
+**Uch nusxa qoidasi:** server diskida + tashqi diskda/NAS'da (`RSYNC_TARGET`) +
+bulutda (`RCLONE_REMOTE`). Zaxirani yiliga kamida bir marta haqiqiy tiklab
+ko'ring — tekshirilmagan zaxira zaxira emas.
+
+**Bulut ishlashning sharti emas:** laboratoriya butunlay internetsiz ishlayveradi.
+Bulut faqat zaxira uchun; internet tiklanganda navbatdagi nusxa yuboriladi.
 
 Shuningdek kerak: **UPS** (elektr o'chishiga qarshi), disk uchun RAID, server
 xonasiga cheklangan kirish.
 
 ---
 
-## 7. Xavfsizlik
+## 8. Xavfsizlik
 
 * Parollar `bcrypt` (12 rounds) bilan saqlanadi — ochiq matnda hech qayerda yo'q.
 * Sessiya bazada saqlanadi: administrator xodimning sessiyasini bir tugma bilan uzadi.
@@ -241,7 +317,7 @@ xonasiga cheklangan kirish.
 
 ---
 
-## 8. Buyruqlar
+## 9. Buyruqlar
 
 | Buyruq | Vazifasi |
 |---|---|
@@ -262,7 +338,7 @@ TEST_DATABASE_URL=postgres://labcore:parol@127.0.0.1:5432/labcore_test npm test
 
 ---
 
-## 9. API (qisqacha)
+## 10. API (qisqacha)
 
 Barcha manzillar `/api` bilan boshlanadi; avtorizatsiya `Authorization: Bearer <token>`
 yoki `httpOnly` cookie orqali. Ish stansiyasi nomi `X-Computer-Name` sarlavhasida.
@@ -279,10 +355,12 @@ yoki `httpOnly` cookie orqali. Ish stansiyasi nomi `X-Computer-Name` sarlavhasid
 | `GET /dashboard` `/dashboard/finance` `/dashboard/stats` | Hisobotlar |
 | `GET /labels/barcode/:code` `/qr/patient/:id` `/scan/:barcode` | Shtrix-kod va QR |
 | `GET/POST /inventory` `/inventory/:id/move` | Ombor |
+| `GET/POST /devices` `/devices/:id/mappings` `/messages` `/simulate` | Uskunalar (admin) |
+| `POST /devices/intake` | Uskunadan natija (kalit bilan, login talab qilinmaydi) |
 
 ---
 
-## 10. Texnik tafsilotlar
+## 11. Texnik tafsilotlar
 
 * **Backend:** Node.js 20+, Express 5, PostgreSQL 14+ (`pg`).
 * **Frontend:** tashqi kutubxonasiz ES-modullar — internetsiz ham to'liq ishlaydi
@@ -305,8 +383,8 @@ Quyidagilar arxitekturada hisobga olingan, lekin hali yozilmagan:
 
 * **Kameralar** — `cameras` jadvali va API bor, video ko'rish interfeysi yo'q
   (odatda kamera tizimi alohida NVR bilan ishlaydi).
-* **Uskunalardan avtomatik natija olish** — HL7/ASTM interfeysi; `results.device`
-  maydoni shu maqsad uchun tayyor.
+* **DICOM/PACS** — rentgen va UTT tasvirlarini to'g'ridan-to'g'ri qabul qilish
+  (hozircha fayl sifatida yuklanadi).
 * **Telegram bot** — xabar navbati va yuborish adapteri tayyor
   (`TELEGRAM_BOT_TOKEN` sozlansa ishlaydi), lekin bemorni botga ulash oqimi
   (`patient_contacts.telegram_chat_id`) qo'lda to'ldiriladi.

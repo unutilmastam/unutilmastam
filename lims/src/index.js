@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import { config } from './config.js';
 import { pool, query } from './db.js';
 import { startNotifyWorker } from './services/notify.js';
+import { startDeviceListeners, stopDeviceListeners } from './services/devices.js';
 
 import { router as authRouter } from './routes/auth.js';
 import { router as usersRouter } from './routes/users.js';
@@ -19,6 +20,7 @@ import { router as monitoringRouter } from './routes/monitoring.js';
 import { router as dashboardRouter } from './routes/dashboard.js';
 import { router as inventoryRouter } from './routes/inventory.js';
 import { router as labelsRouter } from './routes/labels.js';
+import { router as devicesRouter } from './routes/devices.js';
 
 export function createApp() {
   const app = express();
@@ -66,6 +68,7 @@ export function createApp() {
   app.use('/api/dashboard', dashboardRouter);
   app.use('/api/inventory', inventoryRouter);
   app.use('/api/labels', labelsRouter);
+  app.use('/api/devices', devicesRouter);
 
   // Veb-mijoz (laborant kompyuterlari brauzer orqali ishlaydi)
   const publicDir = path.join(config.root, 'public');
@@ -110,9 +113,14 @@ export async function start() {
   });
   startNotifyWorker();
 
+  // Analizatorlardan natija qabul qilish (HL7/ASTM porti yoki papka kuzatuvi)
+  const deviceCount = await startDeviceListeners();
+  if (deviceCount) console.log(`Uskunalar: ${deviceCount} ta ulanish faol`);
+
   const shutdown = async (signal) => {
     console.log(`\n${signal} — server to‘xtatilmoqda...`);
     server.close(async () => {
+      await stopDeviceListeners().catch(() => {});
       await pool.end().catch(() => {});
       process.exit(0);
     });

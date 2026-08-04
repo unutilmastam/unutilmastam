@@ -507,3 +507,250 @@ export async function settingsView() {
     ]),
   ]);
 }
+
+// ---------------------------------------------------------------------------
+// Laboratoriya uskunalari (analizatorlar)
+// ---------------------------------------------------------------------------
+
+const PROTOCOL_LABEL = {
+  hl7: 'HL7 (TCP)', astm: 'ASTM (TCP)', folder: 'Papka', http: 'HTTP (kalit bilan)',
+};
+
+export async function devicesView() {
+  const box = el('div');
+
+  async function load() {
+    const d = await api.get('/devices');
+    clear(box).append(table(
+      ['Nomi', 'Protokol', 'Ulanish', 'Bog‘langan kodlar', '24 soatda xabar', 'Oxirgi aloqa', 'Holat', ''],
+      d.items.length
+        ? d.items.map((v) => el('tr', {}, [
+            el('td', { text: v.name }),
+            el('td', {}, [el('span.badge.info', { text: PROTOCOL_LABEL[v.protocol] || v.protocol })]),
+            el('td.small.mono', {
+              text: v.protocol === 'folder' ? (v.folder || '—')
+                : v.protocol === 'http' ? 'POST /api/devices/intake'
+                : `${v.host || '0.0.0.0'}:${v.port ?? '—'}`,
+            }),
+            el('td.num', { text: v.mappings }),
+            el('td.num', { text: v.messages_24h }),
+            el('td.small', { text: v.last_seen_at ? fmtDateTime(v.last_seen_at) : 'hech qachon' }),
+            el('td', {}, [v.is_active ? el('span.badge.ok', { text: 'Faol' }) : el('span.badge', { text: 'O‘chiq' })]),
+            el('td.row', {}, [
+              el('button.sm', { text: 'Kodlar', onclick: () => mappingsDialog(v) }),
+              el('button.sm', { text: 'Xabarlar', onclick: () => messagesDialog(v) }),
+              el('button.sm', { text: 'Sinov', onclick: () => simulateDialog(v) }),
+              v.api_token
+                ? el('button.sm', { text: 'Kalit', onclick: () => tokenDialog(v) })
+                : null,
+            ]),
+          ]))
+        : [emptyRow(8, 'Uskuna qo‘shilmagan')],
+    ));
+  }
+  await load();
+
+  return el('div', {}, [
+    el('div.card', {}, [
+      el('h3', { text: 'Uskunadan natija qanday keladi' }),
+      el('p.small.muted', {
+        text: 'Analizator natijani yuboradi → tizim uni shtrix-kod bo‘yicha buyurtmaga bog‘laydi → '
+            + 'natija "uskunadan keldi" belgisi bilan laborant ekranida turadi. Bemorga faqat '
+            + 'laborant tasdiqlagandan keyin chiqadi. Uskuna odam kiritgan qiymatni bosib ketmaydi.',
+      }),
+      el('div.row', {}, [
+        el('button.primary', { text: '+ Uskuna qo‘shish', onclick: () => newDeviceDialog(load) }),
+      ]),
+    ]),
+    el('div.card', {}, [box]),
+  ]);
+}
+
+function newDeviceDialog(onDone) {
+  const name = el('input', { placeholder: 'masalan: Mindray BC-20' });
+  const protocol = el('select', {}, Object.entries(PROTOCOL_LABEL).map(([v, t]) =>
+    el('option', { value: v, text: t })));
+  const host = el('input', { value: '0.0.0.0' });
+  const port = el('input', { inputmode: 'numeric', placeholder: '5100' });
+  const folder = el('input', { placeholder: 'C:\\Analizator\\Natijalar' });
+
+  const tcpFields = el('div.form-grid', {}, [field('Tinglash manzili', host), field('Port', port)]);
+  const folderField = field('Kuzatiladigan papka', folder);
+  folderField.style.display = 'none';
+
+  protocol.addEventListener('change', () => {
+    const isFolder = protocol.value === 'folder';
+    const isTcp = protocol.value === 'hl7' || protocol.value === 'astm';
+    folderField.style.display = isFolder ? '' : 'none';
+    tcpFields.style.display = isTcp ? '' : 'none';
+  });
+
+  modal({
+    title: 'Yangi uskuna',
+    body: el('div', {}, [
+      field('Nomi', name),
+      field('Ulanish turi', protocol),
+      tcpFields,
+      folderField,
+      el('p.small.muted', {
+        text: 'HL7/ASTM — uskuna tarmoq orqali yuboradi. Papka — uskuna faylga yozadi. '
+            + 'HTTP — vositachi dastur kalit bilan yuboradi.',
+      }),
+    ]),
+    actions: [{
+      label: 'Qo‘shish', primary: true,
+      onClick: async () => {
+        const d = await api.post('/devices', {
+          name: name.value.trim(),
+          protocol: protocol.value,
+          host: host.value.trim() || null,
+          port: port.value ? Number(port.value) : null,
+          folder: folder.value.trim() || null,
+        });
+        toastOk(d.api_token ? `Qo‘shildi. Kalit: ${d.api_token}` : 'Uskuna qo‘shildi');
+        onDone?.();
+      },
+    }],
+  });
+}
+
+/** Uskuna kodlarini katalogdagi analizlarga bog'lash. */
+async function mappingsDialog(device) {
+  const [{ items: tests }, { items: maps }] = await Promise.all([
+    api.get('/catalog/tests'),
+    api.get(`/devices/${device.id}/mappings`),
+  ]);
+
+  const list = el('div');
+  const draw = (rows) => clear(list).append(table(
+    ['Uskuna kodi', 'Katalogdagi analiz', 'Koeffitsiyent', ''],
+    rows.length
+      ? rows.map((m) => el('tr', {}, [
+          el('td.mono', { text: m.device_code }),
+          el('td', { text: `${m.test_name} (${m.test_code})` }),
+          el('td.num', { text: m.factor }),
+          el('td', {}, [el('button.sm', {
+            text: 'O‘chirish',
+            onclick: async () => {
+              await api.del(`/devices/mappings/${m.id}`);
+              draw((await api.get(`/devices/${device.id}/mappings`)).items);
+            },
+          })]),
+        ]))
+      : [emptyRow(4, 'Bog‘lanish yo‘q — uskuna kodi katalog kodiga teng deb olinadi')],
+  ));
+  draw(maps);
+
+  const code = el('input', { placeholder: 'HB-01' });
+  const testSel = el('select', {}, tests.map((t) => el('option', { value: t.id, text: `${t.name} (${t.code})` })));
+  const factor = el('input', { value: '1', inputmode: 'decimal' });
+
+  modal({
+    title: `${device.name} — kodlar jadvali`,
+    wide: true,
+    body: el('div', {}, [
+      el('p.small.muted', {
+        text: 'Uskuna o‘z kodini yuboradi (masalan HB-01), biz uni katalogdagi analizga bog‘laymiz. '
+            + 'Koeffitsiyent birlik farqi uchun: g/dL → g/L bo‘lsa 10.',
+      }),
+      list,
+      el('div.form-grid', { style: 'margin-top:12px' }, [
+        field('Uskuna kodi', code), field('Analiz', testSel), field('Koeffitsiyent', factor),
+      ]),
+      el('button.primary', {
+        text: 'Bog‘lash',
+        onclick: async () => {
+          try {
+            await api.post(`/devices/${device.id}/mappings`, {
+              device_code: code.value.trim(),
+              test_id: Number(testSel.value),
+              factor: Number(factor.value) || 1,
+            });
+            code.value = '';
+            draw((await api.get(`/devices/${device.id}/mappings`)).items);
+            toastOk('Bog‘landi');
+          } catch (err) { toastError(err); }
+        },
+      }),
+    ]),
+  });
+}
+
+/** Uskunadan kelgan xom xabarlar — nosozlikni topish uchun. */
+async function messagesDialog(device) {
+  const { items } = await api.get(`/devices/${device.id}/messages`);
+  const badge = { applied: 'ok', partial: 'warn', failed: 'danger', ignored: '', pending: '' };
+
+  modal({
+    title: `${device.name} — kelgan xabarlar`,
+    wide: true,
+    body: items.length
+      ? el('div', {}, items.map((m) => el('div.card', {}, [
+          el('div.row.between', {}, [
+            el('span.small.muted', { text: fmtDateTime(m.received_at) }),
+            el(`span.badge.${badge[m.status] || ''}`, { text: `${m.status} · ${m.applied_count} ta natija` }),
+          ]),
+          m.error ? el('div.error-box', { text: m.error }) : null,
+          el('pre.small.mono', {
+            style: 'white-space:pre-wrap;overflow-x:auto;margin:6px 0 0',
+            text: m.raw,
+          }),
+        ])))
+      : el('div.empty', { text: 'Xabar kelmagan' }),
+  });
+}
+
+/** Uskuna yuboradigan xabarni qo'lda kiritib sinash. */
+function simulateDialog(device) {
+  const raw = el('textarea', {
+    rows: '6',
+    placeholder: 'SHTRIXKOD,HGB,130,g/L\n\nyoki HL7/ASTM xabarini to‘liq joylashtiring',
+  });
+  const out = el('div');
+
+  modal({
+    title: `${device.name} — sinov`,
+    wide: true,
+    body: el('div', {}, [
+      el('p.small.muted', {
+        text: 'Uskunani ulashdan oldin tekshirish uchun: probirka shtrix-kodini va qiymatni kiriting. '
+            + 'Natija haqiqiy buyurtmaga yoziladi.',
+      }),
+      field('Xabar', raw),
+      out,
+    ]),
+    actions: [{
+      label: 'Yuborish', primary: true,
+      onClick: async () => {
+        const res = await api.post(`/devices/${device.id}/simulate`, { raw: raw.value });
+        clear(out).append(
+          el('div.card', {}, [
+            el('div', { text: `Qabul qilindi: ${res.applied.length} ta` }),
+            ...res.skipped.map((s) => el('div.small.muted', { text: `${s.code}: ${s.reason}` })),
+          ]),
+        );
+        return false; // oyna ochiq qolsin — natija ko'rinsin
+      },
+    }],
+  });
+}
+
+function tokenDialog(device) {
+  modal({
+    title: `${device.name} — kalit`,
+    body: el('div', {}, [
+      el('p.small.muted', { text: 'Vositachi dastur shu kalit bilan natija yuboradi:' }),
+      el('pre.small.mono', {
+        style: 'white-space:pre-wrap',
+        text: `POST http://<server>:4000/api/devices/intake\nX-Device-Token: ${device.api_token}\n\n<shtrix-kod>,<kod>,<qiymat>,<birlik>`,
+      }),
+    ]),
+    actions: [{
+      label: 'Yangi kalit yaratish', danger: true,
+      onClick: async () => {
+        const r = await api.post(`/devices/${device.id}/token`);
+        toastOk(`Yangi kalit: ${r.token}`);
+      },
+    }],
+  });
+}
