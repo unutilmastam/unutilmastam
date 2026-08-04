@@ -42,6 +42,7 @@ haqiqiy nomini auditga yozadi.
 | **Fayl arxivi** | `/Patients/<karta>_<F.I.O.>/<yil>/` papkalari, SHA-256 nazorati |
 | **Bildirishnoma** | SMS / Telegram navbati: "natija tayyor", kritik ko'rsatkich ogohlantirishi |
 | **Uskunalar** | Analizatorlardan avtomatik natija: HL7, ASTM, papka yoki HTTP |
+| **Kameralar** | Jonli kadr, yuz tanish hodisalari, ish joyida bo'lgan vaqt (davomat) |
 | **Ombor** | Reaktivlar, qoldiq, yaroqlilik muddati ogohlantirishi |
 | **Dashboard** | Bugungi bemorlar, analizlar, onlayn xodimlar, daromad, KPI |
 
@@ -200,6 +201,37 @@ rentgen/UTT rasmi va shifokor xulosasi bemor kartasiga **fayl sifatida
 yuklanadi** (`Fayllar` bo'limi, yil bo'yicha papkalarga tushadi). To'liq
 DICOM ulanishi (PACS) alohida bosqich — qurilma modeli aniq bo'lgach
 qo'shiladi.
+
+### Kameralar va davomat
+
+**Boshqaruv → Kameralar** bo'limida kamera qo'shiladi: panelda har 5 soniyada
+yangilanadigan kadr ko'rinadi, RTSP manzili esa VLC/NVR uchun saqlanadi.
+
+Yuzni tanish AI **kameraning o'zida yoki NVR'da** ishlaydi — LabCore undan
+tayyor hodisa oladi (`POST /api/cameras/events`, kamera kaliti bilan) va shu
+asosda **Davomat** bo'limida hisoblaydi:
+
+```
+Dilnoza Karimova
+  08:55 – 12:25   3 s 30 d   (31 ta hodisa)
+  12:25 – 13:20   tanaffus 55 daqiqa
+  13:20 – 17:04   3 s 44 d   (33 ta hodisa)
+  ─────────────────────────────────────────
+  Kamerada: 7 s 14 d      Tizimda: 6 s 40 d
+```
+
+Ikkala raqam yonma-yon turadi va bir-birini tekshiradi. Batafsil:
+[`docs/kamera-ulash.md`](docs/kamera-ulash.md).
+
+**Maxfiylik talablari** (tavsiya emas, majburiy):
+
+* Kamera **bemor hududiga va natija ko'rinib turgan ekranlarga qaratilmasin**.
+* Xodimlar kuzatuv borligidan xabardor bo'lishi kerak (ko'p joyda qonun talabi).
+* Hojatxona/dam olish xonasi — hech qachon.
+* Hodisalar `CAMERA_RETENTION_DAYS` (90 kun) dan keyin avtomatik o'chadi.
+* Faqat administrator ko'radi; davomatni ochish ham auditga yoziladi.
+* "Kamerada ko'rinmadi" ≠ "ishlamadi" — xodim boshqa xonada bo'lishi mumkin.
+  Bu raqam suhbat uchun asos, jazo uchun dalil emas.
 
 ---
 
@@ -362,6 +394,8 @@ yoki `httpOnly` cookie orqali. Ish stansiyasi nomi `X-Computer-Name` sarlavhasid
 | `GET/POST /inventory` `/inventory/:id/move` | Ombor |
 | `GET/POST /devices` `/devices/:id/mappings` `/messages` `/simulate` | Uskunalar (admin) |
 | `POST /devices/intake` | Uskunadan natija (kalit bilan, login talab qilinmaydi) |
+| `GET/POST /cameras` `/cameras/:id/snapshot` `/faces` `/attendance` | Kameralar va davomat (admin) |
+| `POST /cameras/events` | Kamera AI hodisasi (kalit bilan) |
 
 ---
 
@@ -386,8 +420,6 @@ yoki `httpOnly` cookie orqali. Ish stansiyasi nomi `X-Computer-Name` sarlavhasid
 
 Quyidagilar arxitekturada hisobga olingan, lekin hali yozilmagan:
 
-* **Kameralar** — `cameras` jadvali va API bor, video ko'rish interfeysi yo'q
-  (odatda kamera tizimi alohida NVR bilan ishlaydi).
 * **DICOM/PACS** — rentgen va UTT tasvirlarini to'g'ridan-to'g'ri qabul qilish
   (hozircha fayl sifatida yuklanadi).
 * **Telegram bot** — xabar navbati va yuborish adapteri tayyor

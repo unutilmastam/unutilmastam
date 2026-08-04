@@ -106,6 +106,8 @@ function build(d, online) {
       link('👤', 'Bemorlar', '#/patients'),
       link('🧪', 'Analizlar', '#/orders'),
       link('🖥️', 'Ish nazorati', '#/monitoring'),
+      link('🎥', 'Kameralar', '#/cameras'),
+      link('📋', 'Davomat', '#/attendance'),
       link('🔍', 'Audit', '#/audit'),
       link('💰', 'Kassa', '#/cashier'),
       link('⚙️', 'Sozlamalar', '#/settings'),

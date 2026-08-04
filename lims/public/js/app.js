@@ -8,6 +8,7 @@ import { ordersView, orderView, doctorQueueView } from './views/orders.js';
 import { cashierView, debtsView } from './views/cashier.js';
 import { staffView, monitoringView, auditView, catalogView, inventoryView, devicesView, settingsView } from './views/admin.js';
 import { mobileView } from './views/mobile.js';
+import { camerasView, attendanceView } from './views/cameras.js';
 
 export const state = { user: null, lab: { name: 'LabCore', currency: "so'm" } };
 
@@ -27,6 +28,8 @@ const ROUTES = [
   [/^\/catalog$/, catalogView, ['admin'], 'Analiz katalogi'],
   [/^\/inventory$/, inventoryView, ['admin', 'laborant'], 'Ombor'],
   [/^\/devices$/, devicesView, ['admin'], 'Uskunalar'],
+  [/^\/cameras$/, camerasView, ['admin'], 'Kameralar'],
+  [/^\/attendance$/, attendanceView, ['admin'], 'Davomat'],
   [/^\/settings$/, settingsView, null, 'Sozlamalar'],
   [/^\/mobile$/, mobileView, null, 'Rahbar paneli'],
 ];
@@ -53,6 +56,8 @@ const NAV = [
   { path: '/catalog', label: 'Analiz katalogi', icon: '📋', roles: ['admin'] },
   { path: '/inventory', label: 'Ombor', icon: '📦', roles: ['admin', 'laborant'] },
   { path: '/devices', label: 'Uskunalar', icon: '🔬', roles: ['admin'] },
+  { path: '/cameras', label: 'Kameralar', icon: '🎥', roles: ['admin'] },
+  { path: '/attendance', label: 'Davomat', icon: '📋', roles: ['admin'] },
 ];
 
 const allowed = (roles) => !roles || roles.includes(state.user?.role);

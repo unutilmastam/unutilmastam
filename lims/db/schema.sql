@@ -486,3 +486,47 @@ CREATE TABLE IF NOT EXISTS device_messages (
   error         text
 );
 CREATE INDEX IF NOT EXISTS device_messages_idx ON device_messages(device_id, received_at DESC);
+
+-- ---------------------------------------------------------------------------
+-- Kameralar va davomat nazorati
+--
+--   Yuzni tanish AI kameraning o'zida yoki NVR'da ishlaydi. LabCore undan
+--   hodisa qabul qiladi ("kim, qachon, qaysi kamerada ko'rindi") va shu
+--   asosda xodimning ish joyida bo'lgan vaqtini hisoblaydi.
+--
+--   Maxfiylik: kamera bemor hududiga va natija ko'rinib turgan ekranlarga
+--   qaratilmasligi kerak. Hodisalar saqlash muddati cheklangan (CAMERA_RETENTION_DAYS).
+-- ---------------------------------------------------------------------------
+
+ALTER TABLE cameras ADD COLUMN IF NOT EXISTS stream_type   text NOT NULL DEFAULT 'rtsp';
+ALTER TABLE cameras ADD COLUMN IF NOT EXISTS snapshot_url  text;   -- JPEG kadr manzili
+ALTER TABLE cameras ADD COLUMN IF NOT EXISTS username      text;   -- kamera logini
+ALTER TABLE cameras ADD COLUMN IF NOT EXISTS password_enc  text;   -- shifrlangan parol
+ALTER TABLE cameras ADD COLUMN IF NOT EXISTS api_token     text;   -- AI hodisa yuborish kaliti
+ALTER TABLE cameras ADD COLUMN IF NOT EXISTS workstation   text;   -- qaysi ish joyini ko'radi
+ALTER TABLE cameras ADD COLUMN IF NOT EXISTS last_event_at timestamptz;
+
+-- NVR/AI dagi shaxs yorlig'i ↔ tizimdagi xodim
+CREATE TABLE IF NOT EXISTS camera_faces (
+  id          serial PRIMARY KEY,
+  face_label  text NOT NULL UNIQUE,       -- AI beradigan nom yoki ID
+  user_id     integer REFERENCES users(id),
+  note        text,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+-- Kameradan kelgan hodisalar
+CREATE TABLE IF NOT EXISTS camera_events (
+  id            bigserial PRIMARY KEY,
+  camera_id     integer REFERENCES cameras(id) ON DELETE CASCADE,
+  at            timestamptz NOT NULL DEFAULT now(),
+  type          text NOT NULL CHECK (type IN ('face','motion','present','absent','tamper','offline')),
+  face_label    text,
+  user_id       integer REFERENCES users(id),
+  confidence    numeric(5,2),
+  snapshot_path text,
+  meta          jsonb
+);
+CREATE INDEX IF NOT EXISTS camera_events_at_idx   ON camera_events(at DESC);
+CREATE INDEX IF NOT EXISTS camera_events_user_idx ON camera_events(user_id, at DESC);
+CREATE INDEX IF NOT EXISTS camera_events_cam_idx  ON camera_events(camera_id, at DESC);

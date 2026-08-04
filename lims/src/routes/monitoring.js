@@ -144,22 +144,3 @@ router.get(
     res.json({ date, sessions, items });
   }),
 );
-
-/** Kameralar ro'yxati (ish joyi nazorati uchun havolalar). */
-router.get(
-  '/cameras',
-  wrap(async (_req, res) => {
-    res.json({ items: await many('SELECT * FROM cameras WHERE is_active ORDER BY name') });
-  }),
-);
-
-router.post(
-  '/cameras',
-  wrap(async (req, res) => {
-    const c = await one(
-      'INSERT INTO cameras (name, location, stream_url, branch_id) VALUES ($1,$2,$3,$4) RETURNING *',
-      [req.body.name, req.body.location || null, req.body.stream_url, req.body.branch_id || null],
-    );
-    res.status(201).json(c);
-  }),
-);
