@@ -33,5 +33,13 @@ Batafsil: arxiv ichidagi `OQING.txt` va `server/docs/ornatish.md`.
 ## Nazorat summasi
 
 ```
-SHA-256: ad86b2f05dfb1672af91bb5b0d2f8c498a90ef410c9e6010bec3022e14573dd1
+SHA-256: f9bf90ebde3bcce9b1e035e474b7e563a4f9e5155b575e163392dbb58483c42a
 ```
+
+## Tuzatishlar tarixi
+
+**2026-08-04 (2-nashr).** Windows PowerShell 5.1 `.ps1` faylni ANSI deb
+o'qigani uchun skriptlar ishga tushmasdi ("Unexpected token" xatolari).
+Skriptlar endi faqat ASCII belgilardan iborat. Birinchi nashrni yuklab
+olgan bo'lsangiz — qayta yuklab oling yoki faqat
+`server/deploy/windows/*.ps1` fayllarini almashtiring.
