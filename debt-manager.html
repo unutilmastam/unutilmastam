@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qarz Boshqaruvi - Debt Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --bg: #ffffff;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-mic {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--secondary) 0%, #db2777 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(236, 72, 153, 0.3);
+        }
+
+        .btn-mic:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-mic.listening {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 5px 15px rgba(236, 72, 153, 0.3); }
+            50% { box-shadow: 0 5px 25px rgba(236, 72, 153, 0.6); }
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            color: var(--gray-500);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .stat-card.income .stat-value {
+            color: var(--success);
+        }
+
+        .stat-card.expense .stat-value {
+            color: var(--danger);
+        }
+
+        .stat-card.balance .stat-value {
+            color: var(--primary);
+        }
+
+        .stat-detail {
+            font-size: 12px;
+            color: var(--gray-400);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-500);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab:hover {
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+            color: var(--dark);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--gray-400);
+        }
+
+        .close-btn:hover {
+            color: var(--dark);
+        }
+
+        .debt-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .debt-item {
+            background: white;
+            border: 2px solid var(--border);
+            padding: 20px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .debt-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.1);
+        }
+
+        .debt-info {
+            flex: 1;
+        }
+
+        .debt-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 6px;
+        }
+
+        .debt-meta {
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+
+        .debt-amount {
+            text-align: right;
+        }
+
+        .amount-main {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .debt-item.i-owe .amount-main {
+            color: var(--danger);
+        }
+
+        .debt-item.owes-me .amount-main {
+            color: var(--success);
+        }
+
+        .amount-sub {
+            font-size: 12px;
+            color: var(--gray-500);
+        }
+
+        .debt-actions {
+            margin-left: 16px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn.edit {
+            color: var(--primary);
+        }
+
+        .action-btn.edit:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .action-btn.delete {
+            color: var(--danger);
+        }
+
+        .action-btn.delete:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .payment-item {
+            background: var(--light);
+            padding: 16px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .payment-info {
+            flex: 1;
+        }
+
+        .payment-date {
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-bottom: 4px;
+        }
+
+        .payment-amount {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray-500);
+        }
+
+        .empty-state-icon {
+            font-size: 60px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+
+        .chart-container {
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+            transition: width 0.3s ease;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.paid {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .badge.pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .currency-input {
+            position: relative;
+        }
+
+        .currency-input::before {
+            content: 'сўм';
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        .currency-input input {
+            padding-left: 50px;
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--success);
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--danger);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header h1 {
+                justify-content: center;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .debt-item {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .debt-actions {
+                margin-left: 0;
+                margin-top: 12px;
+                justify-content: center;
+            }
+
+            .modal-content {
+                padding: 24px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>💰 Qarz Boshqaruvi</h1>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="openAddDebtModal()">
+                    ➕ Yangi Qarz
+                </button>
+                <button class="btn btn-primary" onclick="openPaymentModal()">
+                    💳 To'lov Qosh
+                </button>
+                <button class="btn-mic" id="micBtn" onclick="toggleMicrophone()" title="Ovozli buyruq">
+                    🎤
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="dashboard">
+            <div class="card stat-card income">
+                <h3>Menga Qarz</h3>
+                <div class="stat-value" id="totalOwesMe">0</div>
+                <div class="stat-detail">Olinayotgan jami qarz</div>
+            </div>
+            <div class="card stat-card expense">
+                <h3>Men Qarzdor</h3>
+                <div class="stat-value" id="totalIowe">0</div>
+                <div class="stat-detail">Berayotgan jami qarz</div>
+            </div>
+            <div class="card stat-card balance">
+                <h3>Balans</h3>
+                <div class="stat-value" id="balance">0</div>
+                <div class="stat-detail" id="balanceStatus">Sof balans</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('all')">📊 Barcha Qarzlar</button>
+                <button class="tab" onclick="switchTab('owes-me')">💵 Menga Qarzdor</button>
+                <button class="tab" onclick="switchTab('i-owe')">💸 Men Qarzdor</button>
+                <button class="tab" onclick="switchTab('history')">📅 Tarix</button>
+                <button class="tab" onclick="switchTab('statistics')">📈 Statistika</button>
+            </div>
+
+            <!-- All Debts Tab -->
+            <div id="tab-all" class="tab-content">
+                <div id="allDebtsList" class="debt-list"></div>
+                <div id="emptyAll" class="empty-state hidden">
+                    <div class="empty-state-icon">📭</div>
+                    <h3>Qarzlar yo'q</h3>
+                    <p>Yangi qarz qo'shish uchun yuqorida tugmani bosing</p>
+                </div>
+            </div>
+
+            <!-- Owes Me Tab -->
+            <div id="tab-owes-me" class="tab-content hidden">
+                <div id="owesmelist" class="debt-list"></div>
+                <div id="emptyOwesMe" class="empty-state hidden">
+                    <div class="empty-state-icon">👤</div>
+                    <h3>Kimdir siz qarzdor emas</h3>
+                    <p>Yuqorida "Yangi Qarz" tugmasini bosing</p>
+                </div>
+            </div>
+
+            <!-- I Owe Tab -->
+            <div id="tab-i-owe" class="tab-content hidden">
+                <div id="iowelist" class="debt-list"></div>
+                <div id="emptyIOwe" class="empty-state hidden">
+                    <div class="empty-state-icon">🎉</div>
+                    <h3>Siz qarzdor emas</h3>
+                    <p>Hayr! Birorga qarzdor emasiz</p>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="tab-history" class="tab-content hidden">
+                <div id="historyList" class="debt-list"></div>
+                <div id="emptyHistory" class="empty-state hidden">
+                    <div class="empty-state-icon">🕐</div>
+                    <h3>Tarix bo'sh</h3>
+                    <p>Qarz qo'shganingizdan keyin tarix paydo bo'ladi</p>
+                </div>
+            </div>
+
+            <!-- Statistics Tab -->
+            <div id="tab-statistics" class="tab-content hidden">
+                <div style="padding: 20px 0;">
+                    <h3 style="font-size: 18px; margin-bottom: 20px; color: var(--dark);">Qarz Statistikasi</h3>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                        <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%); padding: 20px; border-radius: 12px; border-left: 4px solid var(--success);">
+                            <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 8px;">O'rtacha Qarz (Menga)</div>
+                            <div style="font-size: 24px; font-weight: 800; color: var(--success);" id="avgOwesMe">0</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%); padding: 20px; border-radius: 12px; border-left: 4px solid var(--danger);">
+                            <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 8px;">O'rtacha Qarz (Mening)</div>
+                            <div style="font-size: 24px; font-weight: 800; color: var(--danger);" id="avgIOwe">0</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%); padding: 20px; border-radius: 12px; border-left: 4px solid var(--primary);">
+                            <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 8px;">Jami Tranzaksiya</div>
+                            <div style="font-size: 24px; font-weight: 800; color: var(--primary);" id="totalTransactions">0</div>
+                        </div>
+                    </div>
+
+                    <div style="background: var(--light); padding: 20px; border-radius: 12px;">
+                        <h4 style="font-size: 16px; margin-bottom: 16px; color: var(--dark);">Ko'p Qarzdor Odamlar</h4>
+                        <div id="topDebtors" style="display: grid; gap: 12px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Debt Modal -->
+    <div id="addDebtModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Yangi Qarz Qo'sh</h2>
+                <button class="close-btn" onclick="closeAddDebtModal()">&times;</button>
+            </div>
+            <form id="addDebtForm" onsubmit="saveDebt(event)">
+                <div class="form-group">
+                    <label>Odamning Ismi *</label>
+                    <input type="text" id="debtorName" placeholder="Ozoda, Fatima, va b." required>
+                </div>
+                <div class="form-group">
+                    <label>Qarz Turi *</label>
+                    <select id="debtType" required onchange="updateDebtTypeLabel()">
+                        <option value="">Tanlang</option>
+                        <option value="owes-me">Menga qarzdor (Qarz berayotganman)</option>
+                        <option value="i-owe">Men qarzdor (Qarz olyaptirganman)</option>
+                    </select>
+                </div>
+                <div class="form-group currency-input">
+                    <label>Qarz Miqdori *</label>
+                    <input type="number" id="debtAmount" placeholder="0" min="0" step="1000" required>
+                </div>
+                <div class="form-group">
+                    <label>Sana *</label>
+                    <input type="date" id="debtDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Izoh</label>
+                    <textarea id="debtDescription" placeholder="Qarz haqida to'liq ma'lumot yozing..." rows="3"></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddDebtModal()">Bekor</button>
+                    <button type="submit" class="btn btn-primary">Qo'sh</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>To'lov Qosh</h2>
+                <button class="close-btn" onclick="closePaymentModal()">&times;</button>
+            </div>
+            <form id="paymentForm" onsubmit="savePayment(event)">
+                <div class="form-group">
+                    <label>Odam Tanlang *</label>
+                    <select id="paymentDebtor" required>
+                        <option value="">Odamni tanlang</option>
+                    </select>
+                </div>
+                <div class="form-group currency-input">
+                    <label>To'lov Miqdori *</label>
+                    <input type="number" id="paymentAmount" placeholder="0" min="0" step="1000" required>
+                </div>
+                <div class="form-group">
+                    <label>Sana *</label>
+                    <input type="date" id="paymentDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Izoh</label>
+                    <textarea id="paymentNote" placeholder="To'lov izohini yozing..." rows="2"></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <button type="button" class="btn btn-secondary" onclick="closePaymentModal()">Bekor</button>
+                    <button type="submit" class="btn btn-primary">Qo'sh</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Debt Modal -->
+    <div id="editDebtModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Qarzni Tahrirlash</h2>
+                <button class="close-btn" onclick="closeEditDebtModal()">&times;</button>
+            </div>
+            <form id="editDebtForm" onsubmit="updateDebt(event)">
+                <input type="hidden" id="editDebtId">
+                <div class="form-group">
+                    <label>Odamning Ismi *</label>
+                    <input type="text" id="editDebtorName" required>
+                </div>
+                <div class="form-group currency-input">
+                    <label>Qarz Miqdori *</label>
+                    <input type="number" id="editDebtAmount" min="0" step="1000" required>
+                </div>
+                <div class="form-group">
+                    <label>Sana *</label>
+                    <input type="date" id="editDebtDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Izoh</label>
+                    <textarea id="editDebtDescription" rows="3"></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditDebtModal()">Bekor</button>
+                    <button type="submit" class="btn btn-primary">Saqlash</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Data Management
+        let debts = JSON.parse(localStorage.getItem('debts') || '[]');
+        let payments = JSON.parse(localStorage.getItem('payments') || '[]');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('debtDate').valueAsDate = new Date();
+            document.getElementById('paymentDate').valueAsDate = new Date();
+            document.getElementById('editDebtDate').valueAsDate = new Date();
+            updateDashboard();
+            renderAllDebts();
+            updatePaymentDebtorSelect();
+        });
+
+        // Voice Recognition
+        let recognition;
+        let isListening = false;
+
+        function initVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert('Sizning brauzeringiz ovozli buyruqni qo\'llab-quvvatlamaydi');
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'uz-UZ';
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                isListening = true;
+                document.getElementById('micBtn').classList.add('listening');
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                document.getElementById('micBtn').classList.remove('listening');
+            };
+
+            recognition.onresult = (event) => {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                processVoiceCommand(transcript);
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Ovoz taniga xato:', event.error);
+                isListening = false;
+                document.getElementById('micBtn').classList.remove('listening');
+            };
+        }
+
+        function toggleMicrophone() {
+            if (!recognition) initVoiceRecognition();
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+
+        function processVoiceCommand(command) {
+            command = command.toLowerCase().trim();
+
+            if (command.includes('yangi qarz')) {
+                openAddDebtModal();
+            } else if (command.includes('to\'lov')) {
+                openPaymentModal();
+            } else if (command.includes('qarzlar') || command.includes('barcha')) {
+                switchTab('all');
+            } else if (command.includes('statistika')) {
+                switchTab('statistics');
+            } else if (command.includes('tarix')) {
+                switchTab('history');
+            }
+        }
+
+        // Tab Navigation
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+            document.getElementById('tab-' + tabName).classList.remove('hidden');
+            event.target.classList.add('active');
+
+            if (tabName === 'all') renderAllDebts();
+            else if (tabName === 'owes-me') renderOwesMeDebts();
+            else if (tabName === 'i-owe') renderIoweDebts();
+            else if (tabName === 'history') renderHistory();
+            else if (tabName === 'statistics') renderStatistics();
+        }
+
+        // Debt Management
+        function openAddDebtModal() {
+            document.getElementById('addDebtModal').classList.add('active');
+        }
+
+        function closeAddDebtModal() {
+            document.getElementById('addDebtModal').classList.remove('active');
+            document.getElementById('addDebtForm').reset();
+            document.getElementById('debtDate').valueAsDate = new Date();
+        }
+
+        function saveDebt(e) {
+            e.preventDefault();
+
+            const debt = {
+                id: Date.now(),
+                name: document.getElementById('debtorName').value,
+                type: document.getElementById('debtType').value,
+                amount: parseFloat(document.getElementById('debtAmount').value),
+                date: document.getElementById('debtDate').value,
+                description: document.getElementById('debtDescription').value,
+                status: 'active'
+            };
+
+            debts.push(debt);
+            localStorage.setItem('debts', JSON.stringify(debts));
+
+            updateDashboard();
+            renderAllDebts();
+            updatePaymentDebtorSelect();
+            closeAddDebtModal();
+
+            showSuccessMessage('Qarz muvaffaqiyatli qo\'shildi!');
+        }
+
+        function deleteDebt(id) {
+            if (confirm('Qarzni o\'chirilsinmi?')) {
+                debts = debts.filter(d => d.id !== id);
+                localStorage.setItem('debts', JSON.stringify(debts));
+                updateDashboard();
+                renderAllDebts();
+                updatePaymentDebtorSelect();
+            }
+        }
+
+        function openEditDebtModal(id) {
+            const debt = debts.find(d => d.id === id);
+            if (!debt) return;
+
+            document.getElementById('editDebtId').value = id;
+            document.getElementById('editDebtorName').value = debt.name;
+            document.getElementById('editDebtAmount').value = debt.amount;
+            document.getElementById('editDebtDate').value = debt.date;
+            document.getElementById('editDebtDescription').value = debt.description;
+            document.getElementById('editDebtModal').classList.add('active');
+        }
+
+        function closeEditDebtModal() {
+            document.getElementById('editDebtModal').classList.remove('active');
+        }
+
+        function updateDebt(e) {
+            e.preventDefault();
+
+            const id = parseInt(document.getElementById('editDebtId').value);
+            const debtIndex = debts.findIndex(d => d.id === id);
+
+            if (debtIndex !== -1) {
+                debts[debtIndex] = {
+                    ...debts[debtIndex],
+                    name: document.getElementById('editDebtorName').value,
+                    amount: parseFloat(document.getElementById('editDebtAmount').value),
+                    date: document.getElementById('editDebtDate').value,
+                    description: document.getElementById('editDebtDescription').value
+                };
+
+                localStorage.setItem('debts', JSON.stringify(debts));
+                updateDashboard();
+                renderAllDebts();
+                updatePaymentDebtorSelect();
+                closeEditDebtModal();
+                showSuccessMessage('Qarz tahrirlandi!');
+            }
+        }
+
+        // Payment Management
+        function openPaymentModal() {
+            document.getElementById('paymentModal').classList.add('active');
+            document.getElementById('paymentDate').valueAsDate = new Date();
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.remove('active');
+            document.getElementById('paymentForm').reset();
+        }
+
+        function savePayment(e) {
+            e.preventDefault();
+
+            const payment = {
+                id: Date.now(),
+                debtorId: document.getElementById('paymentDebtor').value,
+                amount: parseFloat(document.getElementById('paymentAmount').value),
+                date: document.getElementById('paymentDate').value,
+                note: document.getElementById('paymentNote').value
+            };
+
+            payments.push(payment);
+            localStorage.setItem('payments', JSON.stringify(payments));
+
+            updateDashboard();
+            renderAllDebts();
+            closePaymentModal();
+            showSuccessMessage('To\'lov qo\'shildi!');
+        }
+
+        function updatePaymentDebtorSelect() {
+            const select = document.getElementById('paymentDebtor');
+            select.innerHTML = '<option value="">Odamni tanlang</option>';
+
+            const uniqueDebtors = [...new Map(debts.map(d => [d.id, d])).values()];
+
+            debts.forEach(debt => {
+                if (!select.querySelector(`option[value="${debt.id}"]`)) {
+                    const option = document.createElement('option');
+                    option.value = debt.id;
+                    option.textContent = debt.name;
+                    select.appendChild(option);
+                }
+            });
+        }
+
+        // Rendering Functions
+        function renderAllDebts() {
+            const container = document.getElementById('allDebtsList');
+            const empty = document.getElementById('emptyAll');
+
+            if (debts.length === 0) {
+                container.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+            container.innerHTML = debts.map(debt => {
+                const paid = payments
+                    .filter(p => p.debtorId === debt.id)
+                    .reduce((sum, p) => sum + p.amount, 0);
+                const remaining = debt.amount - paid;
+
+                return `
+                    <div class="debt-item ${debt.type}">
+                        <div class="debt-info">
+                            <div class="debt-name">${debt.name}</div>
+                            <div class="debt-meta">
+                                ${new Date(debt.date).toLocaleDateString('uz-UZ')} • ${debt.type === 'owes-me' ? 'Menga qarzdor' : 'Men qarzdor'}
+                            </div>
+                        </div>
+                        <div class="debt-amount">
+                            <div class="amount-main">${formatCurrency(remaining)}</div>
+                            <div class="amount-sub">Qolgan: ${debt.amount - paid > 0 ? remaining : 'To\'lanib yuborildi'}</div>
+                        </div>
+                        <div class="debt-actions">
+                            <button class="action-btn edit" onclick="openEditDebtModal(${debt.id})">✏️</button>
+                            <button class="action-btn delete" onclick="deleteDebt(${debt.id})">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderOwesMeDebts() {
+            const container = document.getElementById('owesmelist');
+            const empty = document.getElementById('emptyOwesMe');
+            const filtered = debts.filter(d => d.type === 'owes-me');
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+            container.innerHTML = filtered.map(debt => {
+                const paid = payments
+                    .filter(p => p.debtorId === debt.id)
+                    .reduce((sum, p) => sum + p.amount, 0);
+                const remaining = debt.amount - paid;
+
+                return `
+                    <div class="debt-item owes-me">
+                        <div class="debt-info">
+                            <div class="debt-name">${debt.name}</div>
+                            <div class="debt-meta">${new Date(debt.date).toLocaleDateString('uz-UZ')}</div>
+                        </div>
+                        <div class="debt-amount">
+                            <div class="amount-main">+${formatCurrency(remaining)}</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${(paid/debt.amount)*100}%"></div>
+                            </div>
+                        </div>
+                        <div class="debt-actions">
+                            <button class="action-btn edit" onclick="openEditDebtModal(${debt.id})">✏️</button>
+                            <button class="action-btn delete" onclick="deleteDebt(${debt.id})">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderIoweDebts() {
+            const container = document.getElementById('iowelist');
+            const empty = document.getElementById('emptyIOwe');
+            const filtered = debts.filter(d => d.type === 'i-owe');
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+            container.innerHTML = filtered.map(debt => {
+                const paid = payments
+                    .filter(p => p.debtorId === debt.id)
+                    .reduce((sum, p) => sum + p.amount, 0);
+                const remaining = debt.amount - paid;
+
+                return `
+                    <div class="debt-item i-owe">
+                        <div class="debt-info">
+                            <div class="debt-name">${debt.name}</div>
+                            <div class="debt-meta">${new Date(debt.date).toLocaleDateString('uz-UZ')}</div>
+                        </div>
+                        <div class="debt-amount">
+                            <div class="amount-main">-${formatCurrency(remaining)}</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${(paid/debt.amount)*100}%"></div>
+                            </div>
+                        </div>
+                        <div class="debt-actions">
+                            <button class="action-btn edit" onclick="openEditDebtModal(${debt.id})">✏️</button>
+                            <button class="action-btn delete" onclick="deleteDebt(${debt.id})">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyList');
+            const empty = document.getElementById('emptyHistory');
+
+            const history = [
+                ...debts.map(d => ({
+                    type: 'debt',
+                    date: d.date,
+                    name: d.name,
+                    amount: d.amount,
+                    description: d.description
+                })),
+                ...payments.map(p => ({
+                    type: 'payment',
+                    date: p.date,
+                    debtorId: p.debtorId,
+                    amount: p.amount,
+                    note: p.note
+                }))
+            ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (history.length === 0) {
+                container.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+            container.innerHTML = history.map(item => {
+                if (item.type === 'debt') {
+                    return `
+                        <div class="payment-item">
+                            <div class="payment-info">
+                                <div class="payment-date">${new Date(item.date).toLocaleDateString('uz-UZ')} - Qarz qo'shildi</div>
+                                <div style="font-weight: 600; color: var(--dark);">${item.name}</div>
+                                <div style="font-size: 12px; color: var(--gray-500);">${item.description || 'Izoh yo\'q'}</div>
+                            </div>
+                            <div class="payment-amount">${formatCurrency(item.amount)}</div>
+                        </div>
+                    `;
+                } else {
+                    const debtor = debts.find(d => d.id == item.debtorId);
+                    return `
+                        <div class="payment-item">
+                            <div class="payment-info">
+                                <div class="payment-date">${new Date(item.date).toLocaleDateString('uz-UZ')} - To'lov qilindi</div>
+                                <div style="font-weight: 600; color: var(--dark);">${debtor ? debtor.name : 'Noma\'lum'}</div>
+                                <div style="font-size: 12px; color: var(--gray-500);">${item.note || 'Izoh yo\'q'}</div>
+                            </div>
+                            <div style="color: var(--success); font-weight: 700;">+${formatCurrency(item.amount)}</div>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        function renderStatistics() {
+            const owesMe = debts
+                .filter(d => d.type === 'owes-me')
+                .reduce((sum, d) => sum + d.amount, 0);
+            const iOwe = debts
+                .filter(d => d.type === 'i-owe')
+                .reduce((sum, d) => sum + d.amount, 0);
+
+            const owesmCount = debts.filter(d => d.type === 'owes-me').length;
+            const ioweCount = debts.filter(d => d.type === 'i-owe').length;
+
+            document.getElementById('avgOwesMe').textContent = formatCurrency(owesmCount > 0 ? owesMe / owesmCount : 0);
+            document.getElementById('avgIOwe').textContent = formatCurrency(ioweCount > 0 ? iOwe / ioweCount : 0);
+            document.getElementById('totalTransactions').textContent = debts.length + payments.length;
+
+            // Top Debtors
+            const debtorStats = {};
+            debts.forEach(debt => {
+                if (!debtorStats[debt.id]) {
+                    debtorStats[debt.id] = {
+                        name: debt.name,
+                        total: 0,
+                        type: debt.type
+                    };
+                }
+                debtorStats[debt.id].total += debt.amount;
+            });
+
+            const topDebtors = Object.values(debtorStats)
+                .sort((a, b) => b.total - a.total)
+                .slice(0, 5);
+
+            const topDebtorsHtml = topDebtors.map(d => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border);">
+                    <div>
+                        <div style="font-weight: 600; color: var(--dark);">${d.name}</div>
+                        <div style="font-size: 12px; color: var(--gray-500);">${d.type === 'owes-me' ? 'Menga qarzdor' : 'Men qarzdor'}</div>
+                    </div>
+                    <div style="font-weight: 700; ${d.type === 'owes-me' ? 'color: var(--success)' : 'color: var(--danger)'};">${formatCurrency(d.total)}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('topDebtors').innerHTML = topDebtorsHtml || '<div style="text-align: center; padding: 20px; color: var(--gray-500);">Hali ma\'lumot yo\'q</div>';
+        }
+
+        // Dashboard Update
+        function updateDashboard() {
+            const totalOwesMe = debts
+                .filter(d => d.type === 'owes-me')
+                .reduce((sum, d) => {
+                    const paid = payments
+                        .filter(p => p.debtorId === d.id)
+                        .reduce((s, p) => s + p.amount, 0);
+                    return sum + (d.amount - paid);
+                }, 0);
+
+            const totalIOwe = debts
+                .filter(d => d.type === 'i-owe')
+                .reduce((sum, d) => {
+                    const paid = payments
+                        .filter(p => p.debtorId === d.id)
+                        .reduce((s, p) => s + p.amount, 0);
+                    return sum + (d.amount - paid);
+                }, 0);
+
+            const balance = totalOwesMe - totalIOwe;
+
+            document.getElementById('totalOwesMe').textContent = formatCurrency(totalOwesMe);
+            document.getElementById('totalIowe').textContent = formatCurrency(totalIOwe);
+            document.getElementById('balance').textContent = formatCurrency(Math.abs(balance));
+            document.getElementById('balanceStatus').textContent =
+                balance > 0 ? 'Siz musbat balansdagi' :
+                balance < 0 ? 'Siz manfiy balansdagi' :
+                'Balans teng';
+        }
+
+        // Utilities
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('uz-UZ', {
+                style: 'currency',
+                currency: 'UZS',
+                minimumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function showSuccessMessage(message) {
+            const msg = document.createElement('div');
+            msg.className = 'success-message';
+            msg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 2000; animation: slideIn 0.3s ease;';
+            msg.textContent = message;
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 3000);
+        }
+
+        function updateDebtTypeLabel() {
+            const type = document.getElementById('debtType').value;
+            const label = type === 'owes-me' ? 'Menga qarzdor' : 'Men qarzdor';
+        }
+    </script>
+</body>
+</html>
