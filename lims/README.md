@@ -14,9 +14,17 @@ to'liq ishlaydi — barcha ma'lumot bino ichida qoladi.
                                                  kunlik zaxira → tashqi disk / server
 ```
 
-Ish stansiyalari brauzer orqali ulanadi (`https://labcore.lab.local`) — har bir
-kompyuterga alohida dastur o'rnatish shart emas. Windows'da yorliq yasab, kiosk
-rejimida ochish yetarli.
+Tizim uch qismdan iborat:
+
+| Qism | Kim uchun | Nima bilan |
+|---|---|---|
+| **Server** | laboratoriya binosi | Node.js + PostgreSQL, `lims/` |
+| **Windows dastur** | laborant, shifokor, kassa kompyuterlari | Electron, `lims/desktop/` — o'rnatuvchi `.exe` |
+| **Mobil nazorat ilovasi** | laboratoriya egasi | PWA — telefonga o'rnatiladi, `#/mobile` |
+
+Uchalasi bitta serverga va bitta bazaga ishlaydi. Xohlasangiz ish stansiyalari
+oddiy brauzerdan ham kira oladi — dastur majburiy emas, lekin u kompyuterning
+haqiqiy nomini auditga yozadi.
 
 ---
 
@@ -96,13 +104,43 @@ Birinchi kirish: `npm run seed` bergan login/parol (odatda `admin` / `Admin12345
 **Birinchi kirishdayoq parolni almashtiring** va Sozlamalar bo'limida ikki bosqichli
 loginni yoqing.
 
-### Ish stansiyalarini ulash
+### Ish stansiyalarini ulash (Windows dastur)
 
 1. Serverga statik IP bering (masalan `192.168.1.10`).
-2. Har bir kompyuter brauzerida `http://192.168.1.10:4000` ni oching.
-3. **Sozlamalar → Ish stansiyasi** bo'limida kompyuter nomini kiriting
-   (`LAB-PC-01`, `KASSA-PC`, `SHIFOKOR-PC`). Bu nom audit jurnalida ko'rinadi.
-4. HTTPS uchun: `deploy/nginx.conf.example` ga qarang.
+2. Windows uchun o'rnatuvchi yasang (batafsil: `desktop/README.md`):
+   ```powershell
+   cd lims\desktop
+   npm install
+   npm run build:win        # dist\LabCore Setup 1.0.0.exe
+   ```
+3. `.exe` ni har bir ish stansiyasiga o'rnating. Birinchi ochilishda dastur
+   server manzilini so'raydi va "Ulanishni tekshirish" tugmasi bilan aloqani
+   sinab ko'radi.
+4. Kompyuter nomi Windows tizimidan avtomatik olinadi (`LAB-PC-02`) va audit
+   jurnaliga shu nom bilan yoziladi — xodim uni o'zgartira olmaydi.
+
+Dastur o'rnatilmasa ham bo'ladi: brauzerda `http://192.168.1.10:4000` ni ochib,
+**Sozlamalar → Ish stansiyasi** bo'limida kompyuter nomini qo'lda kiritish kerak.
+
+HTTPS uchun: `deploy/nginx.conf.example` ga qarang.
+
+### Mobil nazorat ilovasi (rahbar uchun)
+
+Telefonda serverni oching (`http://192.168.1.10:4000` yoki VPN orqali) va
+brauzer menyusidan **"Bosh ekranga qo'shish"** ni tanlang — ilova alohida
+belgicha bilan o'rnatiladi, brauzer paneli ko'rinmaydi.
+
+Ilovada:
+
+* bugungi bemorlar, analizlar, tasdiqlangan natijalar, daromad;
+* hozir ishlayotgan xodimlar — kim, qaysi kompyuterda, oxirgi faollik vaqti;
+* kritik natijalar ro'yxati (bosilsa buyurtma ochiladi);
+* so'nggi o'zgarishlar lentasi (kim nimani o'zgartirdi);
+* har 30 soniyada avtomatik yangilanadi.
+
+Aloqa uzilsa ilova baribir ochiladi va oxirgi ko'rsatkichlarni
+"⚠️ Aloqa yo'q — oxirgi saqlangan ma'lumot" belgisi bilan ko'rsatadi.
+Bemor kartalari va hujjatlar telefonda keshda saqlanmaydi.
 
 ---
 
@@ -249,6 +287,10 @@ yoki `httpOnly` cookie orqali. Ish stansiyasi nomi `X-Computer-Name` sarlavhasid
 * **Backend:** Node.js 20+, Express 5, PostgreSQL 14+ (`pg`).
 * **Frontend:** tashqi kutubxonasiz ES-modullar — internetsiz ham to'liq ishlaydi
   (CDN, tashqi shrift yo'q).
+* **Windows dastur:** Electron 33 (`desktop/`), `contextIsolation: true`,
+  `nodeIntegration: false`; o'rnatuvchi — electron-builder/NSIS.
+* **Mobil ilova:** PWA (manifest + service worker). Ko'rsatkichlar
+  "avval tarmoq, uzilsa kesh" tamoyilida; tibbiy hujjatlar keshlanmaydi.
 * **Arxiv uchun:** vaqtlar `timestamptz`, katta jadvallarda BRIN indekslar,
   qidiruv uchun `pg_trgm` (bo'lmasa avtomatik `ILIKE` rejimi).
 * **Avtomatik tahlil** (`src/services/analyzer.js`) — qoidalarga asoslangan:
@@ -268,6 +310,9 @@ Quyidagilar arxitekturada hisobga olingan, lekin hali yozilmagan:
 * **Telegram bot** — xabar navbati va yuborish adapteri tayyor
   (`TELEGRAM_BOT_TOKEN` sozlansa ishlaydi), lekin bemorni botga ulash oqimi
   (`patient_contacts.telegram_chat_id`) qo'lda to'ldiriladi.
-* **Mobil ilova (rahbar uchun)** — hozircha veb-interfeys telefon brauzerida
-  moslashuvchan ishlaydi.
+* **Push-bildirishnoma** — mobil ilovaga telefon qulflangan holatda
+  ogohlantirish yuborish (hozircha ilova ochilganda ko'rsatiladi).
+* **Tayyor `.exe`** — o'rnatuvchi Windows yoki `wine` o'rnatilgan kompyuterda
+  bitta buyruq bilan yasaladi (`npm run build:win`); repozitoriyda binar fayl
+  saqlanmaydi.
 * **SMS shlyuzi** — `SMS_GATEWAY_URL` sizning provayderingiz formatiga moslanishi kerak.

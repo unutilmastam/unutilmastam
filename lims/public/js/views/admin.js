@@ -475,17 +475,25 @@ function moveDialog(item, onDone) {
 // ---------------------------------------------------------------------------
 
 export async function settingsView() {
-  const station = el('input', { value: auth.computerName, placeholder: 'masalan: LAB-PC-02' });
+  const station = el('input', {
+    value: auth.computerName,
+    placeholder: 'masalan: LAB-PC-02',
+    disabled: auth.isDesktop,
+  });
 
   return el('div.grid.cols-2', {}, [
     el('div.card', {}, [
       el('h3', { text: 'Ish stansiyasi' }),
       el('p.small.muted', { text: 'Bu nom audit jurnalida va sessiyalar ro‘yxatida ko‘rinadi.' }),
       field('Kompyuter nomi', station),
-      el('button.primary', {
-        text: 'Saqlash',
-        onclick: () => { auth.computerName = station.value.trim(); toastOk('Saqlandi'); },
-      }),
+      auth.isDesktop
+        ? el('p.small.muted', {
+            text: 'Windows dasturida bu nom kompyuterning tizim nomidan olinadi va o‘zgartirilmaydi.',
+          })
+        : el('button.primary', {
+            text: 'Saqlash',
+            onclick: () => { auth.computerName = station.value.trim(); toastOk('Saqlandi'); },
+          }),
     ]),
     el('div.card', {}, [el('h3', { text: 'Parolni o‘zgartirish' }), changePasswordForm()]),
     el('div.card', {}, [el('h3', { text: 'Ikki bosqichli login' }), twoFactorPanel(state.user)]),

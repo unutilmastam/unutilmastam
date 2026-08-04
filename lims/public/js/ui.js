@@ -70,6 +70,18 @@ export function age(birthDate) {
 
 export const GENDER = { m: 'Erkak', f: 'Ayol', u: '—' };
 
+// Brauzerning uz-UZ lokali oylarni "M08" ko'rinishida beradi — o'zimiz yozamiz.
+export const MONTHS = [
+  'yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun',
+  'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr',
+];
+
+/** "4-avgust, 2026" ko'rinishidagi to'liq sana. */
+export function fmtDateLong(v) {
+  const d = v ? new Date(v) : new Date();
+  return `${d.getDate()}-${MONTHS[d.getMonth()]}, ${d.getFullYear()}`;
+}
+
 export const ROLE_LABEL = {
   admin: 'Administrator', laborant: 'Laborant', doctor: 'Shifokor', cashier: 'Kassir',
 };

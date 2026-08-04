@@ -6,8 +6,13 @@ const PC_KEY = 'labcore.pc';
 export const auth = {
   get token() { return localStorage.getItem(TOKEN_KEY); },
   set token(v) { v ? localStorage.setItem(TOKEN_KEY, v) : localStorage.removeItem(TOKEN_KEY); },
-  get computerName() { return localStorage.getItem(PC_KEY) || ''; },
-  set computerName(v) { localStorage.setItem(PC_KEY, v); },
+  /**
+   * Ish stansiyasi nomi. Windows dasturida ishlayotgan bo'lsak — kompyuterning
+   * haqiqiy nomi (o'zgartirib bo'lmaydi), aks holda qo'lda kiritilgan nom.
+   */
+  get computerName() { return window.labcore?.station || localStorage.getItem(PC_KEY) || ''; },
+  set computerName(v) { if (!window.labcore?.station) localStorage.setItem(PC_KEY, v); },
+  get isDesktop() { return !!window.labcore?.isDesktop; },
 };
 
 export class ApiError extends Error {

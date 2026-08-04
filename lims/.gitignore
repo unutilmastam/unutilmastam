@@ -3,3 +3,7 @@ data/
 backups/
 .env
 *.log
+
+# Windows dasturi
+desktop/node_modules/
+desktop/dist/

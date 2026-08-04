@@ -7,6 +7,7 @@ import { patientsView, patientCardView } from './views/patients.js';
 import { ordersView, orderView, doctorQueueView } from './views/orders.js';
 import { cashierView, debtsView } from './views/cashier.js';
 import { staffView, monitoringView, auditView, catalogView, inventoryView, settingsView } from './views/admin.js';
+import { mobileView } from './views/mobile.js';
 
 export const state = { user: null, lab: { name: 'LabCore', currency: "so'm" } };
 
@@ -26,11 +27,18 @@ const ROUTES = [
   [/^\/catalog$/, catalogView, ['admin'], 'Analiz katalogi'],
   [/^\/inventory$/, inventoryView, ['admin', 'laborant'], 'Ombor'],
   [/^\/settings$/, settingsView, null, 'Sozlamalar'],
+  [/^\/mobile$/, mobileView, null, 'Rahbar paneli'],
 ];
+
+/** Telefon yoki o'rnatilgan ilova (PWA) rejimimi? */
+export const isMobile = () =>
+  window.matchMedia('(max-width: 700px)').matches ||
+  window.matchMedia('(display-mode: standalone)').matches;
 
 const NAV = [
   { group: 'Ish joyi' },
   { path: '/', label: 'Bosh sahifa', icon: '📊' },
+  { path: '/mobile', label: 'Rahbar paneli', icon: '📱' },
   { path: '/patients', label: 'Bemorlar', icon: '👤' },
   { path: '/orders', label: 'Analizlar', icon: '🧪' },
   { path: '/doctor', label: 'Shifokor navbati', icon: '🩺', roles: ['admin', 'doctor'] },
@@ -86,6 +94,9 @@ async function render() {
 
   if (path === '/login') { navigate('/'); return; }
 
+  // Telefonda yoki o'rnatilgan ilovada bosh sahifa o'rniga rahbar paneli.
+  if (path === '/' && isMobile()) { navigate('/mobile'); return; }
+
   const match = ROUTES.find(([re]) => re.test(path));
   if (!match) return clear(app).append(shell(el('div.empty', { text: 'Sahifa topilmadi' }), 'Xatolik'));
 
@@ -125,7 +136,7 @@ function shell(content, title) {
         }, [el('span', { text: item.icon }), item.label]),
   ));
 
-  return el('div.shell', {}, [
+  return el(`div.shell${isMobile() ? '.mobile-mode' : ''}`, {}, [
     el('aside.sidebar', {}, [
       el('div.brand', {}, [
         '🧪',
@@ -165,3 +176,11 @@ function shell(content, title) {
 
 window.addEventListener('hashchange', render);
 render();
+
+// Ilovani telefonga/kompyuterga o'rnatish va oflayn ishlash uchun.
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch((err) =>
+      console.warn('[sw] ro‘yxatdan o‘tmadi:', err.message));
+  });
+}
