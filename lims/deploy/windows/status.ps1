@@ -20,7 +20,7 @@ try {
   Write-Host "Baza        : $($r.db)"
   Write-Host "Laboratoriya: $($r.lab)"
 } catch {
-  Write-Host "Server      : javob bermayapti — $($_.Exception.Message)" -ForegroundColor Red
+  Write-Host "Server      : javob bermayapti - $($_.Exception.Message)" -ForegroundColor Red
 }
 
 $ip = (Get-NetIPAddress -AddressFamily IPv4 |

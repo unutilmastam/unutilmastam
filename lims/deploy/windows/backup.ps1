@@ -1,5 +1,5 @@
 # ============================================================================
-#  LabCore — Windows uchun kunlik zaxira nusxa
+#  LabCore - Windows uchun kunlik zaxira nusxa
 #  Har kuni 01:30 da "LabCore-Backup" vazifasi orqali ishga tushadi.
 # ============================================================================
 $ErrorActionPreference = "Stop"
@@ -49,7 +49,7 @@ if (Test-Path $patientsDir) {
   Write-Host "  OK fayllar: $([math]::Round((Get-Item $zip).Length/1MB,1)) MB"
 }
 
-# 3) Nazorat summalari — yillar o'tib fayl buzilmaganini tekshirish uchun
+# 3) Nazorat summalari - yillar o'tib fayl buzilmaganini tekshirish uchun
 Get-ChildItem $target -File | ForEach-Object {
   "$((Get-FileHash $_.FullName -Algorithm SHA256).Hash)  $($_.Name)"
 } | Set-Content (Join-Path $target "CHECKSUMS.sha256")

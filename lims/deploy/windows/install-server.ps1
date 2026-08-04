@@ -1,5 +1,5 @@
 # ============================================================================
-#  LabCore — Windows serverga o'rnatish
+#  LabCore - Windows serverga o'rnatish
 #
 #  Ishga tushirish (Administrator sifatida PowerShell):
 #     Set-ExecutionPolicy -Scope Process Bypass -Force
@@ -71,7 +71,7 @@ if ($exists -ne "1") {
   Ok "Foydalanuvchi yaratildi: $DbUser"
 } else {
   psql -U postgres -c "ALTER USER $DbUser WITH PASSWORD '$dbPassword';" | Out-Null
-  Warn "Foydalanuvchi mavjud edi — paroli yangilandi"
+  Warn "Foydalanuvchi mavjud edi - paroli yangilandi"
 }
 
 $dbExists = psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$DbName'"
@@ -79,7 +79,7 @@ if ($dbExists -ne "1") {
   psql -U postgres -c "CREATE DATABASE $DbName OWNER $DbUser;" | Out-Null
   Ok "Baza yaratildi: $DbName"
 } else {
-  Warn "Baza mavjud edi — saqlab qolindi"
+  Warn "Baza mavjud edi - saqlab qolindi"
 }
 
 # ---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ Step "3/8  Fayllarni ko'chirish va sozlash"
 $source = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent   # lims/ papkasi
 if ($source -ne $InstallDir) {
   New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
-  # node_modules bor bo'lsa u ham ko'chiriladi — internetsiz o'rnatish uchun
+  # node_modules bor bo'lsa u ham ko'chiriladi - internetsiz o'rnatish uchun
   Copy-Item "$source\*" $InstallDir -Recurse -Force -Exclude @("data","backups",".env")
   Ok "Fayllar ko'chirildi: $InstallDir"
 }
@@ -125,7 +125,7 @@ Set-Acl "$InstallDir\.env" $acl
 Ok ".env yozildi va himoyalandi"
 
 if (Test-Path (Join-Path $InstallDir "node_modules")) {
-  Ok "Kutubxonalar to'plam ichida keldi — internet kerak emas"
+  Ok "Kutubxonalar to'plam ichida keldi - internet kerak emas"
 } else {
   npm ci --omit=dev
   Ok "Kutubxonalar o'rnatildi"
@@ -162,7 +162,7 @@ if (Get-Command openssl -ErrorAction SilentlyContinue) {
   openssl pkcs12 -in "$InstallDir\ssl\labcore.pfx" -nocerts -nodes -out "$InstallDir\ssl\labcore.key" -passin pass:labcore-temp
   Ok "Sertifikat tayyor: $InstallDir\ssl\labcore.crt"
 } else {
-  Warn "openssl topilmadi — sertifikatni qo'lda PEM'ga o'giring yoki HTTPS'ni o'chiring."
+  Warn "openssl topilmadi - sertifikatni qo'lda PEM'ga o'giring yoki HTTPS'ni o'chiring."
   Warn "Vaqtincha HTTP rejimi uchun .env dagi SSL_ satrlarini # bilan izohga oling."
 }
 
@@ -180,7 +180,7 @@ foreach ($p in @($Port, $HttpPort)) {
       -LocalPort $p -Action Allow -Profile Private,Domain | Out-Null
   }
 }
-Ok "Portlar ochildi: $Port (HTTPS), $HttpPort (HTTP → yo'naltirish)"
+Ok "Portlar ochildi: $Port (HTTPS), $HttpPort (HTTP -> yo'naltirish)"
 
 # ---------------------------------------------------------------------------
 Step "7/8  Avtomatik ishga tushirish"
@@ -206,7 +206,7 @@ Ok "Kunlik zaxira sozlandi (har kuni 01:30)"
 # ---------------------------------------------------------------------------
 Step "8/8  Ish stoli yorlig'i"
 
-# Dastur oynasi: brauzer "ilova rejimi"da ochiladi — manzil paneli va
+# Dastur oynasi: brauzer "ilova rejimi"da ochiladi - manzil paneli va
 # yorliqlar ko'rinmaydi, oddiy dasturdek bo'ladi.
 $browser = $null
 foreach ($p in @(
@@ -224,7 +224,7 @@ if ($browser) {
   $lnk.Arguments = "--app=https://localhost:$Port --window-size=1400,900"
   $lnk.IconLocation = "$InstallDir\deploy\windows\labcore.ico"
   $lnk.WorkingDirectory = $InstallDir
-  $lnk.Description = "LabCore — laboratoriya boshqaruv tizimi"
+  $lnk.Description = "LabCore - laboratoriya boshqaruv tizimi"
   $lnk.Save()
   Ok "Ish stolida 'LabCore' yorlig'i yaratildi"
 
@@ -236,7 +236,7 @@ if ($browser) {
   $lnk2.Save()
   Ok "'Telefonga ulash' yorlig'i yaratildi (QR kod bilan)"
 } else {
-  Warn "Edge yoki Chrome topilmadi — brauzerda https://localhost:$Port ni oching"
+  Warn "Edge yoki Chrome topilmadi - brauzerda https://localhost:$Port ni oching"
 }
 
 # ---------------------------------------------------------------------------
