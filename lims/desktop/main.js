@@ -16,6 +16,8 @@
 const { app, BrowserWindow, session, dialog, Menu, shell } = require('electron');
 const os = require('node:os');
 const fs = require('node:fs');
+const https = require('node:https');
+const http = require('node:http');
 const path = require('node:path');
 
 const CONFIG_FILE = path.join(app.getPath('userData'), 'labcore.json');
@@ -73,6 +75,47 @@ function createWindow(serverUrl) {
   });
 
   win.once('ready-to-show', () => win.show());
+
+  // Laboratoriya serverining sertifikati o'z-o'zini imzolagan bo'ladi
+  // (ichki tarmoqda boshqa iloji yo'q). Uni ko'r-ko'rona qabul qilmaymiz:
+  // faqat sozlangan server manzili uchun va xodim bir marta tasdiqlagandan
+  // keyin ruxsat beramiz. Barmoq izi saqlanadi — keyin almashsa yana so'raladi.
+  win.webContents.on('certificate-error', (event, url, error, certificate, callback) => {
+    const expected = new URL(serverUrl).host;
+    let host;
+    try { host = new URL(url).host; } catch { host = ''; }
+
+    if (host !== expected) return callback(false);   // boshqa sayt — rad etamiz
+
+    const cfg = readConfig();
+    if (cfg.trustedFingerprint && cfg.trustedFingerprint === certificate.fingerprint) {
+      event.preventDefault();
+      return callback(true);
+    }
+
+    const choice = dialog.showMessageBoxSync(win, {
+      type: 'warning',
+      title: 'Server sertifikati',
+      message: `Server sertifikati rasmiy markaz tomonidan imzolanmagan.`,
+      detail:
+        `Server: ${expected}\n` +
+        `Sertifikat: ${certificate.subjectName || '—'}\n` +
+        `Barmoq izi: ${certificate.fingerprint}\n\n` +
+        'Bu laboratoriyaning ichki serveri bo\'lsa — normal holat.\n' +
+        'Manzil notanish bo\'lsa — "Rad etish" ni bosing.',
+      buttons: ['Ishonaman (eslab qol)', 'Rad etish'],
+      defaultId: 0,
+      cancelId: 1,
+    });
+
+    if (choice === 0) {
+      writeConfig({ trustedFingerprint: certificate.fingerprint });
+      event.preventDefault();
+      callback(true);
+    } else {
+      callback(false);
+    }
+  });
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     // Natija blankasi va chek alohida oynada ochiladi (chop etish uchun).
@@ -190,21 +233,50 @@ app.whenReady().then(() => {
       createWindow(url);
       return true;
     });
-    ipcMain.handle('labcore:test-server', async (_e, url) => {
-      try {
-        const res = await fetch(new URL('/api/health', url), { signal: AbortSignal.timeout(5000) });
-        const body = await res.json();
-        return { ok: !!body.ok, lab: body.lab || null };
-      } catch (err) {
-        return { ok: false, error: err.message };
-      }
-    });
+    ipcMain.handle('labcore:test-server', (_e, url) => checkServer(url));
     return;
   }
 
   buildMenu(cfg.serverUrl);
   createWindow(cfg.serverUrl);
 });
+
+/**
+ * Serverni tekshirish. Oddiy fetch ishlatilmaydi: laboratoriya serverining
+ * sertifikati o'z-o'zini imzolagan bo'lib, fetch uni darhol rad etadi va
+ * xodim "server ishlamayapti" deb o'ylab qoladi.
+ */
+function checkServer(url) {
+  return new Promise((resolve) => {
+    let target;
+    try { target = new URL('/api/health', url); } catch { return resolve({ ok: false, error: 'Manzil noto‘g‘ri' }); }
+
+    const client = target.protocol === 'https:' ? https : http;
+    const req = client.request(
+      target,
+      { timeout: 5000, rejectUnauthorized: false },   // sertifikat pastda alohida tekshiriladi
+      (res) => {
+        // Sertifikat holatini SHU YERDA o'qib olamiz: javob tugaganda
+        // res.socket allaqachon null bo'lib qoladi.
+        const selfSigned = target.protocol === 'https:' && res.socket?.authorized === false;
+
+        let data = '';
+        res.on('data', (c) => { data += c; });
+        res.on('end', () => {
+          try {
+            const body = JSON.parse(data);
+            resolve({ ok: !!body.ok, lab: body.lab || null, selfSigned });
+          } catch {
+            resolve({ ok: false, error: `Server tushunarsiz javob qaytardi (kod ${res.statusCode})` });
+          }
+        });
+      },
+    );
+    req.on('timeout', () => { req.destroy(); resolve({ ok: false, error: 'Server javob bermadi (5 soniya)' }); });
+    req.on('error', (err) => resolve({ ok: false, error: err.message }));
+    req.end();
+  });
+}
 
 app.on('window-all-closed', () => app.quit());
 app.on('activate', () => {

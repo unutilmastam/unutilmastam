@@ -8,6 +8,7 @@ const saveBtn = document.getElementById('save');
 
 function show(text, kind) {
   msg.className = 'msg ' + kind;
+  msg.style.whiteSpace = 'pre-line';
   msg.textContent = text;
 }
 
@@ -17,7 +18,11 @@ document.getElementById('test').addEventListener('click', async () => {
   show('Tekshirilmoqda…', '');
   const res = await window.labcore.testServer(url);
   if (res.ok) {
-    show(`✓ Ulanish muvaffaqiyatli${res.lab ? ' — ' + res.lab : ''}`, 'ok');
+    show(
+      `✓ Ulanish muvaffaqiyatli${res.lab ? ' — ' + res.lab : ''}` +
+      (res.selfSigned ? '\n(sertifikat imzolanmagan — birinchi ochilganda tasdiqlashingiz so‘raladi)' : ''),
+      'ok',
+    );
     saveBtn.disabled = false;
   } else {
     show('✗ Ulanib bo‘lmadi: ' + (res.error || 'server javob bermadi'), 'err');
