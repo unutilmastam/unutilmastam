@@ -9,7 +9,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Shrift bloklamasdan yuklanadi: internet sekin yoki yo'q bo'lsa ham ilova darhol ishlaydi -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"></noscript>
 <style>
 /* ══════════════ DESIGN TOKENS ══════════════ */
 :root{
@@ -350,6 +353,45 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml;charset=utf-
 .seg-o.on.v-out{background:linear-gradient(135deg,var(--bad-1),var(--bad-2));box-shadow:0 6px 18px rgba(244,63,94,.32)}
 .seg-o.on.v-b{background:linear-gradient(135deg,var(--brand-1),var(--brand-2));box-shadow:var(--sh-brand)}
 
+/* advanced (kredit jadvali) */
+.adv-t{
+  width:100%;display:flex;align-items:center;gap:10px;padding:14px 15px;border-radius:var(--r-sm);
+  background:var(--input-bg);border:1.5px solid var(--line);font-size:13.5px;font-weight:750;
+  color:var(--txt-2);transition:.24s var(--ease);margin-bottom:16px;
+}
+.adv-t:hover{border-color:var(--brand-1);color:var(--brand-1)}
+.adv-t span{flex:1;text-align:left}
+.adv-t .chev{width:18px;height:18px;transition:transform .3s var(--ease)}
+.adv-t.open{border-color:var(--brand-1);color:var(--brand-1);margin-bottom:12px}
+.adv-t.open .chev{transform:rotate(180deg)}
+.adv-t .dotv{width:8px;height:8px;border-radius:50%;background:var(--warn-1);flex:none}
+.adv-prev{
+  padding:13px 15px;border-radius:var(--r-sm);background:rgba(245,158,11,.1);
+  border:1px solid rgba(245,158,11,.28);font-size:12.5px;font-weight:600;color:var(--txt-2);line-height:1.6;
+}
+.adv-prev b{color:#d97706}
+
+/* peni ogohlantirish bloki */
+.pen-box{
+  padding:16px;border-radius:var(--r-md);margin-bottom:16px;
+  background:linear-gradient(135deg,rgba(244,63,94,.12),rgba(245,158,11,.10));
+  border:1px solid rgba(244,63,94,.3);
+}
+.pen-h{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:800;color:var(--bad-1);margin-bottom:11px}
+.pen-r{display:flex;justify-content:space-between;font-size:13px;font-weight:650;padding:5px 0}
+.pen-r span{color:var(--txt-2)}
+.pen-r b{font-weight:800}
+.pen-f{font-size:11.5px;color:var(--txt-3);font-weight:600;margin-top:9px;padding-top:9px;border-top:1px dashed var(--line-strong)}
+
+/* jadval qatorlari */
+.sc-row{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--r-xs);background:var(--surface-2);border:1px solid var(--line);margin-bottom:7px}
+.sc-n{width:24px;height:24px;border-radius:8px;flex:none;display:grid;place-items:center;font-size:11px;font-weight:800;background:var(--line);color:var(--txt-2)}
+.sc-row.paid .sc-n{background:rgba(16,185,129,.16);color:var(--ok-1)}
+.sc-row.late .sc-n{background:rgba(244,63,94,.16);color:var(--bad-1)}
+.sc-row.next .sc-n{background:rgba(109,94,252,.16);color:var(--brand-1)}
+.sc-d{flex:1;font-size:13px;font-weight:650}
+.sc-a{font-size:13px;font-weight:800}
+
 /* quick amount */
 .quick{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
 .quick button{
@@ -432,7 +474,8 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml;charset=utf-
 
 /* ══════════════ STATS PAGE ══════════════ */
 .mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
-@media(min-width:760px){.mini-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:760px){.mini-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1080px){.mini-grid{grid-template-columns:repeat(4,1fr)}}
 .mini{padding:18px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);box-shadow:var(--sh-sm);backdrop-filter:var(--blur)}
 .mini-l{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:750;color:var(--txt-3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:9px}
 .mini-l .ico{width:15px;height:15px}
@@ -548,6 +591,9 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml;charset=utf-
 <symbol id="i-inbox" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13.5 6 5h12l2.5 8.5v4a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M3.5 13.5H9l1 2.5h4l1-2.5h5.5"/></symbol>
 <symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 4.2 5 9a5 5 0 0 1-10 0c0-1.6.7-3 1.5-4 .3 1 1 1.8 1.8 2.1C10.8 8 12 5.5 12 3z"/></symbol>
 <symbol id="i-swap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13l-3-3M20 16H7l3 3"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m7 10 5 5 5-5"/></symbol>
+<symbol id="i-percent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18.5 5.5 5.5 18.5"/><circle cx="7.8" cy="7.8" r="2.8"/><circle cx="16.2" cy="16.2" r="2.8"/></symbol>
+<symbol id="i-cal-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11V8a3 3 0 0 0-3-3h-11a3 3 0 0 0-3 3v9a3 3 0 0 0 3 3H12"/><path d="M3.5 10h17M8 3v4M16 3v4"/><circle cx="17.5" cy="17.5" r="4"/><path d="M17.5 15.8v1.9l1.3.9"/></symbol>
 </svg>
 
 <div class="app">
@@ -766,7 +812,48 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml;charset=utf-
         <div class="f"><label>Olingan sana <span class="req">*</span></label><input class="inp" type="date" id="dDate" required></div>
         <div class="f"><label>Qaytarish muddati</label><input class="inp" type="date" id="dDue"></div>
       </div>
-      <div class="f"><label>Telefon</label><input class="inp" type="tel" id="dPhone" placeholder="+998 90 123 45 67"></div>
+      <!-- ─── KREDIT JADVALI + PENI ─── -->
+      <button type="button" class="adv-t" id="advT" onclick="UI.adv()">
+        <svg class="ico"><use href="#i-cal-clock"/></svg>
+        <span>Kredit jadvali va kechikish penisi</span>
+        <svg class="ico chev"><use href="#i-chev"/></svg>
+      </button>
+      <div id="advBox" class="hide">
+        <div class="f-row">
+          <div class="f">
+            <label>Har oy to'lash sanasi</label>
+            <select class="inp" id="dPayDay" onchange="UI.advPreview()"><option value="">— yo'q —</option></select>
+            <div class="hint">Masalan: har oyning 15-sanasi</div>
+          </div>
+          <div class="f">
+            <label>Oylik to'lov</label>
+            <div class="money">
+              <input class="inp" id="dMonthly" inputmode="numeric" placeholder="0" oninput="UI.fmtInput(this);UI.advPreview()">
+              <span class="cur" id="moCur">so'm</span>
+            </div>
+          </div>
+        </div>
+        <div class="f-row">
+          <div class="f">
+            <label>Kechiksa — peni foizi</label>
+            <div class="money">
+              <input class="inp" id="dPenRate" inputmode="decimal" placeholder="0" oninput="UI.advPreview()">
+              <span class="cur">%</span>
+            </div>
+          </div>
+          <div class="f">
+            <label>Foiz davri</label>
+            <select class="inp" id="dPenPer" onchange="UI.advPreview()">
+              <option value="day">har kuni</option>
+              <option value="month">har oy</option>
+            </select>
+          </div>
+        </div>
+        <div class="quick" id="penQuick"></div>
+        <div id="advPrev" class="adv-prev"></div>
+      </div>
+
+      <div class="f" style="margin-top:16px"><label>Telefon</label><input class="inp" type="tel" id="dPhone" placeholder="+998 90 123 45 67"></div>
       <div class="f"><label>Izoh</label><textarea class="inp" id="dNote" placeholder="Nima uchun olingan / berilgan…"></textarea></div>
       <div class="f-row">
         <button type="button" class="btn btn-g" onclick="UI.close('ovDebt')">Bekor</button>
@@ -865,6 +952,7 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CUR={UZS:"so'm",USD:'$'};
+const numStr=n=>Number(n||0).toLocaleString('ru-RU').replace(/ /g,' ');
 
 function money(n,c='UZS'){
   n=Math.round(Number(n)||0);
@@ -897,11 +985,78 @@ const paidOf=id=>paysOf(id).reduce((s,p)=>s+p.amount,0);
 const leftOf=d=>Math.max(0,d.amount-paidOf(d.id));
 const isClosed=d=>leftOf(d)<=0;
 const pctOf=d=>d.amount>0?Math.min(100,Math.round(paidOf(d.id)/d.amount*100)):0;
-const isOverdue=d=>!isClosed(d)&&d.due&&daysTo(d.due)<0;
+
+/* ══════════════ KREDIT JADVALI + PENI ══════════════ */
+const dayDiff=(a,b)=>Math.max(0,Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/864e5));
+
+/* i-chi oylik to'lov sanasi: boshlanish sanasidan keyingi birinchi "payDay" dan boshlab */
+function instDate(startISO,payDay,i){
+  const s=new Date(startISO+'T00:00:00');
+  let y=s.getFullYear(), m=s.getMonth();
+  if(s.getDate()>=payDay)m++;
+  m+=i; y+=Math.floor(m/12); m=((m%12)+12)%12;
+  const day=Math.min(payDay,new Date(y,m+1,0).getDate());
+  return `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+}
+
+/* To'lov jadvali: oylik kredit bo'lsa — bo'lib-bo'lib, aks holda bitta muddat */
+function installments(d){
+  const pd=Number(d.payDay)||0, mo=Number(d.monthly)||0;
+  if(pd>=1&&pd<=31&&mo>0){
+    const out=[]; let rest=d.amount;
+    for(let i=0;i<600&&rest>0.5;i++){
+      const a=Math.min(mo,rest); rest-=a;
+      out.push({date:instDate(d.date,pd,i),amount:a,n:i+1});
+    }
+    return out;
+  }
+  return d.due?[{date:d.due,amount:d.amount,n:1}]:[];
+}
+
+/* Peni: to'lanmagan (muddati o'tgan) summaga har kuni foiz qo'shiladi.
+   bal = shu kungacha to'lanishi kerak bo'lgan − haqiqatda to'langan */
+function credit(d){
+  const inst=installments(d);
+  const T=today(), paid=paidOf(d.id);
+  const rate=(Number(d.penRate)||0)/100/(d.penPer==='month'?30:1); // kunlik ulush
+
+  const ev=[
+    ...inst.map(x=>({date:x.date,due:x.amount})),
+    ...paysOf(d.id).map(p=>({date:p.date,pay:p.amount}))
+  ].sort((a,b)=>a.date.localeCompare(b.date)||((a.due?0:1)-(b.due?0:1)));
+
+  let bal=0,pen=0,prev=null;
+  for(const e of ev){
+    if(e.date>T)break;
+    if(prev&&bal>0&&rate>0)pen+=bal*rate*dayDiff(prev,e.date);
+    prev=e.date;
+    bal+=(e.due||0)-(e.pay||0);
+  }
+  if(prev&&bal>0&&rate>0)pen+=bal*rate*dayDiff(prev,T);
+
+  /* kechikish qaysi sanadan boshlangan */
+  let cum=0,firstDue=null;
+  for(const x of inst){ cum+=x.amount; if(cum>paid+0.5){ firstDue=x.date; break; } }
+  const late=firstDue&&firstDue<T?dayDiff(firstDue,T):0;
+
+  /* keyingi kutilayotgan to'lov */
+  let acc=0,next=null;
+  for(const x of inst){ acc+=x.amount; if(acc>paid+0.5&&x.date>=T){ next=x; break; } }
+
+  const overdue=isClosed(d)?0:Math.max(0,Math.round(bal));
+  return {inst,overdue,pen:isClosed(d)?0:Math.round(pen),late,next,firstDue,
+          total:leftOf(d)+(isClosed(d)?0:Math.round(pen))};
+}
+const isOverdue=d=>!isClosed(d)&&credit(d).overdue>0;
+const penOf=d=>credit(d).pen;
 
 function totals(){
-  const t={UZS:{in:0,out:0},USD:{in:0,out:0}};
-  S.debts.forEach(d=>{const l=leftOf(d); if(!t[d.cur])t[d.cur]={in:0,out:0}; t[d.cur][d.type==='owes-me'?'in':'out']+=l;});
+  const t={UZS:{in:0,out:0,pen:0},USD:{in:0,out:0,pen:0}};
+  S.debts.forEach(d=>{
+    if(!t[d.cur])t[d.cur]={in:0,out:0,pen:0};
+    t[d.cur][d.type==='owes-me'?'in':'out']+=leftOf(d);
+    t[d.cur].pen+=penOf(d);
+  });
   return t;
 }
 
@@ -928,6 +1083,10 @@ const Data={
     const o={
       name:$('#dName').value.trim(), type:$('#dType').value, src:$('#dSrc').value,
       amount:amt, cur:$('#dCur').value, date:$('#dDate').value, due:$('#dDue').value||'',
+      payDay:Number($('#dPayDay').value)||0,
+      monthly:UI.numOf($('#dMonthly').value),
+      penRate:Number(String($('#dPenRate').value).replace(',','.'))||0,
+      penPer:$('#dPenPer').value,
       phone:$('#dPhone').value.trim(), note:$('#dNote').value.trim()
     };
     if(S.editing){
@@ -1109,7 +1268,40 @@ const UI={
   curChange(){
     const c=$('#dCur').value;
     $('#curLbl').textContent=CUR[c];
-    UI.quickAmounts();
+    $('#moCur').textContent=CUR[c];
+    UI.quickAmounts(); UI.advPreview();
+  },
+
+  /* ── kredit jadvali bo'limi ── */
+  adv(force){
+    const b=$('#advBox'), t=$('#advT');
+    const open=force!==undefined?force:b.classList.contains('hide');
+    b.classList.toggle('hide',!open); t.classList.toggle('open',open);
+  },
+  advPreview(){
+    const pd=Number($('#dPayDay').value)||0, mo=UI.numOf($('#dMonthly').value);
+    const rate=Number(String($('#dPenRate').value).replace(',','.'))||0;
+    const per=$('#dPenPer').value, cur=$('#dCur').value, amt=UI.numOf($('#dAmt').value);
+    const box=$('#advPrev');
+    if(!pd&&!mo&&!rate){ box.innerHTML=''; box.style.display='none'; return; }
+    box.style.display='block';
+    const rows=[];
+    if(pd&&mo>0&&amt>0){
+      const n=Math.ceil(amt/mo);
+      rows.push(`Har oyning <b>${pd}-sanasi</b> — <b>${money(mo,cur)}</b> dan, jami <b>${n} oy</b>.`);
+      rows.push(`Birinchi to'lov: <b>${dstr(instDate($('#dDate').value||today(),pd,0))}</b>`);
+    }else if(pd&&!mo){ rows.push(`Oylik to'lov summasini ham kiriting.`); }
+    if(rate>0){
+      const base=mo>0?mo:amt;
+      const daily=per==='month'?rate/30:rate;
+      rows.push(`Kechikkanda: <b>${rate}% ${per==='day'?'har kuni':'har oy'}</b>. Masalan ${money(base,cur)} 10 kun kechiksa — peni <b>${money(base*daily/100*10,cur)}</b>.`);
+    }
+    box.innerHTML=rows.join('<br>');
+  },
+  penQuick(){
+    const v=[0.1,0.2,0.5,1];
+    $('#penQuick').innerHTML=v.map(x=>`<button type="button" onclick="document.querySelector('#dPenRate').value='${x}';UI.advPreview()">${x}%</button>`).join('')
+      +`<button type="button" onclick="document.querySelector('#dPenRate').value='';UI.advPreview()">peni yo'q</button>`;
   },
   quickAmounts(){
     const c=$('#dCur').value;
@@ -1126,19 +1318,27 @@ const UI={
     S.editing=id||null;
     $('#debtForm').reset(); $('#dId').value=id||'';
     $('#nameList').innerHTML=[...new Set(S.debts.map(d=>d.name))].map(n=>`<option value="${esc(n)}">`).join('');
+    $('#dPayDay').innerHTML='<option value="">— yo\'q —</option>'+
+      Array.from({length:31},(_,i)=>`<option value="${i+1}">${i+1}-sana</option>`).join('');
+    UI.penQuick();
     if(id){
       const d=S.debts.find(x=>x.id===id);
       $('#debtTitle').textContent='Qarzni tahrirlash';
       $('#dName').value=d.name; $('#dAmt').value=d.amount.toLocaleString('ru-RU').replace(/ /g,' ');
       $('#dCur').value=d.cur; $('#dDate').value=d.date; $('#dDue').value=d.due||'';
+      $('#dPayDay').value=d.payDay||'';
+      $('#dMonthly').value=d.monthly?numStr(d.monthly):'';
+      $('#dPenRate').value=d.penRate||''; $('#dPenPer').value=d.penPer||'day';
       $('#dPhone').value=d.phone||''; $('#dNote').value=d.note||'';
       UI.pickType($(`.seg-o[data-type="${d.type}"]`));
       UI.pickSrc($(`.seg-o[data-src="${d.src||'person'}"]`));
+      UI.adv(!!(d.payDay||d.monthly||d.penRate));
     }else{
       $('#debtTitle').textContent='Yangi qarz';
-      $('#dDate').value=today(); $('#dCur').value='UZS';
+      $('#dDate').value=today(); $('#dCur').value='UZS'; $('#dPenPer').value='day';
       UI.pickType($('.seg-o[data-type="owes-me"]'));
       UI.pickSrc($('.seg-o[data-src="person"]'));
+      UI.adv(false);
     }
     UI.curChange(); UI.open('ovDebt');
     setTimeout(()=>$('#dName').focus(),320);
@@ -1180,13 +1380,12 @@ const UI={
     const d=S.debts.find(x=>x.id===id); if(!d)return;
     S.detailId=id;
     const left=leftOf(d), paid=paidOf(id), pct=pctOf(d), ps=paysOf(id).slice().sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt);
-    const inn=d.type==='owes-me';
+    const inn=d.type==='owes-me', c=credit(d);
     $('#detIco').style.background=inn?'linear-gradient(135deg,var(--ok-1),var(--ok-2))':'linear-gradient(135deg,var(--bad-1),var(--bad-2))';
     $('#detIco').innerHTML=`<svg class="ico"><use href="#i-${d.src==='bank'?'bank':'user'}"/></svg>`;
     $('#detName').textContent=d.name;
-    const dt=daysTo(d.due);
     $('#detMeta').innerHTML=`${inn?'Menga qarzdor':'Men qarzdorman'} • ${dstr(d.date)}`+
-      (d.due?` • muddat: ${dstr(d.due)}${dt<0?` (${-dt} kun kechikkan)`:dt<=7?` (${dt} kun qoldi)`:''}`:'');
+      (d.payDay?` • har oy ${d.payDay}-sana`:d.due?` • muddat: ${dstr(d.due)}`:'');
 
     $('#detBody').innerHTML=`
       <div class="d-sum">
@@ -1198,6 +1397,9 @@ const UI={
       <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--txt-3);margin-bottom:18px">
         <span>${pct}% to'langan</span><span>${ps.length} ta to'lov • ${ps.reduce((s,p)=>s+(p.cheks?.length||0),0)} ta chek</span>
       </div>
+
+      ${UI.penBlock(d,c)}
+      ${UI.schedBlock(d,c)}
 
       ${d.phone?`<a class="btn btn-g btn-block" style="margin-bottom:10px" href="tel:${esc(d.phone)}"><svg class="ico"><use href="#i-phone"/></svg>${esc(d.phone)}</a>`:''}
       ${d.note?`<div class="card" style="padding:13px;margin-bottom:16px;font-size:13.5px;color:var(--txt-2)"><b style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--txt-3);margin-bottom:5px">Izoh</b>${esc(d.note)}</div>`:''}
@@ -1214,6 +1416,49 @@ const UI={
       </div>`;
     UI.open('ovDetail');
   },
+  /* ── kechikish + peni bloki ── */
+  penBlock(d,c){
+    if(isClosed(d)||(c.overdue<=0&&c.pen<=0))return '';
+    const daily=(Number(d.penRate)||0)/(d.penPer==='month'?30:1);
+    return `<div class="pen-box">
+      <div class="pen-h"><svg class="ico"><use href="#i-alert"/></svg>To'lov muddati o'tib ketgan</div>
+      <div class="pen-r"><span>Kechikkan summa</span><b style="color:var(--bad-1)">${money(c.overdue,d.cur)}</b></div>
+      <div class="pen-r"><span>Kechikish</span><b>${c.late} kun${c.firstDue?` (${dstr(c.firstDue)} dan)`:''}</b></div>
+      ${d.penRate>0?`<div class="pen-r"><span>Hisoblangan peni</span><b style="color:var(--bad-1)">${money(c.pen,d.cur)}</b></div>
+      <div class="pen-r" style="border-top:1px solid var(--line-strong);margin-top:6px;padding-top:10px">
+        <span style="font-weight:800;color:var(--txt)">Jami to'lash kerak</span><b style="font-size:16px;color:var(--bad-1)">${money(c.total,d.cur)}</b></div>
+      <div class="pen-f">Hisob: kechikkan summa × ${d.penRate}% ${d.penPer==='month'?'oyiga':'kuniga'} × kechikkan kunlar.
+        Har kuni taxminan <b>${money(c.overdue*daily/100,d.cur)}</b> qo'shiladi.</div>`
+      :`<div class="pen-f">Bu qarzga peni foizi belgilanmagan. Tahrirlash → "Kredit jadvali va kechikish penisi" bo'limidan qo'shishingiz mumkin.</div>`}
+    </div>`;
+  },
+
+  /* ── oylik to'lov jadvali ── */
+  schedBlock(d,c){
+    if(!d.payDay||!d.monthly||!c.inst.length)return '';
+    const T=today(); let acc=0; const paid=paidOf(d.id);
+    const rows=c.inst.map(x=>{
+      acc+=x.amount;
+      const done=acc<=paid+0.5;
+      const late=!done&&x.date<T;
+      const isNext=!done&&!late&&c.next&&x.date===c.next.date;
+      return {x,done,late,isNext};
+    });
+    const shown=[...rows.filter(r=>r.late),...rows.filter(r=>!r.late&&!r.done).slice(0,3)];
+    const doneN=rows.filter(r=>r.done).length;
+    if(!shown.length)return '';
+    return `<div class="sec-h" style="margin:6px 0 12px"><h2 style="font-size:15px">To'lov jadvali</h2><div class="ln"></div>
+        <span style="font-size:12px;font-weight:700;color:var(--txt-3)">${doneN}/${rows.length} to'langan</span></div>
+      ${shown.map(r=>`<div class="sc-row ${r.late?'late':r.isNext?'next':''}">
+        <div class="sc-n">${r.x.n}</div>
+        <div class="sc-d">${dstr(r.x.date)}
+          <span style="font-size:11.5px;color:${r.late?'var(--bad-1)':'var(--txt-3)'};font-weight:650">
+            ${r.late?`• ${dayDiff(r.x.date,T)} kun kech`:r.isNext?`• ${daysTo(r.x.date)} kun qoldi`:''}</span></div>
+        <div class="sc-a" style="color:${r.late?'var(--bad-1)':'var(--txt)'}">${money(r.x.amount,d.cur)}</div>
+      </div>`).join('')}
+      <div style="height:16px"></div>`;
+  },
+
   payRow(p,d,i=0){
     const ck=p.cheks||[];
     return `<div class="p-row" style="animation-delay:${i*.04}s">
@@ -1265,11 +1510,14 @@ const UI={
     $('#sOut').textContent=money(t.UZS.out); $('#sOutSub').innerHTML=fmtSub('out');
     const bal=t.UZS.in-t.UZS.out;
     $('#sBal').textContent=money(bal);
-    $('#sBalSub').innerHTML=bal>0?'Sizning foydangizga ✦':bal<0?'Siz ko\'proq qarzdorsiz':'Muvozanat';
+    $('#sBalSub').innerHTML=(t.UZS.pen>0?`<span class="chip-w">peni ${money(t.UZS.pen)}</span> `:'')+
+      (bal>0?'Sizning foydangizga ✦':bal<0?'Siz ko\'proq qarzdorsiz':'Muvozanat');
 
-    /* urgent = overdue + due within 7 days + biggest */
-    const urgent=S.debts.filter(d=>!isClosed(d)).map(d=>({d,k:isOverdue(d)?0:(d.due&&daysTo(d.due)<=7?1:2)}))
-      .sort((a,b)=>a.k-b.k||leftOf(b.d)-leftOf(a.d)).slice(0,3).map(x=>x.d);
+    /* urgent: peni yiglayotganlar → kechikkanlar → muddati yaqinlar */
+    const urgent=S.debts.filter(d=>!isClosed(d)).map(d=>{
+      const c=credit(d);
+      return {d,k:c.pen>0?0:c.overdue>0?1:(c.next&&daysTo(c.next.date)<=7?2:3),v:c.total};
+    }).sort((a,b)=>a.k-b.k||b.v-a.v).slice(0,3).map(x=>x.d);
     $('#urgentList').innerHTML=urgent.length?urgent.map((d,i)=>UI.debtCard(d,i)).join('')
       :`<div class="empty"><div class="empty-ico"><svg class="ico"><use href="#i-check-c"/></svg></div><h3>Hammasi joyida</h3><p>Ochiq qarzlar yo'q. Yangi qarz qo'shib kuzatishni boshlang.</p><button class="btn btn-p" onclick="UI.openDebt()"><svg class="ico"><use href="#i-plus"/></svg>Yangi qarz</button></div>`;
 
@@ -1279,13 +1527,15 @@ const UI={
   },
 
   debtCard(d,i=0){
-    const left=leftOf(d), pct=pctOf(d), inn=d.type==='owes-me', closed=isClosed(d), od=isOverdue(d);
-    const dt=daysTo(d.due);
+    const left=leftOf(d), pct=pctOf(d), inn=d.type==='owes-me', closed=isClosed(d);
+    const c=credit(d), od=c.overdue>0;
     let tag='';
     if(closed)tag=`<span class="tag tag-ok"><svg class="ico"><use href="#i-check"/></svg>Yopilgan</span>`;
-    else if(od)tag=`<span class="tag tag-bad"><svg class="ico"><use href="#i-alert"/></svg>${-dt} kun kech</span>`;
-    else if(d.due&&dt<=7)tag=`<span class="tag tag-warn"><svg class="ico"><use href="#i-clock"/></svg>${dt} kun</span>`;
+    else if(od)tag=`<span class="tag tag-bad"><svg class="ico"><use href="#i-alert"/></svg>${c.late} kun kech</span>`;
+    else if(c.next&&daysTo(c.next.date)<=7)tag=`<span class="tag tag-warn"><svg class="ico"><use href="#i-clock"/></svg>${daysTo(c.next.date)} kun</span>`;
     else if(pct>0)tag=`<span class="tag tag-info">${pct}%</span>`;
+    const penTag=c.pen>0?`<span class="tag tag-bad"><svg class="ico"><use href="#i-percent"/></svg>peni ${shortMoney(c.pen,d.cur)}</span>`:'';
+    tag+=penTag;
     const ck=paysOf(d.id).reduce((s,p)=>s+(p.cheks?.length||0),0);
     return `<div class="d-item ${inn?'t-in':'t-out'} ${closed?'done':''}" style="animation-delay:${i*.05}s" onclick="UI.openDetail('${d.id}')">
       <div class="av" style="background:${d.src==='bank'?'linear-gradient(135deg,#0ea5e9,#6366f1)':avColor(d.name)}">
@@ -1295,15 +1545,17 @@ const UI={
       <div class="d-body">
         <div class="d-name"><span class="nm">${esc(d.name)}</span> ${tag}</div>
         <div class="d-meta">
-          <span>${dstr(d.date)}</span>
+          <span>${c.next&&!closed?`keyingi to'lov ${dstr(c.next.date)}`:dstr(d.date)}</span>
           ${ck?`<span class="dot"></span><span style="display:inline-flex;align-items:center;gap:3px"><svg class="ico" style="width:12px;height:12px"><use href="#i-receipt"/></svg>${ck}</span>`:''}
+          ${d.payDay?`<span class="dot"></span><span>har oy ${d.payDay}-sana</span>`:''}
           ${d.note?`<span class="dot"></span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px">${esc(d.note)}</span>`:''}
         </div>
         ${!closed&&pct>0?`<div class="bar"><i style="width:${pct}%"></i></div>`:''}
       </div>
       <div class="d-right">
         <div class="d-amt">${inn?'+':'−'}${shortMoney(left,d.cur)}</div>
-        <div class="d-sub">${pct>0&&!closed?`${shortMoney(paidOf(d.id),d.cur)} to'langan`:closed?'to\'liq to\'landi':`jami ${shortMoney(d.amount,d.cur)}`}</div>
+        <div class="d-sub">${c.pen>0?`<span style="color:var(--bad-1);font-weight:750">+ peni ${shortMoney(c.pen,d.cur)}</span>`
+          :pct>0&&!closed?`${shortMoney(paidOf(d.id),d.cur)} to'langan`:closed?'to\'liq to\'landi':`jami ${shortMoney(d.amount,d.cur)}`}</div>
       </div>
     </div>`;
   },
@@ -1397,10 +1649,13 @@ const UI={
     const paidTotal=S.pays.reduce((s,p)=>{const d=S.debts.find(x=>x.id===p.debtId);return s+(d&&d.cur==='UZS'?p.amount:0)},0);
     const cheks=S.pays.reduce((s,p)=>s+(p.cheks?.length||0),0);
     const closed=S.debts.filter(isClosed).length, over=S.debts.filter(isOverdue).length;
+    const nexts=S.debts.filter(d=>!isClosed(d)).map(d=>credit(d).next).filter(Boolean).sort((a,b)=>a.date.localeCompare(b.date));
     const M=[
       ['i-in','Jami olinishi kerak',money(t.UZS.in),'var(--ok-1)'],
       ['i-out','Jami berilishi kerak',money(t.UZS.out),'var(--bad-1)'],
       ['i-check-c','Jami to\'langan',money(paidTotal),'var(--brand-1)'],
+      ['i-percent','Hisoblangan peni',money(t.UZS.pen),t.UZS.pen?'var(--bad-1)':'var(--txt-3)'],
+      ['i-cal-clock','Keyingi to\'lov',nexts.length?dstr(nexts[0].date):'—','var(--warn-1)'],
       ['i-receipt','Saqlangan cheklar',cheks+' ta','var(--info-1)'],
       ['i-check','Yopilgan qarzlar',closed+' / '+S.debts.length,'var(--ok-1)'],
       ['i-alert','Muddati o\'tgan',over+' ta',over?'var(--bad-1)':'var(--txt-3)']
@@ -1494,6 +1749,11 @@ const Voice={
     else if(has('balans','hisob','баланс')){ const b=t.UZS.in-t.UZS.out; Voice.say(`Sof balans ${money(b)}`); UI.toast(`Balans: ${money(b)}`,'info'); }
     else if(has('menga qancha','menga qarz','qancha olaman')){ Voice.say(`Sizga ${money(t.UZS.in)} qarzdorlar`); UI.toast(`Menga qarzdor: ${money(t.UZS.in)}`,'info'); }
     else if(has('men qancha','men qarzdor','qancha berishim')){ Voice.say(`Siz ${money(t.UZS.out)} qarzdorsiz`); UI.toast(`Men qarzdor: ${money(t.UZS.out)}`,'info'); }
+    else if(has('peni','jarima','foiz','штраф')){
+      const od=S.debts.filter(isOverdue);
+      if(!od.length){ Voice.say('Kechikkan qarz yoq. Hammasi joyida'); UI.toast('Kechikkan qarz yo\'q','ok'); }
+      else{ Voice.say(`${od.length} ta qarz kechikkan. Jami peni ${money(t.UZS.pen)}`); UI.toast(`${od.length} ta kechikkan • peni ${money(t.UZS.pen)}`,'bad'); UI.go('debts'); }
+    }
     else if(has('statistika','hisobot')){ UI.go('stats'); Voice.say('Statistika'); }
     else if(has('tarix','история')){ UI.go('history'); Voice.say('Tarix'); }
     else if(has('odam','shaxs')){ UI.go('people'); Voice.say('Odamlar'); }
@@ -1532,6 +1792,14 @@ const Voice={
   if(window.speechSynthesis)speechSynthesis.getVoices();
 
   UI.renderAll();
+
+  /* kechikkan to'lovlar haqida ogohlantirish */
+  setTimeout(()=>{
+    const od=S.debts.filter(isOverdue), pen=totals().UZS.pen;
+    if(od.length)UI.toast(`${od.length} ta to'lov muddati o'tgan${pen>0?` • peni ${money(pen)}`:''}`,'bad');
+    const soon=S.debts.filter(d=>{const n=credit(d).next;return !isClosed(d)&&n&&daysTo(n.date)>=0&&daysTo(n.date)<=3});
+    if(soon.length)setTimeout(()=>UI.toast(`${soon.length} ta to'lov sanasi yaqinlashdi`,'info'),900);
+  },700);
 })();
 </script>
 </body>
