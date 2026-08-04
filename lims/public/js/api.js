@@ -1,0 +1,56 @@
+/** Server bilan aloqa. Token localStorage'da, ish stansiyasi nomi har so'rovda yuboriladi. */
+
+const TOKEN_KEY = 'labcore.token';
+const PC_KEY = 'labcore.pc';
+
+export const auth = {
+  get token() { return localStorage.getItem(TOKEN_KEY); },
+  set token(v) { v ? localStorage.setItem(TOKEN_KEY, v) : localStorage.removeItem(TOKEN_KEY); },
+  get computerName() { return localStorage.getItem(PC_KEY) || ''; },
+  set computerName(v) { localStorage.setItem(PC_KEY, v); },
+};
+
+export class ApiError extends Error {
+  constructor(status, message) { super(message); this.status = status; }
+}
+
+async function request(method, url, body, opts = {}) {
+  const headers = { 'x-computer-name': auth.computerName || guessStation() };
+  if (auth.token) headers.authorization = `Bearer ${auth.token}`;
+  if (body && !(body instanceof FormData)) headers['content-type'] = 'application/json';
+
+  const res = await fetch('/api' + url, {
+    method,
+    headers,
+    body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
+  });
+
+  if (res.status === 401 && !opts.noRedirect) {
+    auth.token = null;
+    location.hash = '#/login';
+    throw new ApiError(401, 'Sessiya tugadi — qayta kiring');
+  }
+  const ct = res.headers.get('content-type') || '';
+  const data = ct.includes('json') ? await res.json() : await res.text();
+  if (!res.ok) throw new ApiError(res.status, data?.error || `Xatolik (${res.status})`);
+  return data;
+}
+
+export const api = {
+  get: (u) => request('GET', u),
+  post: (u, b) => request('POST', u, b),
+  patch: (u, b) => request('PATCH', u, b),
+  del: (u) => request('DELETE', u),
+  upload: (u, formData) => request('POST', u, formData),
+};
+
+/** Kompyuter nomi qo'lda kiritilmagan bo'lsa taxminiy nom (sozlamalarda o'zgartiriladi). */
+function guessStation() {
+  const ua = navigator.userAgent;
+  const os = /Windows NT 10/.test(ua) ? 'Windows-10' :
+             /Windows/.test(ua) ? 'Windows' :
+             /Mac/.test(ua) ? 'Mac' :
+             /Android/.test(ua) ? 'Android' :
+             /Linux/.test(ua) ? 'Linux' : 'PC';
+  return `${os}-${(screen.width)}x${screen.height}`;
+}
