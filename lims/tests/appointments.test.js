@@ -170,8 +170,10 @@ test('o‘tib ketgan vaqtlar bo‘sh deb ko‘rsatilmaydi', async () => {
 
   // Bugungi kun uchun o'tgan oraliqlar tanlanmaydi
   assert.ok(past.every((s) => s.past === true && s.free === 0));
-  // Ertangi kun uchun hammasi bo'sh
-  const tomorrow = new Date(Date.now() + 864e5).toISOString().slice(0, 10);
+  // Ertangi kun uchun hammasi bo'sh.
+  // Sana laboratoriya vaqt mintaqasida hisoblanadi — UTC bo'yicha "ertaga"
+  // Toshkent vaqtida "bugun" bo'lib qolishi mumkin (yarim tundan keyin).
+  const tomorrow = localDate(new Date(Date.now() + 864e5));
   const t = await api('GET', `/api/appointments/slots?date=${tomorrow}`).then((r) => r.json());
   assert.ok(t.slots.every((s) => s.past === false));
 });
