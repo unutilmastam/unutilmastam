@@ -165,10 +165,21 @@ Birinchi ochilganda telefoningiz rejimiga moslashadi.
 
 ## 7. Ma'lumotlarni saqlash
 
+**Standart holat — faqat qurilmada:**
 - Hammasi **shu qurilmada** (localStorage) saqlanadi — hech qayerga yuborilmaydi
 - **Sozlamalar → Zaxira nusxa (JSON)** — hamma qarz, to'lov va **cheklar** bitta faylga tushadi
 - Boshqa telefonga o'tkazish: shu faylni oling → yangi qurilmada **Zaxiradan tiklash**
 - Brauzer ma'lumotlarini tozalasangiz — yo'qoladi. Vaqti-vaqti bilan zaxira oling.
+
+**☁️ Bulutda saqlash (tavsiya etiladi):**
+- **Sozlamalar → Bulutda saqlash** bo'limidan Firebase Firestore'ga ulanasiz
+- Ulangach: telefon yo'qolsa ham ma'lumot yo'qolmaydi, boshqa qurilmada ham ko'rinadi
+- O'zgarishlar **real vaqtda** sinxronlanadi
+- Internet yo'q bo'lsa ham ilova ishlayveradi, ulanish tiklanganda o'zi sinxronlanadi
+- To'liq o'rnatish qo'llanmasi: **[FIREBASE-SETUP.md](FIREBASE-SETUP.md)**
+
+Yuqoridagi bulut belgisi holatni ko'rsatadi:
+`Ulanmagan` / `Kirilmagan` / `Ulangan` ✓ / `Sinxronlanmoqda…` / `Xato`
 
 ---
 
