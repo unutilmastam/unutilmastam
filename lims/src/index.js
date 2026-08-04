@@ -1,4 +1,6 @@
 import express from 'express';
+import http from 'node:http';
+import https from 'node:https';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import path from 'node:path';
@@ -95,6 +97,31 @@ export function createApp() {
   return app;
 }
 
+/**
+ * Sertifikat ko'rsatilgan bo'lsa HTTPS, aks holda HTTP server.
+ * Nginx/Apache o'rnatish shart emas — Windows serverlar uchun muhim.
+ */
+function createServer(app) {
+  const { certFile, keyFile, redirectFromPort } = config.ssl;
+  if (!certFile || !keyFile) return http.createServer(app);
+
+  const options = {
+    cert: fs.readFileSync(certFile),
+    key: fs.readFileSync(keyFile),
+  };
+
+  if (redirectFromPort) {
+    http.createServer((req, res) => {
+      const host = String(req.headers.host || '').split(':')[0];
+      res.writeHead(301, { location: `https://${host}:${config.port}${req.url}` });
+      res.end();
+    }).listen(redirectFromPort, config.host, () => {
+      console.log(`HTTP → HTTPS yo‘naltirish: ${redirectFromPort} → ${config.port}`);
+    });
+  }
+  return https.createServer(options, app);
+}
+
 export async function start() {
   fs.mkdirSync(config.filesDir, { recursive: true });
 
@@ -113,9 +140,18 @@ export async function start() {
   }
 
   const app = createApp();
-  const server = app.listen(config.port, config.host, () => {
-    console.log(`LabCore LIMS — http://${config.host}:${config.port}  (${config.env})`);
+  const server = createServer(app);
+
+  server.listen(config.port, config.host, () => {
+    const scheme = server instanceof https.Server ? 'https' : 'http';
+    console.log(`LabCore LIMS — ${scheme}://${config.host}:${config.port}  (${config.env})`);
     console.log(`Ma'lumotlar: ${config.dataDir}`);
+    if (scheme === 'http') {
+      console.log(
+        'Eslatma: telefonga ilova o‘rnatish (PWA) va oflayn rejim uchun HTTPS kerak.\n' +
+        '         SSL_CERT_FILE va SSL_KEY_FILE ni sozlang.',
+      );
+    }
   });
   startNotifyWorker();
   startAppointmentWorker();   // navbat eslatmalari va kelmaganlarni belgilash

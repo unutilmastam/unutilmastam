@@ -69,7 +69,26 @@ har bir bunday o'zgarish auditga tushadi.
 
 ---
 
-## 3. O'rnatish (Ubuntu/Debian laboratoriya serveri)
+## 3. O'rnatish
+
+**To'liq qo'llanma:** [`docs/ornatish.md`](docs/ornatish.md) — Windows server,
+ish stansiyalari, telefonga ilova o'rnatish, tekshiruv ro'yxati va
+tez-tez uchraydigan muammolar.
+
+### Windows serverga (bir buyruq bilan)
+
+```powershell
+# Administrator sifatida PowerShell
+Set-ExecutionPolicy -Scope Process Bypass -Force
+cd lims\deploy\windows
+.\install-server.ps1 -LabName "Sizning laboratoriyangiz"
+```
+
+Skript bazani yaratadi, sxemani o'rnatadi, HTTPS sertifikat yasaydi,
+brandmauerni sozlaydi, avtomatik ishga tushishni va kunlik zaxirani yoqadi.
+Holatni tekshirish: `.\status.ps1`
+
+### Ubuntu/Debian serverga
 
 ```bash
 # 1) Zarur dasturlar
@@ -125,13 +144,19 @@ loginni yoqing.
 Dastur o'rnatilmasa ham bo'ladi: brauzerda `http://192.168.1.10:4000` ni ochib,
 **Sozlamalar → Ish stansiyasi** bo'limida kompyuter nomini qo'lda kiritish kerak.
 
-HTTPS uchun: `deploy/nginx.conf.example` ga qarang.
+**HTTPS** (telefonga ilova o'rnatish uchun shart): sertifikat yasab, `.env` ga
+`SSL_CERT_FILE` va `SSL_KEY_FILE` ni yozing — server o'zi HTTPS'da ishlaydi,
+nginx kerak emas. Nginx orqali qilmoqchi bo'lsangiz: `deploy/nginx.conf.example`.
 
 ### Mobil nazorat ilovasi (rahbar uchun)
 
-Telefonda serverni oching (`http://192.168.1.10:4000` yoki VPN orqali) va
-brauzer menyusidan **"Bosh ekranga qo'shish"** ni tanlang — ilova alohida
-belgicha bilan o'rnatiladi, brauzer paneli ko'rinmaydi.
+Telefonda serverni oching (`https://192.168.1.10:4000`) va brauzer menyusidan
+**"Bosh ekranga qo'shish"** ni tanlang — ilova alohida belgicha bilan
+o'rnatiladi, brauzer paneli ko'rinmaydi.
+
+> Avval serverning sertifikatini telefonga o'rnatish kerak — HTTPS bo'lmasa
+> ilova o'rnatilmaydi va oflayn rejim ishlamaydi. Qadamma-qadam:
+> [`docs/ornatish.md`](docs/ornatish.md) 5-bo'lim.
 
 Ilovada:
 

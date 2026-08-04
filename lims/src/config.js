@@ -49,6 +49,15 @@ export const config = {
   // xodim "online" deb hisoblanadigan oxirgi faollik oynasi
   onlineWindowMinutes: Number(process.env.ONLINE_WINDOW_MINUTES || 10),
 
+  // HTTPS: ikkala fayl ko'rsatilsa server o'zi shifrlangan ulanishda ishlaydi.
+  // Telefonga ilova o'rnatish (PWA) va oflayn rejim faqat HTTPS'da ishlaydi.
+  ssl: {
+    certFile: process.env.SSL_CERT_FILE || '',
+    keyFile: process.env.SSL_KEY_FILE || '',
+    // HTTP portida turib, HTTPS'ga yo'naltirish (0 = o'chirilgan)
+    redirectFromPort: Number(process.env.SSL_REDIRECT_FROM_PORT || 0),
+  },
+
   labName: process.env.LAB_NAME || 'Laboratoriya',
   currency: process.env.CURRENCY || "so'm",
   timezone: process.env.TZ_NAME || 'Asia/Tashkent',
