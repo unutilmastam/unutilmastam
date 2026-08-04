@@ -35,6 +35,26 @@ Linux yoki macOS'da yasamoqchi bo'lsangiz `wine` kerak bo'ladi:
 
 ```bash
 sudo apt install -y wine
+# wine'da 32-bit qism bo'lmasa, dastur belgichasi va versiya ma'lumotini
+# yozadigan qadam (rcedit) ishlamaydi — uni o'tkazib yuboramiz:
+npx electron-builder --win portable --x64 -c.win.signAndEditExecutable=false
+```
+
+Natija: `dist/LabCore 1.0.0.exe` — o'rnatishsiz ishlaydigan (portable) fayl.
+NSIS o'rnatuvchisi (`Setup.exe`) Linux'da to'liq yasalmaydi: oxirgi bosqichda
+o'chirish dasturini wine ostida ishga tushirish talab qilinadi. Shuning uchun
+**o'rnatuvchi Windows kompyuterda yasalgani ma'qul** — u yerda belgicha ham,
+versiya ma'lumoti ham joyida bo'ladi.
+
+### Raqamli imzo
+
+Imzolanmagan dasturni ochganda Windows "SmartScreen" ogohlantiradi
+("More info" → "Run anyway" bilan ochiladi). Buni yo'qotish uchun kod
+imzolash sertifikati kerak (yiliga to'lovli). Sertifikat olingach:
+
+```powershell
+$env:CSC_LINK="C:\yo'l\sertifikat.pfx"
+$env:CSC_KEY_PASSWORD="parol"
 npm run build:win
 ```
 

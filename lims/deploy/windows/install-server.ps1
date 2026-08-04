@@ -88,7 +88,8 @@ Step "3/7  Fayllarni ko'chirish va sozlash"
 $source = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent   # lims/ papkasi
 if ($source -ne $InstallDir) {
   New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
-  Copy-Item "$source\*" $InstallDir -Recurse -Force -Exclude @("node_modules","data","backups",".env")
+  # node_modules bor bo'lsa u ham ko'chiriladi — internetsiz o'rnatish uchun
+  Copy-Item "$source\*" $InstallDir -Recurse -Force -Exclude @("data","backups",".env")
   Ok "Fayllar ko'chirildi: $InstallDir"
 }
 Set-Location $InstallDir
@@ -123,8 +124,12 @@ $acl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRul
 Set-Acl "$InstallDir\.env" $acl
 Ok ".env yozildi va himoyalandi"
 
-npm ci --omit=dev
-Ok "Kutubxonalar o'rnatildi"
+if (Test-Path (Join-Path $InstallDir "node_modules")) {
+  Ok "Kutubxonalar to'plam ichida keldi — internet kerak emas"
+} else {
+  npm ci --omit=dev
+  Ok "Kutubxonalar o'rnatildi"
+}
 
 # ---------------------------------------------------------------------------
 Step "4/7  Sxema va boshlang'ich ma'lumotlar"
