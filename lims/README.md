@@ -145,7 +145,7 @@ Dastur o'rnatilmasa ham bo'ladi: brauzerda `http://192.168.1.10:4000` ni ochib,
 **Sozlamalar → Ish stansiyasi** bo'limida kompyuter nomini qo'lda kiritish kerak.
 
 **HTTPS** (telefonga ilova o'rnatish uchun shart): sertifikat yasab, `.env` ga
-`SSL_CERT_FILE` va `SSL_KEY_FILE` ni yozing — server o'zi HTTPS'da ishlaydi,
+`LABCORE_SSL_CERT` va `LABCORE_SSL_KEY` ni yozing — server o'zi HTTPS'da ishlaydi,
 nginx kerak emas. Nginx orqali qilmoqchi bo'lsangiz: `deploy/nginx.conf.example`.
 
 ### Mobil nazorat ilovasi (rahbar uchun)

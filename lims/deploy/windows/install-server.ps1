@@ -35,7 +35,7 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 }
 
 # ---------------------------------------------------------------------------
-Step "1/7  Zarur dasturlarni tekshirish"
+Step "1/8  Zarur dasturlarni tekshirish"
 
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
   throw "Node.js topilmadi. https://nodejs.org (LTS) dan o'rnating va PowerShell'ni qayta oching."
@@ -58,7 +58,7 @@ if (-not $psql) {
 }
 
 # ---------------------------------------------------------------------------
-Step "2/7  Baza va foydalanuvchi"
+Step "2/8  Baza va foydalanuvchi"
 
 $dbPassword = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 24 | ForEach-Object {[char]$_})
 $pgPassword = Read-Host "PostgreSQL 'postgres' foydalanuvchisining paroli" -AsSecureString
@@ -83,7 +83,7 @@ if ($dbExists -ne "1") {
 }
 
 # ---------------------------------------------------------------------------
-Step "3/7  Fayllarni ko'chirish va sozlash"
+Step "3/8  Fayllarni ko'chirish va sozlash"
 
 $source = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent   # lims/ papkasi
 if ($source -ne $InstallDir) {
@@ -108,9 +108,9 @@ JWT_SECRET=$jwt
 LAB_NAME=$LabName
 CURRENCY=so'm
 TZ_NAME=Asia/Tashkent
-SSL_CERT_FILE=$InstallDir\ssl\labcore.crt
-SSL_KEY_FILE=$InstallDir\ssl\labcore.key
-SSL_REDIRECT_FROM_PORT=$HttpPort
+LABCORE_SSL_CERT=$InstallDir\ssl\labcore.crt
+LABCORE_SSL_KEY=$InstallDir\ssl\labcore.key
+LABCORE_SSL_REDIRECT_PORT=$HttpPort
 BACKUP_KEEP_DAYS=30
 "@ | Set-Content "$InstallDir\.env" -Encoding UTF8
 
@@ -132,7 +132,7 @@ if (Test-Path (Join-Path $InstallDir "node_modules")) {
 }
 
 # ---------------------------------------------------------------------------
-Step "4/7  Sxema va boshlang'ich ma'lumotlar"
+Step "4/8  Sxema va boshlang'ich ma'lumotlar"
 
 npm run migrate
 $seed = npm run seed 2>&1 | Out-String
@@ -140,7 +140,7 @@ Write-Host $seed
 Ok "Baza tayyor"
 
 # ---------------------------------------------------------------------------
-Step "5/7  HTTPS sertifikat (telefonga ilova o'rnatish uchun shart)"
+Step "5/8  HTTPS sertifikat (telefonga ilova o'rnatish uchun shart)"
 
 $ip = (Get-NetIPAddress -AddressFamily IPv4 |
        Where-Object { $_.IPAddress -notlike "127.*" -and $_.PrefixOrigin -ne "WellKnown" } |
@@ -172,7 +172,7 @@ Import-Certificate -FilePath "$InstallDir\ssl\labcore-ca.cer" -CertStoreLocation
 Ok "Sertifikat ishonchlilar ro'yxatiga qo'shildi (telefonlarga labcore-ca.cer ni yuboring)"
 
 # ---------------------------------------------------------------------------
-Step "6/7  Brandmauer"
+Step "6/8  Brandmauer"
 
 foreach ($p in @($Port, $HttpPort)) {
   if (-not (Get-NetFirewallRule -DisplayName "LabCore $p" -ErrorAction SilentlyContinue)) {
@@ -183,7 +183,7 @@ foreach ($p in @($Port, $HttpPort)) {
 Ok "Portlar ochildi: $Port (HTTPS), $HttpPort (HTTP → yo'naltirish)"
 
 # ---------------------------------------------------------------------------
-Step "7/7  Avtomatik ishga tushirish"
+Step "7/8  Avtomatik ishga tushirish"
 
 $action  = New-ScheduledTaskAction -Execute "node.exe" -Argument "src\index.js" -WorkingDirectory $InstallDir
 $trigger = New-ScheduledTaskTrigger -AtStartup
@@ -204,12 +204,50 @@ Register-ScheduledTask -TaskName "LabCore-Backup" -Action $backupAction -Trigger
 Ok "Kunlik zaxira sozlandi (har kuni 01:30)"
 
 # ---------------------------------------------------------------------------
+Step "8/8  Ish stoli yorlig'i"
+
+# Dastur oynasi: brauzer "ilova rejimi"da ochiladi — manzil paneli va
+# yorliqlar ko'rinmaydi, oddiy dasturdek bo'ladi.
+$browser = $null
+foreach ($p in @(
+  "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe",
+  "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe",
+  "$env:ProgramFiles\Google\Chrome\Application\chrome.exe",
+  "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe"
+)) { if (Test-Path $p) { $browser = $p; break } }
+
+if ($browser) {
+  $shell = New-Object -ComObject WScript.Shell
+  $desktop = [Environment]::GetFolderPath("CommonDesktopDirectory")
+  $lnk = $shell.CreateShortcut((Join-Path $desktop "LabCore.lnk"))
+  $lnk.TargetPath = $browser
+  $lnk.Arguments = "--app=https://localhost:$Port --window-size=1400,900"
+  $lnk.IconLocation = "$InstallDir\deploy\windows\labcore.ico"
+  $lnk.WorkingDirectory = $InstallDir
+  $lnk.Description = "LabCore — laboratoriya boshqaruv tizimi"
+  $lnk.Save()
+  Ok "Ish stolida 'LabCore' yorlig'i yaratildi"
+
+  # Telefonni ulash sahifasi uchun ham yorliq
+  $lnk2 = $shell.CreateShortcut((Join-Path $desktop "LabCore - telefonga ulash.lnk"))
+  $lnk2.TargetPath = $browser
+  $lnk2.Arguments = "https://localhost:$Port/telefon"
+  $lnk2.IconLocation = "$InstallDir\deploy\windows\labcore.ico"
+  $lnk2.Save()
+  Ok "'Telefonga ulash' yorlig'i yaratildi (QR kod bilan)"
+} else {
+  Warn "Edge yoki Chrome topilmadi — brauzerda https://localhost:$Port ni oching"
+}
+
+# ---------------------------------------------------------------------------
 Write-Host "`n============================================================" -ForegroundColor Green
 Write-Host " LabCore o'rnatildi" -ForegroundColor Green
 Write-Host "============================================================"
 Write-Host " Server manzili   : https://$ip`:$Port"
 Write-Host " Ish stansiyalari : shu manzilni brauzerga yoki LabCore dasturiga kiriting"
-Write-Host " Telefon uchun    : avval $InstallDir\ssl\labcore-ca.cer ni telefonga o'rnating"
+Write-Host " Ish stoli        : 'LabCore' belgichasini bosing"
+Write-Host " Telefon uchun    : 'LabCore - telefonga ulash' belgichasi (QR kod)"
+Write-Host "                    yoki https://$ip`:$Port/telefon"
 Write-Host " Login/parol      : yuqoridagi 'seed' natijasiga qarang (admin / Admin12345)"
 Write-Host ""
 Write-Host " DIQQAT: birinchi kirishdayoq parolni almashtiring!" -ForegroundColor Yellow

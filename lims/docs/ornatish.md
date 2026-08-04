@@ -117,9 +117,9 @@ sudo openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
 `.env` ga qo'shing:
 
 ```
-SSL_CERT_FILE=/opt/labcore/ssl/labcore.crt
-SSL_KEY_FILE=/opt/labcore/ssl/labcore.key
-SSL_REDIRECT_FROM_PORT=4080
+LABCORE_SSL_CERT=/opt/labcore/ssl/labcore.crt
+LABCORE_SSL_KEY=/opt/labcore/ssl/labcore.key
+LABCORE_SSL_REDIRECT_PORT=4080
 ```
 
 Nginx **shart emas** — server o'zi HTTPS'da ishlaydi.
@@ -169,7 +169,19 @@ yo'qotish uchun 5-bo'limdagi sertifikatni shu kompyuterga ham o'rnating.
 Telefonda ilova **PWA** ko'rinishida o'rnatiladi — Play Market yoki App Store
 kerak emas.
 
-### 5.1. Avval sertifikatni o'rnating (bir marta)
+### 5.0. Eng oson yo'l: QR sahifasi
+
+Server kompyuterida ish stolidagi **"LabCore - telefonga ulash"** belgichasini
+bosing (yoki brauzerda `https://localhost:4000/telefon`). Sahifada:
+
+* **QR kod** — telefon kamerasi bilan skanerlanadi, manzil terish shart emas;
+* **"Sertifikatni yuklab olish"** tugmasi — telefonga to'g'ridan-to'g'ri;
+* Android va iPhone uchun qadamma-qadam ko'rsatma.
+
+Bu sahifa HTTP portida ham ochiladi — telefon sertifikatni olmaguncha
+HTTPS'ga ishonmasligi hisobga olingan.
+
+### 5.1. Sertifikatni qo'lda o'rnatish (agar QR sahifasi ishlatilmasa)
 
 Bu qadam **majburiy**: HTTPS bo'lmasa ilova o'rnatilmaydi va oflayn ishlamaydi.
 

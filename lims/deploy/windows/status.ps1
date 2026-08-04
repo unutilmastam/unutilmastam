@@ -5,7 +5,7 @@ Get-Content (Join-Path $root ".env") | ForEach-Object {
   if ($_ -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$') { $env_[$matches[1]] = $matches[2] }
 }
 $port   = if ($env_["PORT"]) { $env_["PORT"] } else { 4000 }
-$scheme = if ($env_["SSL_CERT_FILE"]) { "https" } else { "http" }
+$scheme = if ($env_["LABCORE_SSL_CERT"]) { "https" } else { "http" }
 
 Write-Host "`n=== LabCore holati ===" -ForegroundColor Cyan
 $task = Get-ScheduledTask -TaskName "LabCore" -ErrorAction SilentlyContinue

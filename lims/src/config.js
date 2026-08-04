@@ -51,11 +51,15 @@ export const config = {
 
   // HTTPS: ikkala fayl ko'rsatilsa server o'zi shifrlangan ulanishda ishlaydi.
   // Telefonga ilova o'rnatish (PWA) va oflayn rejim faqat HTTPS'da ishlaydi.
+  // DIQQAT: nomlar LABCORE_ bilan boshlanadi. SSL_CERT_FILE — OpenSSL va
+  // curl ishlatadigan standart o'zgaruvchi (CA to'plamini ko'rsatadi);
+  // o'sha nomni olsak, tizimda u allaqachon o'rnatilgan bo'lsa server
+  // noto'g'ri sertifikatni o'qib ishga tushmay qoladi.
   ssl: {
-    certFile: process.env.SSL_CERT_FILE || '',
-    keyFile: process.env.SSL_KEY_FILE || '',
+    certFile: process.env.LABCORE_SSL_CERT || '',
+    keyFile: process.env.LABCORE_SSL_KEY || '',
     // HTTP portida turib, HTTPS'ga yo'naltirish (0 = o'chirilgan)
-    redirectFromPort: Number(process.env.SSL_REDIRECT_FROM_PORT || 0),
+    redirectFromPort: Number(process.env.LABCORE_SSL_REDIRECT_PORT || 0),
   },
 
   labName: process.env.LAB_NAME || 'Laboratoriya',

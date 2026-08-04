@@ -27,6 +27,7 @@ import { router as labelsRouter } from './routes/labels.js';
 import { router as devicesRouter } from './routes/devices.js';
 import { router as camerasRouter } from './routes/cameras.js';
 import { router as appointmentsRouter } from './routes/appointments.js';
+import { router as setupRouter, localIp } from './routes/setup.js';
 
 export function createApp() {
   const app = express();
@@ -78,6 +79,9 @@ export function createApp() {
   app.use('/api/cameras', camerasRouter);
   app.use('/api/appointments', appointmentsRouter);
 
+  // Telefonni ulash sahifasi (avtorizatsiyasiz — sabab: routes/setup.js)
+  app.use('/', setupRouter);
+
   // Veb-mijoz (laborant kompyuterlari brauzer orqali ishlaydi)
   const publicDir = path.join(config.root, 'public');
   app.use(express.static(publicDir, { index: 'index.html', maxAge: '1h' }));
@@ -105,17 +109,37 @@ function createServer(app) {
   const { certFile, keyFile, redirectFromPort } = config.ssl;
   if (!certFile || !keyFile) return http.createServer(app);
 
-  const options = {
-    cert: fs.readFileSync(certFile),
-    key: fs.readFileSync(keyFile),
-  };
+  // Sertifikat buzuq bo'lsa tizim butunlay ishlamay qolmasin: aniq xabar
+  // beramiz va HTTP rejimida davom etamiz (telefon ilovasi ishlamaydi,
+  // lekin laboratoriya to'xtab qolmaydi).
+  let options;
+  try {
+    options = { cert: fs.readFileSync(certFile), key: fs.readFileSync(keyFile) };
+    https.createServer(options).close();   // juftlikni oldindan tekshiramiz
+  } catch (err) {
+    console.error(
+      '\n[!] HTTPS sertifikatini o‘qib bo‘lmadi — server HTTP rejimida ishlaydi.\n' +
+      `    Sertifikat: ${certFile}\n` +
+      `    Kalit:      ${keyFile}\n` +
+      `    Sabab:      ${err.code === 'ERR_OSSL_X509_KEY_VALUES_MISMATCH'
+        ? 'sertifikat va kalit bir-biriga mos emas'
+        : err.message}\n` +
+      '    Telefonga ilova o‘rnatish uchun sertifikatni qayta yasang.\n',
+    );
+    return http.createServer(app);
+  }
 
   if (redirectFromPort) {
-    http.createServer((req, res) => {
+    // Telefonni ulash sahifasi va sertifikat HTTP'da ham ochilishi kerak:
+    // telefon sertifikatni olmaguncha HTTPS'ga ishonmaydi.
+    const plain = express();
+    plain.use('/', setupRouter);
+    plain.use((req, res) => {
       const host = String(req.headers.host || '').split(':')[0];
       res.writeHead(301, { location: `https://${host}:${config.port}${req.url}` });
       res.end();
-    }).listen(redirectFromPort, config.host, () => {
+    });
+    http.createServer(plain).listen(redirectFromPort, config.host, () => {
       console.log(`HTTP → HTTPS yo‘naltirish: ${redirectFromPort} → ${config.port}`);
     });
   }
@@ -146,6 +170,7 @@ export async function start() {
     const scheme = server instanceof https.Server ? 'https' : 'http';
     console.log(`LabCore LIMS — ${scheme}://${config.host}:${config.port}  (${config.env})`);
     console.log(`Ma'lumotlar: ${config.dataDir}`);
+    console.log(`Telefonni ulash: ${scheme}://${localIp()}:${config.port}/telefon`);
     if (scheme === 'http') {
       console.log(
         'Eslatma: telefonga ilova o‘rnatish (PWA) va oflayn rejim uchun HTTPS kerak.\n' +
