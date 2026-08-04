@@ -10,3 +10,6 @@ process.env.DATA_DIR = process.env.TEST_DATA_DIR || '/tmp/labcore-test-data';
 process.env.JWT_SECRET = 'test-secret-not-for-production';
 process.env.EDIT_WINDOW_HOURS = '24';
 process.env.LAB_NAME = 'Test laboratoriya';
+// Navbat testlari kun davomida istalgan vaqtda ishlashi uchun ish vaqti keng
+process.env.WORK_START = '00:00';
+process.env.WORK_END = '23:45';

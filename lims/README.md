@@ -32,6 +32,7 @@ haqiqiy nomini auditga yozadi.
 
 | Bo'lim | Imkoniyat |
 |---|---|
+| **Navbat** | Telefon orqali yozib olish, navbat raqami, eslatma, hudud statistikasi |
 | **Bemor kartasi** | ID (karta raqami), F.I.O., tug'ilgan sana, jins, telefon, manzil, pasport; QR kod |
 | **Tibbiy tarix** | Murojaatlar, shikoyat, analizlar, natijalar, tashxis, dori, muolaja — yillar bo'yicha lenta |
 | **Analizlar** | Katalog, narx, norma oraliqlari (jins/yosh bo'yicha), probirka shtrix-kodi, muddat nazorati |
@@ -146,7 +147,37 @@ Bemor kartalari va hujjatlar telefonda keshda saqlanmaydi.
 
 ---
 
-## 4. Printer va laboratoriya uskunalari
+## 4. Navbat (registratura)
+
+Bemor telefon qiladi — registratura xodimi **Navbat** bo'limida yozib oladi:
+familiya, ism, yosh (yoki tug'ilgan sana), jins, telefon, viloyat va tuman.
+Bo'sh vaqtlar jadvalda ko'rinadi; band va o'tib ketgan vaqtlar tanlanmaydi.
+
+Yozilgandan keyin tizim **navbat raqamini** beradi (kun bo'yicha ketma-ket:
+№1, №2, …). Bemor kartasi shu paytda ochilmaydi — u faqat bemor kelganda,
+"Keldi" tugmasi bosilganda ochiladi. Agar shu telefon va ism bilan karta
+allaqachon bo'lsa, yangisi ochilmaydi — mavjudi topiladi.
+
+**Vaqti yaqinlashganda** (odatda 60 daqiqa oldin):
+
+* xodim ekranida sariq ogohlantirish paydo bo'ladi —
+  "№12 — Karimov Anvar, 15 daqiqa qoldi";
+* bemorga SMS navbatga qo'yiladi: *"Siz bugun soat 10:30 ga navbatdasiz
+  (navbat №12). Iltimos, 10 daqiqa oldin yetib keling."*;
+* ekran har 30 soniyada o'zi yangilanadi — sahifani yangilash shart emas.
+
+Vaqti o'tib ketgan va kelmagan bemorlar 45 daqiqadan keyin avtomatik
+"Kelmadi" deb belgilanadi; qayta yozilganda registrator "3 marta kelmagan"
+belgisini ko'radi.
+
+Kim yozgani, kim ko'chirgani, kim bekor qilgani — hammasi audit jurnalida.
+
+**Navbat statistikasi** (administrator): bemorlar qaysi hududdan kelmoqda,
+kunlar bo'yicha soni va kelmaganlar ulushi.
+
+---
+
+## 5. Printer va laboratoriya uskunalari
 
 ### Printer — hozir ishlaydi
 
@@ -235,7 +266,7 @@ Ikkala raqam yonma-yon turadi va bir-birini tekshiradi. Batafsil:
 
 ---
 
-## 5. Audit — tizimning yuragi
+## 6. Audit — tizimning yuragi
 
 Har bir muhim amal `audit_log` jadvaliga yoziladi va **hech qachon
 o'zgartirilmaydi**: baza darajasidagi trigger `UPDATE` va `DELETE` ni bloklaydi.
@@ -269,7 +300,7 @@ ochdi), `SEARCH`, `CREATE`, `UPDATE`, `DELETE`, `CONFIRM`, `PRINT`, `PAYMENT`,
 
 ---
 
-## 6. Fayl arxivi
+## 7. Fayl arxivi
 
 ```
 /var/lib/labcore/Patients/
@@ -288,7 +319,7 @@ ochdi), `SEARCH`, `CREATE`, `UPDATE`, `DELETE`, `CONFIRM`, `PRINT`, `PAYMENT`,
 
 ---
 
-## 7. Zaxira nusxa: lokal + bulut
+## 8. Zaxira nusxa: lokal + bulut
 
 ```bash
 ./scripts/backup.sh                      # baza + fayllar + nazorat summalari
@@ -340,7 +371,7 @@ xonasiga cheklangan kirish.
 
 ---
 
-## 8. Xavfsizlik
+## 9. Xavfsizlik
 
 * Parollar `bcrypt` (12 rounds) bilan saqlanadi — ochiq matnda hech qayerda yo'q.
 * Sessiya bazada saqlanadi: administrator xodimning sessiyasini bir tugma bilan uzadi.
@@ -354,7 +385,7 @@ xonasiga cheklangan kirish.
 
 ---
 
-## 9. Buyruqlar
+## 10. Buyruqlar
 
 | Buyruq | Vazifasi |
 |---|---|
@@ -375,7 +406,7 @@ TEST_DATABASE_URL=postgres://labcore:parol@127.0.0.1:5432/labcore_test npm test
 
 ---
 
-## 10. API (qisqacha)
+## 11. API (qisqacha)
 
 Barcha manzillar `/api` bilan boshlanadi; avtorizatsiya `Authorization: Bearer <token>`
 yoki `httpOnly` cookie orqali. Ish stansiyasi nomi `X-Computer-Name` sarlavhasida.
@@ -395,11 +426,12 @@ yoki `httpOnly` cookie orqali. Ish stansiyasi nomi `X-Computer-Name` sarlavhasid
 | `GET/POST /devices` `/devices/:id/mappings` `/messages` `/simulate` | Uskunalar (admin) |
 | `POST /devices/intake` | Uskunadan natija (kalit bilan, login talab qilinmaydi) |
 | `GET/POST /cameras` `/cameras/:id/snapshot` `/faces` `/attendance` | Kameralar va davomat (admin) |
+| `GET/POST /appointments` `/slots` `/upcoming` `/lookup` `/:id/arrive` | Navbat (registratura) |
 | `POST /cameras/events` | Kamera AI hodisasi (kalit bilan) |
 
 ---
 
-## 11. Texnik tafsilotlar
+## 12. Texnik tafsilotlar
 
 * **Backend:** Node.js 20+, Express 5, PostgreSQL 14+ (`pg`).
 * **Frontend:** tashqi kutubxonasiz ES-modullar — internetsiz ham to'liq ishlaydi

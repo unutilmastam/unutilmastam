@@ -103,6 +103,7 @@ function build(d, online) {
     state.user.role === 'admin' ? activityFeed() : null,
 
     el('div.m-links', {}, [
+      link('📞', 'Navbat', '#/queue'),
       link('👤', 'Bemorlar', '#/patients'),
       link('🧪', 'Analizlar', '#/orders'),
       link('🖥️', 'Ish nazorati', '#/monitoring'),

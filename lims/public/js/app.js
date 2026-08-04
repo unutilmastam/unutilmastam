@@ -9,12 +9,15 @@ import { cashierView, debtsView } from './views/cashier.js';
 import { staffView, monitoringView, auditView, catalogView, inventoryView, devicesView, settingsView } from './views/admin.js';
 import { mobileView } from './views/mobile.js';
 import { camerasView, attendanceView } from './views/cameras.js';
+import { queueView, queueStatsView } from './views/queue.js';
 
 export const state = { user: null, lab: { name: 'LabCore', currency: "so'm" } };
 
 /** Marshrutlar: [naqsh, ko'rinish, ruxsat etilgan rollar] */
 const ROUTES = [
   [/^\/$/, dashboardView, null, 'Bosh sahifa'],
+  [/^\/queue$/, queueView, null, 'Navbat'],
+  [/^\/queue-stats$/, queueStatsView, ['admin'], 'Navbat statistikasi'],
   [/^\/patients$/, patientsView, null, 'Bemorlar'],
   [/^\/patients\/(\d+)$/, patientCardView, null, 'Bemor kartasi'],
   [/^\/orders$/, ordersView, null, 'Analizlar'],
@@ -43,6 +46,7 @@ const NAV = [
   { group: 'Ish joyi' },
   { path: '/', label: 'Bosh sahifa', icon: '📊' },
   { path: '/mobile', label: 'Rahbar paneli', icon: '📱' },
+  { path: '/queue', label: 'Navbat', icon: '📞' },
   { path: '/patients', label: 'Bemorlar', icon: '👤' },
   { path: '/orders', label: 'Analizlar', icon: '🧪' },
   { path: '/doctor', label: 'Shifokor navbati', icon: '🩺', roles: ['admin', 'doctor'] },
@@ -58,6 +62,7 @@ const NAV = [
   { path: '/devices', label: 'Uskunalar', icon: '🔬', roles: ['admin'] },
   { path: '/cameras', label: 'Kameralar', icon: '🎥', roles: ['admin'] },
   { path: '/attendance', label: 'Davomat', icon: '📋', roles: ['admin'] },
+  { path: '/queue-stats', label: 'Navbat statistikasi', icon: '📈', roles: ['admin'] },
 ];
 
 const allowed = (roles) => !roles || roles.includes(state.user?.role);

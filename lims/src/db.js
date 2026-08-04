@@ -6,6 +6,12 @@ import { config } from './config.js';
 pg.types.setTypeParser(pg.types.builtins.NUMERIC, (v) => (v === null ? null : Number(v)));
 pg.types.setTypeParser(pg.types.builtins.INT8, (v) => (v === null ? null : Number(v)));
 
+// DATE (vaqtsiz sana) matn holida qoladi: 'YYYY-MM-DD'.
+// Aks holda u JS Date'ga aylanib, JSON'da '2026-08-04T00:00:00.000Z' bo'lib
+// ketadi va manfiy vaqt mintaqasidagi klientda bir kun orqaga siljiydi
+// (tug'ilgan sana, navbat sanasi uchun bu jiddiy xato).
+pg.types.setTypeParser(pg.types.builtins.DATE, (v) => v);
+
 export const pool = new pg.Pool({
   connectionString: config.db.connectionString,
   max: config.db.max,

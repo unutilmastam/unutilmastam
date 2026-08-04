@@ -530,3 +530,54 @@ CREATE TABLE IF NOT EXISTS camera_events (
 CREATE INDEX IF NOT EXISTS camera_events_at_idx   ON camera_events(at DESC);
 CREATE INDEX IF NOT EXISTS camera_events_user_idx ON camera_events(user_id, at DESC);
 CREATE INDEX IF NOT EXISTS camera_events_cam_idx  ON camera_events(camera_id, at DESC);
+
+-- ---------------------------------------------------------------------------
+-- Navbat (registratura): bemor telefon qilib oldindan yoziladi
+--
+--   Bemor kartasi hali bo'lmasligi mumkin — telefonda aytilgan ma'lumot
+--   shu jadvalda turadi va bemor kelganda kartaga aylanadi.
+--   scheduled_date alohida ustun: navbat raqami kun bo'yicha yagona bo'lishi
+--   kerak, timestamptz'dan sanani indeksda hisoblab bo'lmaydi (vaqt mintaqasi).
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS appointments (
+  id             bigserial PRIMARY KEY,
+  queue_number   integer NOT NULL,
+  scheduled_at   timestamptz NOT NULL,
+  scheduled_date date NOT NULL,               -- laboratoriya vaqti bo'yicha kun
+  duration_min   integer NOT NULL DEFAULT 15,
+
+  patient_id     bigint REFERENCES patients(id),   -- mavjud bemor bo'lsa
+  last_name      text NOT NULL,
+  first_name     text NOT NULL,
+  middle_name    text,
+  birth_date     date,
+  age_years      integer,                     -- telefonda faqat yosh aytilsa
+  gender         text CHECK (gender IN ('m','f','u')) DEFAULT 'u',
+  phone          text NOT NULL,
+  region         text,                        -- viloyat
+  district       text,                        -- tuman/shahar
+  address        text,
+  note           text,
+  test_ids       integer[],                   -- oldindan aytilgan analizlar
+
+  status         text NOT NULL DEFAULT 'booked'
+                 CHECK (status IN ('booked','confirmed','arrived','done','no_show','cancelled')),
+  branch_id      integer REFERENCES branches(id),
+  created_by     integer REFERENCES users(id),
+  created_at     timestamptz NOT NULL DEFAULT now(),
+
+  reminder_sent_at timestamptz,               -- bemorga eslatma yuborilgan vaqt
+  notified_staff   boolean NOT NULL DEFAULT false,
+  arrived_at     timestamptz,
+  order_id       bigint REFERENCES orders(id),
+  cancelled_by   integer REFERENCES users(id),
+  cancel_reason  text
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS appointments_queue_idx
+  ON appointments(scheduled_date, coalesce(branch_id, 0), queue_number);
+CREATE INDEX IF NOT EXISTS appointments_date_idx  ON appointments(scheduled_date, scheduled_at);
+CREATE INDEX IF NOT EXISTS appointments_phone_idx ON appointments(phone);
+CREATE INDEX IF NOT EXISTS appointments_due_idx
+  ON appointments(scheduled_at) WHERE status IN ('booked','confirmed');

@@ -24,7 +24,11 @@ router.get(
            (SELECT count(*) FROM order_items oi JOIN orders o ON o.id = oi.order_id
              WHERE o.created_at::date = current_date) AS tests_today,
            (SELECT count(*) FROM orders WHERE created_at::date = current_date) AS orders_today,
-           (SELECT count(*) FROM results WHERE confirmed_at::date = current_date) AS confirmed_today`,
+           (SELECT count(*) FROM results WHERE confirmed_at::date = current_date) AS confirmed_today,
+           (SELECT count(*) FROM appointments
+             WHERE scheduled_date = current_date AND status NOT IN ('cancelled')) AS appointments_today,
+           (SELECT count(*) FROM appointments
+             WHERE scheduled_date = current_date AND status IN ('booked','confirmed')) AS appointments_waiting`,
       ),
       one(
         `SELECT

@@ -19,6 +19,8 @@ export async function dashboardView() {
   }
   stats.push(
     stat('⏳', 'Ish jarayonida', d.pending.in_work, `${d.pending.awaiting_confirm} ta tasdiqlash kutmoqda`),
+    stat('📞', 'Bugungi navbat', d.today.appointments_today ?? 0,
+      `${d.today.appointments_waiting ?? 0} tasi hali kelmagan`),
   );
   if (Number(d.pending.overdue) > 0) {
     stats.push(stat('⚠️', 'Muddati o‘tgan', d.pending.overdue, 'tezkor e’tibor talab qiladi'));
