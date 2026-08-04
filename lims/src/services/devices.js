@@ -354,9 +354,18 @@ function startFolderWatcher(device) {
   return timer;
 }
 
-/** Bazadagi faol uskunalar uchun tinglovchilarni ishga tushiradi. */
+/** Uskuna sozlamasi o'zgarganini bilish uchun qisqa imzo. */
+const signature = (d) => [d.protocol, d.host, d.port, d.folder].join('|');
+const running = new Map(); // device_id -> signature
+
+/**
+ * Bazadagi faol uskunalar uchun tinglovchilarni ishga tushiradi.
+ *
+ * Faqat o'zgargani qayta ishga tushadi: yangi uskuna qo'shilganda boshqa
+ * analizatorlarning ochiq ulanishi uzilmaydi (o'sha paytda natija
+ * yuborayotgan uskuna xabarini yo'qotmasin).
+ */
 export async function startDeviceListeners() {
-  await stopDeviceListeners();
   let devices = [];
   try {
     devices = await many('SELECT * FROM devices WHERE is_active');
@@ -364,21 +373,45 @@ export async function startDeviceListeners() {
     return 0; // sxema hali o'rnatilmagan
   }
 
-  let started = 0;
+  const wanted = new Map(devices.map((d) => [d.id, d]));
+
+  // O'chirilgan yoki sozlamasi o'zgargan tinglovchilarni to'xtatamiz
+  for (const [id, sig] of [...running]) {
+    const d = wanted.get(id);
+    if (!d || signature(d) !== sig) await stopOne(id);
+  }
+
   for (const d of devices) {
+    if (running.has(d.id)) continue;
     try {
-      if ((d.protocol === 'hl7' || d.protocol === 'astm') && d.port) { startTcpListener(d); started++; }
-      else if (d.protocol === 'folder' && d.folder) { startFolderWatcher(d); started++; }
+      if ((d.protocol === 'hl7' || d.protocol === 'astm') && d.port) {
+        startTcpListener(d);
+        running.set(d.id, signature(d));
+      } else if (d.protocol === 'folder' && d.folder) {
+        startFolderWatcher(d);
+        running.set(d.id, signature(d));
+      }
     } catch (err) {
       console.error(`[uskuna:${d.name}] ishga tushmadi:`, err.message);
     }
   }
-  return started;
+  return running.size;
+}
+
+async function stopOne(id) {
+  const server = listeners.get(id);
+  if (server) {
+    await new Promise((r) => server.close(r));
+    listeners.delete(id);
+  }
+  const timer = watchers.get(id);
+  if (timer) { clearInterval(timer); watchers.delete(id); }
+  running.delete(id);
 }
 
 export async function stopDeviceListeners() {
-  for (const [, server] of listeners) await new Promise((r) => server.close(r));
+  for (const id of [...running.keys()]) await stopOne(id);
   listeners.clear();
-  for (const [, timer] of watchers) clearInterval(timer);
   watchers.clear();
+  running.clear();
 }

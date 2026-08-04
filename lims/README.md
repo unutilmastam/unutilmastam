@@ -187,6 +187,11 @@ Muhim qoidalar:
 Ulashdan oldin **Sinov** tugmasi bilan tekshirish mumkin: uskuna yuboradigan
 xabarni qo'lda kiritib, natija to'g'ri buyurtmaga tushishini ko'rasiz.
 
+Uskuna hali olinmagan bo'lsa hech narsa qilish shart emas — laborant natijani
+qo'lda kiritaveradi. Uskuna paydo bo'lganda ulash tartibi:
+[`docs/uskuna-ulash.md`](docs/uskuna-ulash.md) (kod yozilmaydi, server qayta
+ishga tushirilmaydi, boshqa uskunalarning ishi to'xtamaydi).
+
 ### Rentgen va UTT (ultratovush)
 
 Bu qurilmalar odatda **DICOM** protokolida ishlaydi va tasvir yuboradi —
