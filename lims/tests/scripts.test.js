@@ -157,3 +157,50 @@ test('tekshiruv skripti bor va manzilni aytadi', () => {
   assert.match(text, /api\/health/, 'serverga so‘rov yuborilmaydi');
   assert.match(text, /DASTURGA SHU MANZILNI YOZING/, 'manzil aytilmaydi');
 });
+
+/**
+ * PowerShell'da tashqi dastur (psql, npm) xato qaytarsa skript o'zi
+ * to'xtamaydi — $LASTEXITCODE qo'lda tekshirilishi kerak. Bir marta shu
+ * sabab: postgres paroli noto'g'ri kiritilgan, psql yiqilgan, skript esa
+ * "OK: Foydalanuvchi yaratildi" deb davom etgan va xato ancha keyin,
+ * tushunarsiz ko'rinishda chiqqan.
+ */
+test('o‘rnatuvchi psql va npm natijasini tekshiradi', () => {
+  const text = fs.readFileSync(
+    path.join(config.root, 'deploy', 'windows', 'install-server.ps1'), 'utf8');
+
+  assert.match(text, /\$LASTEXITCODE/, 'tashqi buyruq natijasi umuman tekshirilmaydi');
+
+  // postgres paroli oldindan tekshiriladi va qayta so'raladi
+  assert.match(text, /psql .*-tAc "SELECT 1"/, 'postgres paroli oldindan tekshirilmaydi');
+  assert.match(text, /for \(\$i = 1; \$i -le 3; \$i\+\+\)/, 'parolni qayta so‘rash yo‘q');
+
+  // labcore foydalanuvchisi haqiqatan ulana olishi tekshiriladi
+  assert.match(text, /psql -h \$PgHost -U \$DbUser -d \$DbName/,
+    'dastur foydalanuvchisining ulanishi tekshirilmaydi');
+
+  // migratsiya jimgina o'tib ketmaydi
+  assert.match(text, /Migratsiya xatosi/, 'migratsiya natijasi tekshirilmaydi');
+});
+
+/**
+ * "localhost" Windows'da avval IPv6 (::1) ga uriniladi. VPN yoki antivirus
+ * uni bloklasa "Permission denied (10013)" chiqadi. 127.0.0.1 ishonchli.
+ */
+test('psql aniq 127.0.0.1 manziliga ulanadi', () => {
+  const text = fs.readFileSync(
+    path.join(config.root, 'deploy', 'windows', 'install-server.ps1'), 'utf8');
+  assert.match(text, /\$PgHost = "127\.0\.0\.1"/, 'PgHost belgilanmagan');
+
+  const bare = text.split('\n').filter((l) =>
+    !l.trim().startsWith('#') && /(^|[^-])\bpsql -U /.test(l));
+  assert.deepEqual(bare, [], `psql manzilsiz chaqirilgan:\n  ${bare.join('\n  ')}`);
+});
+
+/** O'rnatish oxirida server haqiqatan javob berayotgani tekshiriladi. */
+test('o‘rnatuvchi oxirida serverni tekshiradi', () => {
+  const text = fs.readFileSync(
+    path.join(config.root, 'deploy', 'windows', 'install-server.ps1'), 'utf8');
+  assert.match(text, /api\/health/, 'server javob berishi tekshirilmaydi');
+  assert.match(text, /Server ishlayapti \(\$scheme\)/, 'natija aytilmaydi');
+});

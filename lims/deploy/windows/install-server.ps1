@@ -80,27 +80,92 @@ u qo'shimcha dasturlarni internetdan yuklaydi, LabCore uchun kerak emas.
 # ---------------------------------------------------------------------------
 Step "2/8  Baza va foydalanuvchi"
 
-$dbPassword = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 24 | ForEach-Object {[char]$_})
-$pgPassword = Read-Host "PostgreSQL 'postgres' foydalanuvchisining paroli" -AsSecureString
-$env:PGPASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-  [Runtime.InteropServices.Marshal]::SecureStringToBSTR($pgPassword))
+# Manzil aniq ko'rsatiladi: "localhost" avval IPv6 (::1) ga uriniladi va
+# ba'zi kompyuterlarda (VPN, antivirus, brandmauer) u
+# "Permission denied (10013)" beradi. 127.0.0.1 har doim ishlaydi.
+$PgHost = "127.0.0.1"
 
-$exists = psql -U postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DbUser'"
-if ($exists -ne "1") {
-  psql -U postgres -c "CREATE USER $DbUser WITH PASSWORD '$dbPassword';" | Out-Null
+$dbPassword = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 24 | ForEach-Object {[char]$_})
+
+# --- postgres parolini TEKSHIRAMIZ ---
+# Ilgari parol noto'g'ri bo'lsa ham skript "OK" deb davom etardi va xato
+# faqat 4/8-qadamda, tushunarsiz ko'rinishda chiqardi. Endi shu yerda
+# to'xtaymiz va uch marta qayta urinish beramiz.
+$pgOk = $false
+for ($i = 1; $i -le 3; $i++) {
+  $secure = Read-Host "PostgreSQL 'postgres' foydalanuvchisining paroli" -AsSecureString
+  $env:PGPASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+    [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure))
+
+  $probe = psql -h $PgHost -U postgres -tAc "SELECT 1" 2>&1
+  if ($LASTEXITCODE -eq 0 -and ($probe -join "") -match "1") { $pgOk = $true; break }
+
+  Warn "Parol to'g'ri kelmadi yoki PostgreSQL javob bermadi ($i/3)"
+  if ($i -eq 1) { Write-Host "    ($probe)" -ForegroundColor DarkGray }
+}
+
+if (-not $pgOk) {
+  throw @"
+PostgreSQL'ga ulanib bo'lmadi.
+
+Eng ko'p uchraydigan sabab: 'postgres' parolini noto'g'ri kiritish.
+Bu parolni siz PostgreSQL o'rnatayotganda o'zingiz qo'ygansiz.
+
+Parolni eslay olmasangiz - eng oson yo'l PostgreSQL'ni o'chirib,
+qayta o'rnatish va yangi parolni YOZIB QO'YISH.
+(Bazada hali hech qanday ma'lumot yo'q, yo'qotadigan narsa yo'q.)
+
+Boshqa sabablar:
+  - PostgreSQL xizmati ishlamayapti:
+      Win+R -> services.msc -> "postgresql-x64-18" -> Start
+  - 5432 portni antivirus yoki VPN bloklayapti
+"@
+}
+Ok "PostgreSQL parolini qabul qildi"
+
+# --- Foydalanuvchi va baza ---
+# Har bir psql chaqiruvi natijasi tekshiriladi: jimgina o'tib ketmasin.
+function PgExec($sql, $xato) {
+  $out = psql -h $PgHost -U postgres -c $sql 2>&1
+  if ($LASTEXITCODE -ne 0) { throw "$xato`n$($out -join "`n")" }
+}
+
+$exists = psql -h $PgHost -U postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DbUser'" 2>&1
+if (($exists -join "") -ne "1") {
+  PgExec "CREATE USER $DbUser WITH PASSWORD '$dbPassword';" "Foydalanuvchi yaratilmadi: $DbUser"
   Ok "Foydalanuvchi yaratildi: $DbUser"
 } else {
-  psql -U postgres -c "ALTER USER $DbUser WITH PASSWORD '$dbPassword';" | Out-Null
+  PgExec "ALTER USER $DbUser WITH PASSWORD '$dbPassword';" "Foydalanuvchi paroli yangilanmadi: $DbUser"
   Warn "Foydalanuvchi mavjud edi - paroli yangilandi"
 }
 
-$dbExists = psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$DbName'"
-if ($dbExists -ne "1") {
-  psql -U postgres -c "CREATE DATABASE $DbName OWNER $DbUser;" | Out-Null
+$dbExists = psql -h $PgHost -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$DbName'" 2>&1
+if (($dbExists -join "") -ne "1") {
+  PgExec "CREATE DATABASE $DbName OWNER $DbUser;" "Baza yaratilmadi: $DbName"
   Ok "Baza yaratildi: $DbName"
 } else {
+  PgExec "ALTER DATABASE $DbName OWNER TO $DbUser;" "Baza egasi o'zgartirilmadi: $DbName"
   Warn "Baza mavjud edi - saqlab qolindi"
 }
+
+# --- Eng muhimi: labcore foydalanuvchisi haqiqatan ulana oladimi? ---
+# Keyingi qadamlar shu ulanishga tayanadi; shu yerda tekshirmasak,
+# xato migratsiya paytida tushunarsiz ko'rinishda chiqadi.
+$env:PGPASSWORD = $dbPassword
+$check = psql -h $PgHost -U $DbUser -d $DbName -tAc "SELECT 1" 2>&1
+if ($LASTEXITCODE -ne 0 -or ($check -join "") -notmatch "1") {
+  throw @"
+'$DbUser' foydalanuvchisi bazaga ulana olmadi.
+
+$($check -join "`n")
+
+Ehtimol pg_hba.conf da parol bilan kirish taqiqlangan.
+Fayl: C:\Program Files\PostgreSQL\18\data\pg_hba.conf
+Unda 127.0.0.1 uchun usul 'scram-sha-256' yoki 'md5' bo'lishi kerak.
+O'zgartirgandan keyin PostgreSQL xizmatini qayta ishga tushiring.
+"@
+}
+Ok "Ulanish tekshirildi: $DbUser@$DbName"
 
 # ---------------------------------------------------------------------------
 Step "3/8  Fayllarni ko'chirish va sozlash"
@@ -176,9 +241,22 @@ if (Test-Path (Join-Path $InstallDir "node_modules")) {
 # ---------------------------------------------------------------------------
 Step "4/8  Sxema va boshlang'ich ma'lumotlar"
 
-npm run migrate
+$mig = npm run migrate 2>&1 | Out-String
+Write-Host $mig
+if ($LASTEXITCODE -ne 0 -or $mig -match "Migratsiya xatosi") {
+  throw @"
+Baza sxemasini o'rnatib bo'lmadi.
+
+Yuqoridagi xabarga qarang. Ko'p uchraydigan sabab: '$DbUser'
+foydalanuvchisining paroli bazadagisiga to'g'ri kelmayapti.
+Bu holda shu skriptni boshidan qayta ishga tushiring - u parolni
+yangilab, .env ga ham yozib qo'yadi.
+"@
+}
+
 $seed = npm run seed 2>&1 | Out-String
 Write-Host $seed
+if ($LASTEXITCODE -ne 0) { throw "Boshlang'ich ma'lumotlarni yozib bo'lmadi.`n$seed" }
 Ok "Baza tayyor"
 
 # ---------------------------------------------------------------------------
@@ -322,17 +400,55 @@ if ($browser) {
 }
 
 # ---------------------------------------------------------------------------
+# Server haqiqatan javob berayotganini tekshiramiz. Ilgari skript "o'rnatildi"
+# deb yozardi-yu, server esa ishga tushmagan bo'lishi mumkin edi - xodim
+# buni faqat dastur ulanmaganda bilardi.
+Write-Host "`nServer javob berishini kutamiz..." -ForegroundColor Cyan
+
+try {
+  Add-Type @"
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+public class LabCoreInstallPolicy : ICertificatePolicy {
+  public bool CheckValidationResult(ServicePoint s, X509Certificate c, WebRequest r, int p) { return true; }
+}
+"@ -ErrorAction SilentlyContinue
+  [System.Net.ServicePointManager]::CertificatePolicy = New-Object LabCoreInstallPolicy
+  [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+} catch { }
+
+$scheme = $null
+for ($i = 1; $i -le 20; $i++) {
+  foreach ($s in @("https", "http")) {
+    try {
+      $r = Invoke-RestMethod -Uri "$s`://localhost`:$Port/api/health" -TimeoutSec 3
+      if ($r.ok) { $scheme = $s; break }
+    } catch { }
+  }
+  if ($scheme) { break }
+  Start-Sleep -Seconds 1
+}
+
+if ($scheme) {
+  Ok "Server ishlayapti ($scheme)"
+} else {
+  Warn "Server hali javob bermayapti."
+  Warn "Xatoni ko'rish uchun: cd $InstallDir  va  node src\index.js"
+  $scheme = "https"
+}
+
+# ---------------------------------------------------------------------------
 Write-Host "`n============================================================" -ForegroundColor Green
 Write-Host " LabCore o'rnatildi" -ForegroundColor Green
 Write-Host "============================================================"
-Write-Host " Server manzili   : https://$ip`:$Port" -ForegroundColor Cyan
+Write-Host " Server manzili   : $scheme`://$ip`:$Port" -ForegroundColor Cyan
 Write-Host "   ^-- SHU MANZILNI YOZIB OLING"
 Write-Host " Ish stansiyalari : LabCore-DASTUR.exe ochilganda ayni shu manzilni kiriting"
-Write-Host " Shu kompyuterda  : https://localhost`:$Port ham ishlaydi"
+Write-Host " Shu kompyuterda  : $scheme`://localhost`:$Port ham ishlaydi"
 Write-Host " Ish stoli        : 'LabCore' belgichasini bosing"
 Write-Host " Avtozapusk       : kompyuter yoqilganda LabCore o'zi ochiladi"
 Write-Host " Telefon uchun    : 'LabCore - telefonga ulash' belgichasi (QR kod)"
-Write-Host "                    yoki https://$ip`:$Port/telefon"
+Write-Host "                    yoki $scheme`://$ip`:$Port/telefon"
 Write-Host " Login/parol      : yuqoridagi 'seed' natijasiga qarang (admin / Admin12345)"
 Write-Host ""
 Write-Host " DIQQAT: birinchi kirishdayoq parolni almashtiring!" -ForegroundColor Yellow
