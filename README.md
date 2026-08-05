@@ -3,36 +3,28 @@
 Bu shoxobcha faqat tayyor to'plamni saqlash uchun. Kod
 `claude/lab-management-system-ipsi88` shoxobchasida.
 
-## Tez tuzatish: o'rnatish 3/8-qadamda to'xtab qolsa
+## Ulanmayaptimi? Tuzatish shu yerda
 
-Ekranda qizil xato chiqsa:
+Dastur "Ulanib bo'lmadi: connect ECONNREFUSED" desa yoki o'rnatish paytida
+**`openssl topilmadi`** yozuvi chiqqan bo'lsa — HTTPS sertifikati yasalmagan
+degani. Server HTTPS'siz ko'tarilgan, dasturga esa `https://` manzil yozilgan.
 
-```
-Exception calling "AddAccessRule" with "1" argument(s):
-"Some or all identity references could not be translated."
-```
+Tuzatildi: endi **openssl umuman kerak emas** — Windows yasaydigan sertifikat
+(PFX) to'g'ridan-to'g'ri ishlatiladi.
 
-bu — **ruscha (yoki boshqa tildagi) Windows** muammosi: skript inglizcha
-`Administrators` / `SYSTEM` hisob nomlarini qidirardi, ular esa faqat
-inglizcha Windows'da bor. Tuzatildi.
+[**LabCore-TUZATISH.zip**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-TUZATISH.zip) — 370 KB
 
-**Butun arxivni qayta yuklamasdan tuzatish — 8 KB:**
+1. Arxivni oching, **`TUZAT.bat`** ni ikki marta bosing —
+   u yangi fayllarni LabCore papkangizga o'zi ko'chiradi
+2. `LabCore-toliq` papkangizdagi `ORNATISH.bat` → o'ng tugma →
+   **Run as administrator**
+3. O'rnatish tugagach ekranda server manzili chiqadi — **o'shani** dasturga yozing
 
-[**LabCore-TUZATISH.zip**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-TUZATISH.zip)
+Qayta o'rnatish xavfsiz: baza va bemor ma'lumotlari saqlab qolinadi.
 
-1. Shu arxivni yuklab oling (telefonda ham bo'ladi) va fleshka orqali kompyuterga o'tkazing
-2. Arxivni oching va ichidagi **`TUZAT.bat`** ni ikki marta bosing —
-   u LabCore papkangizni o'zi topib, yangi faylni eskisining ustiga yozadi
-3. `LabCore-toliq` papkangizdagi `ORNATISH.bat` → o'ng tugma →
-   **Run as administrator** — boshidan qayta ishga tushiring
-
-Qayta ishga tushirish xavfsiz: baza mavjud bo'lsa saqlab qolinadi.
-
-Qo'lda qo'ymoqchi bo'lsangiz — arxivdagi `install-server.ps1` ni shu joyga ko'chiring:
-`LabCore-toliq\server\deploy\windows\install-server.ps1`
-
-Yoki yangilangan `LabCore-toliq.zip` ni to'liq qayta yuklab oling — ichida
-xuddi shu tuzatish bor.
+**Yana ulanmasa** — arxivdagi **`TEKSHIR.bat`** ni ishga tushiring. U server
+ishlayaptimi, qaysi portda, `http` yoki `https` ekanini tekshiradi va
+dasturga yoziladigan aniq manzilni aytadi.
 
 ---
 
@@ -118,13 +110,19 @@ Batafsil: arxiv ichidagi `OQING.txt` va `server/docs/ornatish.md`.
 ## Nazorat summasi
 
 ```
-LabCore-toliq.zip      00e36403561f4d28b66cc75593cadc1f878434c4186d9594a2490e7283ad72bf
+LabCore-toliq.zip      53fa8cef8981f0001a944f7222250d78d1282ee593305232c47fcf65c65e6178
+LabCore-TUZATISH.zip   1bb1238006d022e41e3f7799bfe05e4170f1b9c455b4b70813fbf3809bd8fae3
 LabCore-YANGILASH.zip  4201dc4545de284082263f10e95bd65b259f0756ec936cd8ba369cbad198230a
-install-server.ps1     2fb685e9bb1b0efdb0b2f30d10f89176dd169b15b4909fb5fcc984fbd6a7f733
-LabCore-TUZATISH.zip   40532e3be63408a6d4b807e118fb97798c92e1e155febcdc213252ba2124a4e0
 ```
 
 ## Tuzatishlar tarixi
+
+**2026-08-05 (3.2-nashr).** HTTPS uchun `openssl` kerak emas. Ilgari
+o'rnatuvchi sertifikatni PEM'ga o'girish uchun openssl'ni qidirardi, u
+Windows'da odatda yo'q — natijada server HTTPS'siz qolib, dastur
+"ECONNREFUSED" berardi. Endi Windows yasaydigan PFX to'g'ridan-to'g'ri
+ishlatiladi. `TEKSHIR.bat` qo'shildi: ulanmagan holatda sababni topadi va
+qaysi manzilni yozish kerakligini aytadi.
 
 **2026-08-05 (3.1-nashr).** Ruscha Windows'da o'rnatish 3/8-qadamda
 to'xtab qolardi: `.env` fayl huquqlari inglizcha `Administrators` va
