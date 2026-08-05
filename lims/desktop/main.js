@@ -358,12 +358,24 @@ function checkServer(url) {
         let data = '';
         res.on('data', (c) => { data += c; });
         res.on('end', () => {
+          let body;
           try {
-            const body = JSON.parse(data);
-            resolve({ ok: !!body.ok, lab: body.lab || null, selfSigned });
+            body = JSON.parse(data);
           } catch {
-            resolve({ ok: false, error: `Server tushunarsiz javob qaytardi (kod ${res.statusCode})` });
+            return resolve({ ok: false, error: `Server tushunarsiz javob qaytardi (kod ${res.statusCode})` });
           }
+          if (body.ok) return resolve({ ok: true, lab: body.lab || null, selfSigned });
+
+          // Server javob berdi, lekin o'zini sog'lom deb hisoblamayapti.
+          // Sababini ko'rsatmasak, xodim "server javob bermadi" degan
+          // mazmunsiz xabarni ko'radi va nima qilishni bilmaydi.
+          resolve({
+            ok: false,
+            error:
+              `Server ishlayapti, lekin bazaga ulana olmayapti (kod ${res.statusCode}).` +
+              (body.error ? `\n${body.error}` : '') +
+              '\nServer kompyuterda TEKSHIR.bat ni ishga tushiring.',
+          });
         });
       },
     );
