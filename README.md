@@ -3,6 +3,24 @@
 Bu shoxobcha faqat tayyor to'plamni saqlash uchun. Kod
 `claude/lab-management-system-ipsi88` shoxobchasida.
 
+## Ish stansiyasi dasturi yangilandi
+
+Dastur "Ulanib bo'lmadi: server javob bermadi" deb mazmunsiz xabar berardi
+va sozlash oynasida avtozapusk belgisi yo'q edi. Yangi nusxa:
+
+[**LabCore-DASTUR.exe**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-DASTUR.exe) — 71 MB
+
+Eski faylning ustiga yozing (o'rnatish shart emas, shundoq ishlaydi).
+
+* sozlash oynasida **"Kompyuter yoqilganda avtomatik ochilsin"** belgisi
+* menyuda **Sozlamalar → avtozapusk** o'chirgichi
+* ulanish xatosi endi sababini aytadi ("bazaga ulana olmayapti", kod bilan)
+* dastur ikki marta ochilmaydi
+
+`LabCore-toliq.zip` ichida ham shu yangi nusxa bor.
+
+---
+
 ## Ulanmayaptimi? Bitta tugma bilan tuzatiladi
 
 [**LabCore-TUZATISH.zip**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-TUZATISH.zip) — 390 KB
@@ -121,12 +139,17 @@ Batafsil: arxiv ichidagi `OQING.txt` va `server/docs/ornatish.md`.
 ## Nazorat summasi
 
 ```
-LabCore-toliq.zip      a0143b279445ecfe636308e6d3c0f225988b6c864a1842926a15f8bc905658c0
+LabCore-toliq.zip      6d71de55d48f6285aa6269c895f0a6b56067f0f0d3b752897db3589bd3e62694
+LabCore-DASTUR.exe     6c407448f4d0a708dddfd46120923fdb51ae3cc79ecea5f2ad0f29b8ae5f2d40
 LabCore-TUZATISH.zip   d47aa91a5d0d5cfdd046a65efc6c50fccd0597a4b4f6c762858aad9d3bd30673
 LabCore-YANGILASH.zip  4201dc4545de284082263f10e95bd65b259f0756ec936cd8ba369cbad198230a
 ```
 
 ## Tuzatishlar tarixi
+
+**2026-08-06 (3.8-nashr).** `LabCore-DASTUR.exe` qayta yig'ildi: avtozapusk
+belgisi, bitta nusxa qulfi va ulanish xatosining aniq sababi endi dastur
+ichida. Ilgari `.exe` 2-nashrdan qolgan edi.
 
 **2026-08-05 (3.7-nashr).** `.env` ataylab faqat administratorlarga ochiq
 (unda baza paroli bor). Skriptlar oddiy huquq bilan ishlatilganda faylni
