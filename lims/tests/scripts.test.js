@@ -6,6 +6,20 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { config } from '../src/config.js';
 
+/** deploy/windows ichidagi barcha .ps1 fayllar (ichki papkalar bilan). */
+function psScripts() {
+  const root = path.join(config.root, 'deploy', 'windows');
+  const out = [];
+  const walk = (dir, prefix = '') => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (e.isDirectory()) walk(path.join(dir, e.name), prefix + e.name + '/');
+      else if (e.name.endsWith('.ps1')) out.push({ name: prefix + e.name, file: path.join(dir, e.name) });
+    }
+  };
+  walk(root);
+  return out;
+}
+
 /**
  * Windows PowerShell 5.1 .ps1 faylni UTF-8 emas, ANSI (CP1251/CP1252) deb
  * o'qiydi. Shunda '—' belgisi (E2 80 94) 'â€"' bo'lib chiqadi va ichidagi
@@ -15,12 +29,11 @@ import { config } from '../src/config.js';
  * u holda kodlash qanday talqin qilinishidan qat'i nazar fayl bir xil o'qiladi.
  */
 test('PowerShell skriptlari faqat ASCII belgilardan iborat', () => {
-  const dir = path.join(config.root, 'deploy', 'windows');
-  const scripts = fs.readdirSync(dir).filter((f) => f.endsWith('.ps1'));
+  const scripts = psScripts();
   assert.ok(scripts.length > 0, 'skriptlar topilmadi');
 
-  for (const name of scripts) {
-    const buf = fs.readFileSync(path.join(dir, name));
+  for (const { name, file } of scripts) {
+    const buf = fs.readFileSync(file);
     const bad = [];
     for (let i = 0; i < buf.length; i++) {
       if (buf[i] > 127) {
@@ -36,9 +49,8 @@ test('PowerShell skriptlari faqat ASCII belgilardan iborat', () => {
 
 /** Sintaksis buzilmaganini oddiy tekshiruv: qavslar muvozanati. */
 test('PowerShell skriptlarida qavslar muvozanatda', () => {
-  const dir = path.join(config.root, 'deploy', 'windows');
-  for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.ps1'))) {
-    const text = fs.readFileSync(path.join(dir, name), 'utf8')
+  for (const { name, file } of psScripts()) {
+    const text = fs.readFileSync(file, 'utf8')
       .replace(/#.*$/gm, '')          // izohlar
       .replace(/"[^"\n]*"/g, '""')    // qo'shtirnoqli satrlar
       .replace(/'[^'\n]*'/g, "''");   // bitta tirnoqli satrlar
@@ -93,11 +105,10 @@ test('avtozapusk.ps1 uchala rejimni qo‘llaydi', () => {
  * xatosi bilan to'xtaydi. Shuning uchun faqat SID ishlatiladi.
  */
 test('PowerShell skriptlarida tilga bog\'liq hisob nomlari yo\'q', () => {
-  const dir = path.join(config.root, 'deploy', 'windows');
   const bad = [];
 
-  for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.ps1'))) {
-    const lines = fs.readFileSync(path.join(dir, name), 'utf8').split('\n');
+  for (const { name, file } of psScripts()) {
+    const lines = fs.readFileSync(file, 'utf8').split('\n');
     lines.forEach((line, i) => {
       if (line.trim().startsWith('#')) return;                    // izohlar
       // Tirnoq ichidagi hisob nomlari: "Administrators", 'SYSTEM', "Everyone" ...
