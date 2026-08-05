@@ -85,3 +85,37 @@ test('avtozapusk.ps1 uchala rejimni qo‘llaydi', () => {
   assert.match(text, /Remove-ItemProperty/, 'o‘chirish yo‘q');
   assert.match(text, /Set-ItemProperty/, 'yoqish yo‘q');
 });
+
+/**
+ * Windows hisob nomlari tilga bog'liq: ruscha Windows'da "Administrators"
+ * va "SYSTEM" degan hisoblar yo'q. Ularni matn sifatida ishlatilsa skript
+ *   "Some or all identity references could not be translated"
+ * xatosi bilan to'xtaydi. Shuning uchun faqat SID ishlatiladi.
+ */
+test('PowerShell skriptlarida tilga bog\'liq hisob nomlari yo\'q', () => {
+  const dir = path.join(config.root, 'deploy', 'windows');
+  const bad = [];
+
+  for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.ps1'))) {
+    const lines = fs.readFileSync(path.join(dir, name), 'utf8').split('\n');
+    lines.forEach((line, i) => {
+      if (line.trim().startsWith('#')) return;                    // izohlar
+      // Tirnoq ichidagi hisob nomlari: "Administrators", 'SYSTEM', "Everyone" ...
+      const m = line.match(/["'](Administrators|SYSTEM|Everyone|Users|BUILTIN\\[^"']+|NT AUTHORITY\\[^"']+)["']/);
+      if (m) bad.push(`${name}:${i + 1} — ${m[1]}`);
+    });
+  }
+
+  assert.deepEqual(bad, [],
+    `Hisob nomi o'rniga SID ishlating (S-1-5-32-544 = Administrators, S-1-5-18 = SYSTEM):\n  ${bad.join('\n  ')}`);
+});
+
+/** Vazifa yaratishda SYSTEM SID'dan mahalliy nomga o'giriladi. */
+test('rejalashtirilgan vazifa SID orqali yaratiladi', () => {
+  const text = fs.readFileSync(
+    path.join(config.root, 'deploy', 'windows', 'install-server.ps1'), 'utf8');
+  assert.match(text, /S-1-5-18/, 'SYSTEM SID ishlatilmagan');
+  assert.match(text, /S-1-5-32-544/, 'Administrators SID ishlatilmagan');
+  assert.match(text, /Translate\(\[System\.Security\.Principal\.NTAccount\]\)/,
+    'SID mahalliy nomga o‘girilmagan');
+});

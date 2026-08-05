@@ -32,9 +32,36 @@ const api = (method, url, { body, tok } = {}) =>
  * Test kun davomida istalgan vaqtda ishlashi uchun soat qat'iy yozilmaydi.
  */
 const SLOT_MS = 15 * 60_000;
+
+/**
+ * Boshlang'ich nuqta: hozirdan 30 daqiqa keyingi oraliq. Lekin test kech
+ * ishga tushsa (masalan 22:50 da), keyingi bir necha oraliq ish vaqti
+ * oxiridan yoki hatto yarim tundan o'tib ketadi va navbatlar boshqa kunga
+ * tushib qoladi. Shunda testlar sababsiz yiqilardi. Shuning uchun kun
+ * oxiriga yaqin bo'lsak, ertangi kunning ish boshiga o'tamiz.
+ */
+const SLOTS_NEEDED = 6;
+const startOfSlots = (() => {
+  const rounded = Math.ceil((Date.now() + 30 * 60_000) / SLOT_MS) * SLOT_MS;
+  const last = new Date(rounded + SLOTS_NEEDED * SLOT_MS);
+
+  const [endH, endM] = (process.env.WORK_END || '23:45').split(':').map(Number);
+  const endsToday = localTime(new Date(rounded)) <= localTime(last)          // yarim tundan o'tmadi
+    && localTime(last) <= `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+  if (endsToday) return rounded;
+
+  // Ertangi kunning ish boshi (laboratoriya vaqt mintaqasida)
+  const [startH, startM] = (process.env.WORK_START || '08:00').split(':').map(Number);
+  const t = new Date(Date.now() + 864e5);
+  const iso = `${localDate(t)}T${String(startH).padStart(2, '0')}:${String(startM).padStart(2, '0')}:00`;
+  // Sana laboratoriya mintaqasida berilgani uchun mintaqa siljishini hisobga olamiz.
+  const asUtc = new Date(iso + 'Z');
+  const shift = new Date(asUtc.toLocaleString('en-US', { timeZone: config.timezone })) - asUtc;
+  return Math.ceil((asUtc.getTime() - shift + 60 * 60_000) / SLOT_MS) * SLOT_MS;
+})();
+
 function slot(index = 0) {
-  const base = Math.ceil((Date.now() + 30 * 60_000) / SLOT_MS) * SLOT_MS;
-  return new Date(base + index * SLOT_MS).toISOString();
+  return new Date(startOfSlots + index * SLOT_MS).toISOString();
 }
 
 /**

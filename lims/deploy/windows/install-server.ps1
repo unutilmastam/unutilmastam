@@ -134,15 +134,34 @@ LABCORE_SSL_REDIRECT_PORT=$HttpPort
 BACKUP_KEEP_DAYS=30
 "@ | Set-Content "$InstallDir\.env" -Encoding UTF8
 
-# .env faylini faqat administratorlar o'qiy olsin
-$acl = Get-Acl "$InstallDir\.env"
-$acl.SetAccessRuleProtection($true, $false)
-$acl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule(
-  "Administrators","FullControl","Allow")))
-$acl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule(
-  "SYSTEM","FullControl","Allow")))
-Set-Acl "$InstallDir\.env" $acl
-Ok ".env yozildi va himoyalandi"
+# .env faylini faqat administratorlar o'qiy olsin.
+#
+# DIQQAT: bu yerda "Administrators" va "SYSTEM" kabi INGLIZCHA nomlar
+# ishlatilmaydi. Ruscha yoki boshqa tildagi Windows'da bu nomlar boshqacha
+# ("Administratory", "SISTEMA" deb tarjima qilingan) va skript
+#   "Some or all identity references could not be translated"
+# xatosi bilan to'xtab qolardi. Shuning uchun har qanday tilda bir xil
+# bo'ladigan SID'lar ishlatiladi:
+#   S-1-5-32-544 - BUILTIN\Administrators
+#   S-1-5-18     - LOCAL SYSTEM
+try {
+  $adminSid  = New-Object System.Security.Principal.SecurityIdentifier("S-1-5-32-544")
+  $systemSid = New-Object System.Security.Principal.SecurityIdentifier("S-1-5-18")
+
+  $acl = Get-Acl "$InstallDir\.env"
+  $acl.SetAccessRuleProtection($true, $false)
+  $acl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule(
+    $adminSid,"FullControl","Allow")))
+  $acl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule(
+    $systemSid,"FullControl","Allow")))
+  Set-Acl "$InstallDir\.env" $acl
+  Ok ".env yozildi va himoyalandi"
+} catch {
+  # Huquqlarni qo'ya olmasak ham o'rnatish to'xtamasin: fayl baribir
+  # C:\LabCore ichida va oddiy foydalanuvchi u yerga yoza olmaydi.
+  Warn ".env yozildi, lekin huquqlarni cheklab bo'lmadi: $($_.Exception.Message)"
+  Warn "Kerak bo'lsa qo'lda: fayl xossalari -> Security -> faqat Administrators va SYSTEM"
+}
 
 if (Test-Path (Join-Path $InstallDir "node_modules")) {
   Ok "Kutubxonalar to'plam ichida keldi - internet kerak emas"
@@ -162,9 +181,28 @@ Ok "Baza tayyor"
 # ---------------------------------------------------------------------------
 Step "5/8  HTTPS sertifikat (telefonga ilova o'rnatish uchun shart)"
 
-$ip = (Get-NetIPAddress -AddressFamily IPv4 |
-       Where-Object { $_.IPAddress -notlike "127.*" -and $_.PrefixOrigin -ne "WellKnown" } |
+# Laboratoriya tarmog'idagi manzilni topamiz. Kompyuterda VirtualBox, WSL
+# yoki VPN adapterlari ham bo'lishi mumkin - shuning uchun ishlab turgan
+# adapterlar orasidan odatdagi uy/ofis tarmog'i manzillari oldinga qo'yiladi.
+$ip = (Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
+       Where-Object {
+         $_.IPAddress -notlike "127.*" -and
+         $_.IPAddress -notlike "169.254.*" -and
+         $_.PrefixOrigin -ne "WellKnown" -and
+         (Get-NetAdapter -InterfaceIndex $_.InterfaceIndex -ErrorAction SilentlyContinue).Status -eq "Up"
+       } |
+       Sort-Object -Property @{ Expression = {
+         if     ($_.IPAddress -like "192.168.*") { 0 }
+         elseif ($_.IPAddress -like "10.*")      { 1 }
+         elseif ($_.IPAddress -like "172.*")     { 2 }
+         else                                    { 3 }
+       } } |
        Select-Object -First 1).IPAddress
+
+if (-not $ip) {
+  Warn "Tarmoq manzili topilmadi - localhost ishlatiladi (faqat shu kompyuterda ochiladi)"
+  $ip = "localhost"
+}
 $hostName = $env:COMPUTERNAME.ToLower()
 
 $cert = New-SelfSignedCertificate `
@@ -205,13 +243,22 @@ Ok "Portlar ochildi: $Port (HTTPS), $HttpPort (HTTP -> yo'naltirish)"
 # ---------------------------------------------------------------------------
 Step "7/8  Avtomatik ishga tushirish"
 
-$action  = New-ScheduledTaskAction -Execute "node.exe" -Argument "src\index.js" -WorkingDirectory $InstallDir
+# Vazifa SYSTEM nomidan ishlaydi. "SYSTEM" so'zi ham tilga bog'liq bo'lgani
+# uchun SID'dan shu kompyuterdagi haqiqiy nomga o'giriladi.
+$systemAccount = (New-Object System.Security.Principal.SecurityIdentifier("S-1-5-18")
+  ).Translate([System.Security.Principal.NTAccount]).Value
+
+# node.exe ni to'liq manzili bilan yozamiz: SYSTEM hisobining PATH'i
+# foydalanuvchinikidan boshqacha bo'lishi mumkin.
+$nodeExe = (Get-Command node).Source
+
+$action  = New-ScheduledTaskAction -Execute $nodeExe -Argument "src\index.js" -WorkingDirectory $InstallDir
 $trigger = New-ScheduledTaskTrigger -AtStartup
 $settings = New-ScheduledTaskSettingsSet -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) `
             -ExecutionTimeLimit ([TimeSpan]::Zero) -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
 
 Register-ScheduledTask -TaskName "LabCore" -Action $action -Trigger $trigger -Settings $settings `
-  -User "SYSTEM" -RunLevel Highest -Force | Out-Null
+  -User $systemAccount -RunLevel Highest -Force | Out-Null
 Start-ScheduledTask -TaskName "LabCore"
 Ok "'LabCore' vazifasi yaratildi va ishga tushirildi"
 
@@ -220,7 +267,7 @@ $backupAction = New-ScheduledTaskAction -Execute "powershell.exe" `
   -Argument "-ExecutionPolicy Bypass -File `"$InstallDir\deploy\windows\backup.ps1`"" -WorkingDirectory $InstallDir
 $backupTrigger = New-ScheduledTaskTrigger -Daily -At 1:30AM
 Register-ScheduledTask -TaskName "LabCore-Backup" -Action $backupAction -Trigger $backupTrigger `
-  -User "SYSTEM" -RunLevel Highest -Force | Out-Null
+  -User $systemAccount -RunLevel Highest -Force | Out-Null
 Ok "Kunlik zaxira sozlandi (har kuni 01:30)"
 
 # ---------------------------------------------------------------------------
@@ -274,8 +321,10 @@ if ($browser) {
 Write-Host "`n============================================================" -ForegroundColor Green
 Write-Host " LabCore o'rnatildi" -ForegroundColor Green
 Write-Host "============================================================"
-Write-Host " Server manzili   : https://$ip`:$Port"
-Write-Host " Ish stansiyalari : shu manzilni brauzerga yoki LabCore dasturiga kiriting"
+Write-Host " Server manzili   : https://$ip`:$Port" -ForegroundColor Cyan
+Write-Host "   ^-- SHU MANZILNI YOZIB OLING"
+Write-Host " Ish stansiyalari : LabCore-DASTUR.exe ochilganda ayni shu manzilni kiriting"
+Write-Host " Shu kompyuterda  : https://localhost`:$Port ham ishlaydi"
 Write-Host " Ish stoli        : 'LabCore' belgichasini bosing"
 Write-Host " Avtozapusk       : kompyuter yoqilganda LabCore o'zi ochiladi"
 Write-Host " Telefon uchun    : 'LabCore - telefonga ulash' belgichasi (QR kod)"
