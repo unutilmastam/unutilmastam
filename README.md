@@ -3,27 +3,39 @@
 Bu shoxobcha faqat tayyor to'plamni saqlash uchun. Kod
 `claude/lab-management-system-ipsi88` shoxobchasida.
 
-## Ulanmayaptimi? Tuzatish shu yerda
+## Server ishga tushmayaptimi? Sabab topildi
 
 [**LabCore-TUZATISH.zip**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-TUZATISH.zip) — 380 KB
 
-1. Arxivni **to'liq oching** (o'ng tugma → Extract All) — arxiv ichidan turib bosmang
-2. **`TUZAT.bat`** → ikki marta bosing (yangi fayllarni LabCore papkangizga ko'chiradi)
-3. **`TEKSHIR.bat`** → ikki marta bosing (server nega ishlamayotganini ko'rsatadi)
+1. Arxivni **to'liq oching** (o'ng tugma → Extract All)
+2. **`TUZAT.bat`** → ikki marta bosing
+3. **`TEKSHIR.bat`** → ikki marta bosing
 
-Ikki marta bosish ishlamasa: `tuzat.ps1` yoki `tekshir.ps1` → o'ng tugma →
-**"Run with PowerShell"**.
+**Asosiy sabab** — server dasturidagi "meni to'g'ridan-to'g'ri ishga
+tushirishdimi?" degan tekshiruv Linux uchun to'g'ri, Windows uchun noto'g'ri
+yozilgan edi:
 
-**Nima tuzatildi:**
+```
+Linux'da   yo'l:  /opt/labcore/src/index.js   -> mos keladi
+Windows'da yo'l:  C:\LabCore\src\index.js     -> MOS KELMAYDI
+```
+
+Shuning uchun Windows'da Node dasturni yuklardi, lekin serverni ishga
+tushirish buyrug'i **umuman bajarilmasdi** — jarayon xatosiz, bir og'iz
+xabarsiz tugardi. Vazifa "Ready" turardi, port bo'sh edi, jurnal ham
+bo'sh edi.
+
+**Boshqa tuzatishlar:**
 
 | Xato | Endi |
 |---|---|
-| `.bat` oynasi ochilib darrov yopilib ketardi | Fayllar Windows qator tugashi (CRLF) bilan; skript o'zi Enter kutadi |
-| Server ishga tushmasa sababi hech qayerda ko'rinmasdi | `logs\server.log` jurnali; `TEKSHIR.bat` xatoni o'zi ko'rsatadi |
-| `HOLAT.bat`: `parameter 'SkipCertificateCheck'` xatosi | PowerShell 5.1 uchun to'g'ri usul |
-| `postgres` paroli noto'g'ri bo'lsa ham "OK" deb davom etardi | Parol oldindan tekshiriladi, 3 marta qayta so'raladi |
-| `localhost` IPv6 (`::1`) → `Permission denied (10013)` | `psql` aniq `127.0.0.1` ga ulanadi |
-| `openssl topilmadi` → HTTPS yasalmasdi | Windows PFX to'g'ridan-to'g'ri ishlatiladi |
+| Windows'da server jimgina ishga tushmasdi | Yo'l farqi Node'ning o'z vositasi bilan hisobga olinadi |
+| `.bat` oynasi ochilib darrov yopilib ketardi | CRLF qator tugashi; skript o'zi Enter kutadi |
+| Server xatosi hech qayerda ko'rinmasdi | `logs\server.log` jurnali; `TEKSHIR.bat` xatoni ko'rsatadi |
+| `HOLAT.bat`: `parameter 'SkipCertificateCheck'` | PowerShell 5.1 uchun to'g'ri usul |
+| `postgres` paroli noto'g'ri bo'lsa ham "OK" | Parol oldindan tekshiriladi |
+| `localhost` IPv6 → `Permission denied (10013)` | `psql` aniq `127.0.0.1` ga ulanadi |
+| `openssl topilmadi` → HTTPS yasalmasdi | Windows PFX ishlatiladi |
 | Ruscha Windows'da `identity references` xatosi | Hisob nomlari o'rniga SID |
 
 ---
@@ -110,12 +122,19 @@ Batafsil: arxiv ichidagi `OQING.txt` va `server/docs/ornatish.md`.
 ## Nazorat summasi
 
 ```
-LabCore-toliq.zip      26c007c7c4f73fae4dd505fbc09155c2d17a97d13e0862c52fdcea83be3c7d44
-LabCore-TUZATISH.zip   1413d662517d6549e6314fc265802d2ff06bedc91f20a6652ea703044721a91f
+LabCore-toliq.zip      9aaa460134a4013b72b937c5f316f30fb25064eaed9b8571c9c3e2c8b213aabb
+LabCore-TUZATISH.zip   51e9a9a8f5cb47b15231872d547a7c120147b6430773ff020b0044a42435271a
 LabCore-YANGILASH.zip  4201dc4545de284082263f10e95bd65b259f0756ec936cd8ba369cbad198230a
 ```
 
 ## Tuzatishlar tarixi
+
+**2026-08-05 (3.6-nashr).** Windows'da server umuman ishga tushmasdi:
+`import.meta.url === \`file://${process.argv[1]}\`` tekshiruvi Windows
+yo'llarida hech qachon mos kelmaydi, shuning uchun `start()` chaqirilmasdi
+va jarayon xabarsiz tugardi. Endi `pathToFileURL` ishlatiladi.
+Testlarga `tests/entry.test.js` qo'shildi — serverni haqiqatan ishga
+tushirib tekshiradi.
 
 **2026-08-05 (3.5-nashr).** `.bat` fayllar Linux'da yasalgani uchun qator
 tugashi `\n` edi; `cmd.exe` esa `\r\n` kutadi va faylni buzib o'qir,
