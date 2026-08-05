@@ -10,6 +10,14 @@
 param([string]$InstallDir = "C:\LabCore")
 
 $ErrorActionPreference = "Continue"
+
+# Oyna darrov yopilib ketmasin: .bat dagi "pause" ba'zan o'tkazib yuboriladi
+# (masalan skript "Run with PowerShell" bilan to'g'ridan-to'g'ri ochilganda).
+function Wait-Enter {
+  Write-Host ""
+  Write-Host "Yopish uchun Enter bosing..." -ForegroundColor DarkGray
+  try { Read-Host | Out-Null } catch { }
+}
 function Head($t) { Write-Host "`n=== $t ===" -ForegroundColor Cyan }
 function Ok($t)   { Write-Host "  OK: $t" -ForegroundColor Green }
 function Bad($t)  { Write-Host "  XATO: $t" -ForegroundColor Red }
@@ -146,7 +154,8 @@ if (-not $ishlaydi) {
   Write-Host ""
   Write-Host " Yuqoridagi sariq satrlarni menga yuboring - sabab o'sha yerda." -ForegroundColor Yellow
   Write-Host ""
-  return
+  Wait-Enter
+  exit
 }
 
 # Ishlayotgan bo'lsa - qaysi manzilni yozish kerakligini aytamiz
@@ -177,3 +186,5 @@ if ($ishlaydi -eq "http") {
   Write-Host " Telefonga ilova o'rnatish uchun HTTPS kerak - buni keyin sozlaymiz."
   Write-Host ""
 }
+
+Wait-Enter

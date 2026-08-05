@@ -247,3 +247,55 @@ test('server chiqishi jurnalga yoziladi', () => {
   assert.match(tekshir, /server\.log/, 'tekshiruv jurnalni ko‘rsatmaydi');
   assert.match(tekshir, /Start-Process/, 'tekshiruv serverni sinab ko‘rmaydi');
 });
+
+/**
+ * Windows'ning cmd.exe .bat faylni CRLF (\r\n) bilan kutadi. Linux'da
+ * yasalgan fayl faqat \n bilan chiqadi va cmd uni noto'g'ri o'qiydi:
+ * oyna bir lahza ochilib, "pause" ga yetmasdan yopilib ketadi.
+ * Foydalanuvchida aynan shu bo'lgan.
+ */
+test('.bat fayllar CRLF bilan yoziladi', () => {
+  const dir = path.join(config.root, 'deploy', 'windows');
+  const bad = [];
+  const walk = (d, prefix = '') => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      if (e.isDirectory()) { walk(path.join(d, e.name), prefix + e.name + '/'); continue; }
+      if (!e.name.endsWith('.bat')) continue;
+      const buf = fs.readFileSync(path.join(d, e.name));
+      const lf = (buf.toString('binary').match(/\n/g) || []).length;
+      const crlf = (buf.toString('binary').match(/\r\n/g) || []).length;
+      if (lf !== crlf) bad.push(`${prefix}${e.name} — ${lf - crlf} ta yolg'iz LF`);
+    }
+  };
+  walk(dir);
+  assert.deepEqual(bad, [], `cmd.exe bu fayllarni buzib o'qiydi:\n  ${bad.join('\n  ')}`);
+});
+
+/**
+ * Ishga tushirgich .bat lar imkon qadar sodda bo'lsin: ko'p qatorli
+ * qavs bloklari (if ... ( ... ) else ...) cmd'da eng nozik joy.
+ * Butun mantiq .ps1 ichida bo'ladi.
+ */
+test('ishga tushirgich .bat lar sodda', () => {
+  const dir = path.join(config.root, 'deploy', 'windows', 'paket');
+  for (const name of ['TUZAT.bat', 'TEKSHIR.bat']) {
+    const text = fs.readFileSync(path.join(dir, name), 'utf8');
+    assert.ok(text.split('\n').length <= 10, `${name}: juda uzun (${text.split('\n').length} qator)`);
+    assert.doesNotMatch(text, /\(\s*$/m, `${name}: ko'p qatorli qavs bloki bor`);
+    assert.match(text, /^pause/m, `${name}: pause yo'q - oyna yopilib ketadi`);
+  }
+});
+
+/** Skript erta chiqsa ham oyna kutib turadi. */
+test('tekshiruv va tuzatish oynasi o‘zi yopilmaydi', () => {
+  for (const f of [
+    path.join(config.root, 'deploy', 'windows', 'tekshir.ps1'),
+    path.join(config.root, 'deploy', 'windows', 'paket', 'tuzat.ps1'),
+  ]) {
+    const text = fs.readFileSync(f, 'utf8');
+    assert.match(text, /function Wait-Enter/, `${path.basename(f)}: kutish funksiyasi yo'q`);
+    // Har bir erta chiqishdan oldin ham kutilsin
+    const bareReturn = text.split('\n').filter((l) => /^\s*return\s*$/.test(l));
+    assert.deepEqual(bareReturn, [], `${path.basename(f)}: kutmasdan chiqib ketadigan joy bor`);
+  }
+});

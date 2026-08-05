@@ -11,11 +11,20 @@
 
 $ErrorActionPreference = "Stop"
 
+# Oyna darrov yopilib ketmasin: .bat dagi "pause" ba'zan o'tkazib yuboriladi
+# (masalan skript "Run with PowerShell" bilan to'g'ridan-to'g'ri ochilganda).
+function Wait-Enter {
+  Write-Host ""
+  Write-Host "Yopish uchun Enter bosing..." -ForegroundColor DarkGray
+  try { Read-Host | Out-Null } catch { }
+}
+
 $yangi = Join-Path $PSScriptRoot "yangi"
 if (-not (Test-Path $yangi)) {
   Write-Host "XATO: 'yangi' papkasi shu joyda yo'q" -ForegroundColor Red
   Write-Host "Arxivni to'liq ochganingizga ishonch hosil qiling."
-  return
+  Wait-Enter
+  exit
 }
 
 Write-Host ""
@@ -51,7 +60,8 @@ if ($maqsadlar.Count -eq 0) {
   Write-Host "LabCore papkasi topilmadi." -ForegroundColor Yellow
   Write-Host "'yangi' papkasidagi src, public, db, deploy, scripts papkalarini"
   Write-Host "qo'lda LabCore-toliq\server ichiga ko'chiring (eskilarini almashtiring)."
-  return
+  Wait-Enter
+  exit
 }
 
 Write-Host ""
@@ -84,3 +94,5 @@ Write-Host " O'rnatishdan keyin ham ulanmasa - TEKSHIR.bat ni ishlating,"
 Write-Host " u qaysi manzilni yozish kerakligini aniq aytadi."
 Write-Host "============================================================"
 Write-Host ""
+
+Wait-Enter
