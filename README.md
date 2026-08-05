@@ -5,26 +5,27 @@ Bu shoxobcha faqat tayyor to'plamni saqlash uchun. Kod
 
 ## Ulanmayaptimi? Tuzatish shu yerda
 
-Dastur "Ulanib bo'lmadi: connect ECONNREFUSED" desa yoki o'rnatish paytida
-**`openssl topilmadi`** yozuvi chiqqan bo'lsa — HTTPS sertifikati yasalmagan
-degani. Server HTTPS'siz ko'tarilgan, dasturga esa `https://` manzil yozilgan.
-
-Tuzatildi: endi **openssl umuman kerak emas** — Windows yasaydigan sertifikat
-(PFX) to'g'ridan-to'g'ri ishlatiladi.
-
-[**LabCore-TUZATISH.zip**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-TUZATISH.zip) — 370 KB
+[**LabCore-TUZATISH.zip**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-TUZATISH.zip) — 380 KB
 
 1. Arxivni oching, **`TUZAT.bat`** ni ikki marta bosing —
    u yangi fayllarni LabCore papkangizga o'zi ko'chiradi
 2. `LabCore-toliq` papkangizdagi `ORNATISH.bat` → o'ng tugma →
    **Run as administrator**
-3. O'rnatish tugagach ekranda server manzili chiqadi — **o'shani** dasturga yozing
+3. Parol so'raganda **PostgreSQL `postgres` parolini** kiriting
 
-Qayta o'rnatish xavfsiz: baza va bemor ma'lumotlari saqlab qolinadi.
+Ichida **`TEKSHIR.bat`** ham bor: server ishlayaptimi, qaysi portda,
+`http` yoki `https` — hammasini ko'rsatadi va dasturga yoziladigan aniq
+manzilni aytadi.
 
-**Yana ulanmasa** — arxivdagi **`TEKSHIR.bat`** ni ishga tushiring. U server
-ishlayaptimi, qaysi portda, `http` yoki `https` ekanini tekshiradi va
-dasturga yoziladigan aniq manzilni aytadi.
+**Nima tuzatildi:**
+
+| Xato | Endi |
+|---|---|
+| `postgres` paroli noto'g'ri bo'lsa ham skript "OK" deb davom etardi, baza yaratilmasdi | Parol oldindan tekshiriladi, 3 marta qayta so'raladi |
+| `localhost` IPv6 (`::1`) orqali `Permission denied (10013)` berardi | `psql` aniq `127.0.0.1` ga ulanadi |
+| `openssl topilmadi` → HTTPS yasalmasdi → `ECONNREFUSED` | Windows PFX to'g'ridan-to'g'ri ishlatiladi, openssl kerak emas |
+| Ruscha Windows'da `identity references` xatosi | Hisob nomlari o'rniga SID |
+| "O'rnatildi" deb yozardi, server esa ishlamasligi mumkin edi | Oxirida `/api/health` orqali tekshiriladi |
 
 ---
 
@@ -110,12 +111,19 @@ Batafsil: arxiv ichidagi `OQING.txt` va `server/docs/ornatish.md`.
 ## Nazorat summasi
 
 ```
-LabCore-toliq.zip      53fa8cef8981f0001a944f7222250d78d1282ee593305232c47fcf65c65e6178
-LabCore-TUZATISH.zip   1bb1238006d022e41e3f7799bfe05e4170f1b9c455b4b70813fbf3809bd8fae3
+LabCore-toliq.zip      88634683add29187b107a0ccd25a51d077269dc5a2f9f010aec66faa3d916bbd
+LabCore-TUZATISH.zip   af80a0710bd5f98fe737e6143bb77629a06eea2a304acebb274e3190982403bc
 LabCore-YANGILASH.zip  4201dc4545de284082263f10e95bd65b259f0756ec936cd8ba369cbad198230a
 ```
 
 ## Tuzatishlar tarixi
+
+**2026-08-05 (3.3-nashr).** O'rnatuvchi `psql` xatosini yutib yuborardi:
+`postgres` paroli noto'g'ri kiritilsa ham "OK" deb davom etar, baza va
+foydalanuvchi yaratilmas, xato esa ancha keyin — migratsiya paytida
+chiqardi. Endi parol oldindan tekshiriladi va qayta so'raladi, har bir
+amal natijasi ko'riladi, oxirida server javob berayotgani tasdiqlanadi.
+`psql` "localhost" o'rniga `127.0.0.1` ga ulanadi (IPv6 bloklanishi).
 
 **2026-08-05 (3.2-nashr).** HTTPS uchun `openssl` kerak emas. Ilgari
 o'rnatuvchi sertifikatni PEM'ga o'girish uchun openssl'ni qidirardi, u
