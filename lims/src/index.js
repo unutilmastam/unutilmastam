@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import path from 'node:path';
 import fs from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { config } from './config.js';
 import { pool, query } from './db.js';
 import { startNotifyWorker } from './services/notify.js';
@@ -219,4 +220,15 @@ export async function start() {
   return server;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) start();
+/**
+ * Fayl to'g'ridan-to'g'ri ishga tushirilganda serverni ko'taramiz
+ * (import qilinganda — masalan testlarda — ko'tarmaymiz).
+ *
+ * DIQQAT: bu yerda `file://${process.argv[1]}` YOZILMAYDI. Windows'da
+ * process.argv[1] "C:\LabCore\src\index.js" ko'rinishida bo'ladi va
+ * "file://C:\LabCore\..." hech qachon import.meta.url ga
+ * ("file:///C:/LabCore/...") teng kelmaydi. Natijada server jimgina,
+ * hech qanday xabarsiz ishga tushmay chiqib ketardi. pathToFileURL
+ * bu farqni o'zi hisobga oladi.
+ */
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) start();
