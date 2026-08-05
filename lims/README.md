@@ -46,6 +46,8 @@ haqiqiy nomini auditga yozadi.
 | **Kameralar** | Jonli kadr, yuz tanish hodisalari, ish joyida bo'lgan vaqt (davomat) |
 | **Ombor** | Reaktivlar, qoldiq, yaroqlilik muddati ogohlantirishi |
 | **Dashboard** | Bugungi bemorlar, analizlar, onlayn xodimlar, daromad, KPI |
+| **Xodimlar** | Rasm (yuz), rol, KPI, sessiyalar; kirish oynasida rasm ko'rinadi |
+| **Kirish** | Login+parol, shaxsiy **PIN kod** (rasmni bosib teriladi), ikki bosqichli login |
 
 ---
 
@@ -140,6 +142,10 @@ loginni yoqing.
    sinab ko'radi.
 4. Kompyuter nomi Windows tizimidan avtomatik olinadi (`LAB-PC-02`) va audit
    jurnaliga shu nom bilan yoziladi — xodim uni o'zgartira olmaydi.
+5. **Avtozapusk**: sozlash oynasidagi "Kompyuter yoqilganda avtomatik ochilsin"
+   belgisi (odatda yoqilgan). Keyin menyudan o'zgartiriladi:
+   **Sozlamalar → "Kompyuter yoqilganda avtomatik ochilsin"**. Dasturni
+   ochmasdan qilish uchun: `deploy\windows\avtozapusk.ps1` (`-Off`, `-Status`).
 
 Dastur o'rnatilmasa ham bo'ladi: brauzerda `http://192.168.1.10:4000` ni ochib,
 **Sozlamalar → Ish stansiyasi** bo'limida kompyuter nomini qo'lda kiritish kerak.
@@ -402,6 +408,11 @@ xonasiga cheklangan kirish.
 * Sessiya bazada saqlanadi: administrator xodimning sessiyasini bir tugma bilan uzadi.
 * Ikki bosqichli login (TOTP — Google/Microsoft Authenticator).
 * 5 marta xato parol → hisob 15 daqiqaga bloklanadi (sozlanadi).
+* **PIN kod** ham bcrypt bilan saqlanadi; 3 marta xato → 10 daqiqa bloklanadi.
+  Blok faqat PIN'ga tegishli — xodim login/parol bilan baribir kira oladi.
+  Ketma-ket (`1234`) va bir xil (`0000`) raqamli PIN qabul qilinmaydi.
+* Kirish oynasida PIN qo'ygan xodimlarning ismi va rasmi ko'rinadi — bu ichki
+  tarmoq uchun qulaylik. Server ochiq tarmoqda tursa: `.env` da `PIN_LOGIN=0`.
 * Rol tekshiruvi har bir so'rovda; ruxsatsiz urinish auditga `ACCESS_DENIED` bo'lib tushadi.
 * Kassir bemorning pasport ma'lumotini ko'rmaydi.
 * Fayl yuklashda tur va hajm cheklovi; yuklab olish faqat avtorizatsiya bilan.
@@ -439,6 +450,9 @@ yoki `httpOnly` cookie orqali. Ish stansiyasi nomi `X-Computer-Name` sarlavhasid
 | Manzil | Tavsif |
 |---|---|
 | `POST /auth/login` `/logout` `/change-password` `/2fa/*` | Kirish va himoya |
+| `GET /auth/pin-users` `/pin-users/:id/photo` `POST /auth/login-pin` | PIN bilan kirish (avtorizatsiyasiz) |
+| `POST /auth/set-pin` `/remove-pin` | O'z PIN kodini boshqarish |
+| `GET/POST/DELETE /users/:id/photo` `/users/:id/pin` | Xodim rasmi va PIN (admin) |
 | `GET/POST/PATCH /patients` `/patients/:id/history` `/patients/:id/audit` | Bemorlar |
 | `POST /visits` `/visits/diagnoses` `GET /visits/doctor-queue` | Murojaat va tashxis |
 | `GET/POST /orders` `POST /orders/:id/results` `/confirm` `GET /orders/:id/report` | Analizlar |

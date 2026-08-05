@@ -13,3 +13,5 @@ process.env.LAB_NAME = 'Test laboratoriya';
 // Navbat testlari kun davomida istalgan vaqtda ishlashi uchun ish vaqti keng
 process.env.WORK_START = '00:00';
 process.env.WORK_END = '23:45';
+// Testlar bitta IP'dan o'nlab kirish so'rovi yuboradi — cheklov halaqit qilmasin.
+process.env.LOGIN_RATE_MAX = '200';

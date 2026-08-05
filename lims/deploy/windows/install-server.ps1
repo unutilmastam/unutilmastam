@@ -21,7 +21,9 @@ param(
   [int]   $Port      = 4000,
   [int]   $HttpPort  = 4080,
   [string]$DbUser    = "labcore",
-  [string]$DbName    = "labcore"
+  [string]$DbName    = "labcore",
+  # Kompyuter yoqilganda LabCore oynasi o'zi ochilishi (o'chirish uchun -NoAutoStart)
+  [switch]$NoAutoStart
 )
 
 $ErrorActionPreference = "Stop"
@@ -235,6 +237,17 @@ if ($browser) {
   $lnk2.IconLocation = "$InstallDir\deploy\windows\labcore.ico"
   $lnk2.Save()
   Ok "'Telefonga ulash' yorlig'i yaratildi (QR kod bilan)"
+
+  # Kompyuter yoqilganda LabCore oynasi o'zi ochilsin.
+  # Yozuv shu foydalanuvchining ro'yxatiga tushadi; o'chirish uchun
+  # .\avtozapusk.ps1 -Off yoki Task Manager -> Startup.
+  if (-not $NoAutoStart) {
+    $runKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+    if (-not (Test-Path $runKey)) { New-Item -Path $runKey -Force | Out-Null }
+    Set-ItemProperty -Path $runKey -Name "LabCore" `
+      -Value "`"$browser`" --app=https://localhost:$Port --window-size=1400,900"
+    Ok "Kompyuter yoqilganda LabCore o'zi ochiladi (o'chirish: avtozapusk.ps1 -Off)"
+  }
 } else {
   Warn "Edge yoki Chrome topilmadi - brauzerda https://localhost:$Port ni oching"
 }
@@ -246,6 +259,7 @@ Write-Host "============================================================"
 Write-Host " Server manzili   : https://$ip`:$Port"
 Write-Host " Ish stansiyalari : shu manzilni brauzerga yoki LabCore dasturiga kiriting"
 Write-Host " Ish stoli        : 'LabCore' belgichasini bosing"
+Write-Host " Avtozapusk       : kompyuter yoqilganda LabCore o'zi ochiladi"
 Write-Host " Telefon uchun    : 'LabCore - telefonga ulash' belgichasi (QR kod)"
 Write-Host "                    yoki https://$ip`:$Port/telefon"
 Write-Host " Login/parol      : yuqoridagi 'seed' natijasiga qarang (admin / Admin12345)"

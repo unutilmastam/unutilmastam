@@ -49,3 +49,39 @@ test('PowerShell skriptlarida qavslar muvozanatda', () => {
     }
   }
 });
+
+/**
+ * Avtozapusk uchta joyda bir-biriga bog'langan: asosiy jarayon (main.js),
+ * ko'prik (preload.js) va sozlash oynasi (setup.js). Biri o'zgarib,
+ * ikkinchisi qolib ketsa belgi bosiladi-yu hech narsa bo'lmaydi —
+ * shuning uchun bog'lanish shu yerda tekshiriladi.
+ */
+test('Windows dasturida avtozapusk uchi-uchiga ulangan', () => {
+  const dir = path.join(config.root, 'desktop');
+  const main = fs.readFileSync(path.join(dir, 'main.js'), 'utf8');
+  const preload = fs.readFileSync(path.join(dir, 'preload.js'), 'utf8');
+  const setup = fs.readFileSync(path.join(dir, 'setup.js'), 'utf8');
+  const html = fs.readFileSync(path.join(dir, 'setup.html'), 'utf8');
+
+  assert.match(main, /setLoginItemSettings/, 'main.js avtozapuskni sozlamaydi');
+  assert.match(main, /ipcMain\.handle\('labcore:set-autostart'/, 'set-autostart kanali yo‘q');
+  assert.match(main, /ipcMain\.handle\('labcore:get-autostart'/, 'get-autostart kanali yo‘q');
+  assert.match(main, /requestSingleInstanceLock/, 'dastur ikki marta ochilishi mumkin');
+
+  assert.match(preload, /labcore:set-autostart/, 'preload set-autostart ni uzatmaydi');
+  assert.match(preload, /labcore:get-autostart/, 'preload get-autostart ni uzatmaydi');
+
+  assert.match(html, /id="autostart"/, 'sozlash oynasida belgi yo‘q');
+  assert.match(setup, /autoStart:\s*autoStart\.checked/, 'belgi saqlanmaydi');
+});
+
+/** Avtozapusk skripti yoqish, o'chirish va holatni ko'rsatishni biladi. */
+test('avtozapusk.ps1 uchala rejimni qo‘llaydi', () => {
+  const file = path.join(config.root, 'deploy', 'windows', 'avtozapusk.ps1');
+  const text = fs.readFileSync(file, 'utf8');
+  assert.match(text, /\[switch\]\$Off/);
+  assert.match(text, /\[switch\]\$Status/);
+  assert.match(text, /CurrentVersion\\Run/);
+  assert.match(text, /Remove-ItemProperty/, 'o‘chirish yo‘q');
+  assert.match(text, /Set-ItemProperty/, 'yoqish yo‘q');
+});

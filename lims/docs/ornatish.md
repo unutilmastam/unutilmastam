@@ -149,10 +149,32 @@ stansiyalariga ko'chirasiz.
 2. Birinchi ochilganda **server manzili** so'raladi: `https://192.168.1.10:4000`
 3. **"Ulanishni tekshirish"** tugmasini bosing — laboratoriya nomi chiqsa,
    ulanish to'g'ri.
-4. "Saqlash va davom etish" → login oynasi.
+4. **"Kompyuter yoqilganda avtomatik ochilsin"** belgisi (odatda yoqilgan turadi)
+   — ertalab xodim hech narsa qidirmaydi, LabCore ekranda turadi.
+5. "Saqlash va davom etish" → login oynasi.
 
 Kompyuter nomi (`LAB-PC-02`) Windows'dan avtomatik olinadi va audit jurnaliga
 yoziladi — xodim uni o'zgartira olmaydi.
+
+### 4.2.1. Avtozapuskni keyin yoqish yoki o'chirish
+
+Dastur menyusidan: **Sozlamalar → "Kompyuter yoqilganda avtomatik ochilsin"**.
+
+Dasturni ochmasdan, ko'p kompyuterda birdan qilish uchun skript ham bor:
+
+```powershell
+.\avtozapusk.ps1                                   # yoqadi
+.\avtozapusk.ps1 -Off                              # o'chiradi
+.\avtozapusk.ps1 -Status                           # holatini ko'rsatadi
+.\avtozapusk.ps1 -ExePath "D:\LabCore-DASTUR.exe"  # fayl boshqa joyda bo'lsa
+```
+
+Yozuv `HKCU\...\CurrentVersion\Run` ga tushadi — administrator huquqi kerak emas
+va faqat shu foydalanuvchiga tegishli. Windows'ning o'zida ham ko'rinadi:
+**Task Manager → Startup**.
+
+Server kompyuterda buni `ORNATISH.bat` o'zi qiladi (kerak bo'lmasa
+`install-server.ps1 -NoAutoStart`).
 
 ### 4.3. Dastursiz ham bo'ladi
 
@@ -227,6 +249,58 @@ Aloqa bo'lmasa ilova baribir ochiladi va oxirgi ko'rsatkichlarni
 
 ---
 
+## 5A. Xodim rasmi va PIN kod bilan kirish
+
+### 5A.1. Rasm
+
+**Xodimlar → "Rasm"** tugmasi (administrator) yoki har bir xodim o'zi:
+**Sozlamalar → "Mening rasmim"**.
+
+JPG, PNG yoki WEBP, 5 MB gacha. Kvadrat rasm eng chiroyli ko'rinadi — yuz aniq
+tushsin, chunki rasm uchta joyda ishlatiladi:
+
+* kirish oynasida (PIN bilan kirishda o'z rasmini bosadi);
+* **Ish nazorati** → "hozir ishlayotgan xodimlar" kartochkalarida;
+* **Davomat** ro'yxatida — kamera taniganini odam bilan solishtirish oson bo'ladi.
+
+Rasmlar `DATA_DIR/Staff` papkasida saqlanadi va kunlik zaxiraga tushadi.
+Rasm yuklash va o'chirish auditga yoziladi.
+
+### 5A.2. PIN kod
+
+Xodim uzun parol terib o'tirmasin uchun qisqa shaxsiy kod. Kirish oynasida
+xodim **o'z rasmini bosadi**, keyin PIN'ni teradi.
+
+**Kim qo'yadi:**
+
+* administrator — **Xodimlar → "PIN qo'yish"** (xodim unutganda ham shu yerdan tiklanadi);
+* xodimning o'zi — **Sozlamalar → "PIN kod bilan kirish"** (joriy parolini kiritib tasdiqlaydi).
+
+**Qoidalar:**
+
+| Nima | Qanday |
+|---|---|
+| Uzunligi | 4–8 raqam (`PIN_MIN_LENGTH` bilan oshiriladi) |
+| Taqiqlanadi | ketma-ket (`1234`, `4321`) va bir xil (`0000`) raqamlar |
+| Saqlanishi | bcrypt bilan; PIN hech qayerda ochiq turmaydi |
+| Noto'g'ri kod | 3 marta xato → 10 daqiqa PIN bloklanadi |
+| Blok paytida | **login va parol bilan kirish baribir ishlaydi** |
+| Ikki bosqichli login | yoqilgan bo'lsa PIN'dan keyin ham kod so'raladi |
+| Auditda | "Tizimga kirdi (LAB-PC-02, PIN kod)" deb yoziladi |
+
+**Xavfsizlik haqida ochiq gap.** Kirish oynasida PIN qo'ygan xodimlarning
+ismi va rasmi ko'rinadi — bu laboratoriya ichki tarmog'i uchun qulaylik.
+PIN 4 raqamli bo'lgani uchun paroldan zaifroq; shuning uchun:
+
+* server hech qachon internetga to'g'ridan-to'g'ri ochilmasin;
+* muhim hisoblarda (administrator) ikki bosqichli loginni yoqing;
+* server ochiq tarmoqda tursa PIN'ni butunlay o'chiring: `.env` da `PIN_LOGIN=0`.
+
+Xodim ishdan ketsa: **Xodimlar → Tahrir → "Faol hisob"** belgisini oching —
+PIN ham, parol ham darrov ishlamay qoladi.
+
+---
+
 ## 6. Ishga tushirish oldidan tekshiruv ro'yxati
 
 - [ ] Serverga statik IP berildi
@@ -235,6 +309,8 @@ Aloqa bo'lmasa ilova baribir ochiladi va oxirgi ko'rsatkichlarni
 - [ ] Har bir xodimga alohida hisob ochildi (umumiy hisobdan foydalanilmaydi)
 - [ ] Analiz katalogi va narxlar tekshirildi
 - [ ] Har bir ish stansiyasida dastur ochilib, kompyuter nomi to'g'ri ko'rindi
+- [ ] Kompyuter qayta yoqib ko'rildi — LabCore o'zi ochildi
+- [ ] Xodimlarning rasmi yuklandi va PIN kodlari qo'yildi (PIN ishlatilsa)
 - [ ] Telefonga ilova o'rnatildi va rahbar paneli ochildi
 - [ ] Printer sinovdan o'tdi (natija blankasi va chek)
 - [ ] Zaxira ishlayotgani tekshirildi: `backups` papkasida bugungi nusxa bor

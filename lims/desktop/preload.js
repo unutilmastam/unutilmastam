@@ -15,5 +15,8 @@ contextBridge.exposeInMainWorld('labcore', {
   station,
   isDesktop: true,
   testServer: (url) => ipcRenderer.invoke('labcore:test-server', url),
-  saveServer: (url) => ipcRenderer.invoke('labcore:save-server', url),
+  saveServer: (url, options) => ipcRenderer.invoke('labcore:save-server', url, options),
+  // Kompyuter yoqilganda dastur o'zi ochilishi
+  getAutoStart: () => ipcRenderer.invoke('labcore:get-autostart'),
+  setAutoStart: (on) => ipcRenderer.invoke('labcore:set-autostart', on),
 });

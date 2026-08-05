@@ -1,5 +1,5 @@
 import { api, auth } from './api.js';
-import { $, ROLE_LABEL, clear, el, initials, toastError } from './ui.js';
+import { $, ROLE_LABEL, avatar, clear, el, toastError } from './ui.js';
 
 import { loginView } from './views/auth.js';
 import { dashboardView } from './views/dashboard.js';
@@ -164,7 +164,7 @@ function shell(content, title) {
       el('header.topbar', {}, [
         el('h2', { text: title }),
         el('div.userchip', {}, [
-          el('div.avatar', { text: initials(u.full_name) }),
+          avatar(u, { size: 30 }),
           el('div', {}, [
             el('div', { text: u.full_name }),
             el('div.small.muted', { text: ROLE_LABEL[u.role] }),

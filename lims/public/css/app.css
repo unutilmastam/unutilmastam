@@ -52,6 +52,46 @@ body {
 .login-card h1 { margin: 0 0 4px; font-size: 22px; }
 .login-card .sub { color: var(--muted); margin-bottom: 24px; }
 .login-logo { font-size: 34px; }
+.login-card.wide { max-width: 460px; }
+
+/* Kirish oynasidagi usul almashtirish havolasi */
+button.link {
+  border: none; background: none; color: var(--primary); padding: 8px 0;
+  font-weight: 600; font-size: 13px; width: 100%; margin-top: 10px;
+}
+button.link:hover { background: none; text-decoration: underline; }
+
+/* ---------- PIN bilan kirish ---------- */
+.pin-people {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px; margin-bottom: 6px;
+}
+.pin-person {
+  display: grid; justify-items: center; gap: 8px; padding: 12px 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+}
+.pin-person:hover { background: var(--primary-soft); border-color: var(--primary); }
+.pin-person .nm {
+  font-size: 12px; font-weight: 600; line-height: 1.25; text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.pin-pad { display: grid; gap: 14px; justify-items: center; }
+.pin-who { display: grid; justify-items: center; gap: 8px; }
+.pin-who .nm { font-weight: 700; }
+
+.pin-dots { display: flex; gap: 10px; height: 16px; align-items: center; }
+.pin-dots span {
+  width: 13px; height: 13px; border-radius: 50%;
+  border: 2px solid var(--border); background: transparent;
+}
+.pin-dots span.on { background: var(--primary); border-color: var(--primary); }
+
+.pin-keys { display: grid; grid-template-columns: repeat(3, 74px); gap: 10px; }
+.pin-keys button {
+  height: 60px; font-size: 22px; font-weight: 600; border-radius: 12px;
+  font-variant-numeric: tabular-nums;
+}
 
 /* ---------- Karkas ---------- */
 .shell { display: grid; grid-template-columns: 236px 1fr; min-height: 100vh; }
@@ -84,7 +124,10 @@ body {
 .avatar {
   width: 30px; height: 30px; border-radius: 50%; background: var(--primary); color: #fff;
   display: grid; place-items: center; font-weight: 700; font-size: 12px;
+  position: relative; overflow: hidden; flex: none;
 }
+/* Rasm bo'lsa harflar ustiga tushadi; rasm yuklanmasa harflar ko'rinib qolaveradi. */
+.avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
 /* ---------- Elementlar ---------- */
 .card {

@@ -16,6 +16,10 @@
     .ok { background: #dcfce7; color: #15803d; }
     .err { background: #fdecea; color: #c0392b; }
     .station { margin-top: 16px; font-size: 12px; color: #64748b; }
+    .check { display: flex; gap: 9px; align-items: flex-start; margin-top: 16px; }
+    .check input { width: auto; margin-top: 2px; }
+    .check label { font-size: 13px; font-weight: 500; color: #0f172a; margin: 0; cursor: pointer; }
+    .check .hint { display: block; font-size: 12px; color: #64748b; font-weight: 400; margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -24,6 +28,14 @@
 
   <label for="url">Server manzili</label>
   <input id="url" value="https://192.168.1.10:4000" spellcheck="false">
+
+  <div class="check">
+    <input type="checkbox" id="autostart" checked>
+    <label for="autostart">
+      Kompyuter yoqilganda avtomatik ochilsin
+      <span class="hint">Ertalab hech narsa qidirmaysiz — LabCore ekranda turadi.</span>
+    </label>
+  </div>
 
   <button id="test">Ulanishni tekshirish</button>
   <button id="save" disabled>Saqlash va davom etish</button>

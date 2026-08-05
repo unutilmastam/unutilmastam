@@ -42,11 +42,14 @@ async function request(method, url, body, opts = {}) {
 }
 
 export const api = {
-  get: (u) => request('GET', u),
-  post: (u, b) => request('POST', u, b),
-  patch: (u, b) => request('PATCH', u, b),
-  del: (u) => request('DELETE', u),
-  upload: (u, formData) => request('POST', u, formData),
+  get: (u, opts) => request('GET', u, undefined, opts),
+  // Kirish oynasidagi so'rovlar { noRedirect: true } bilan yuboriladi:
+  // xato parol/PIN javobi (401) sahifani qayta yuklab, xatoni yashirib
+  // yubormasligi kerak.
+  post: (u, b, opts) => request('POST', u, b, opts),
+  patch: (u, b, opts) => request('PATCH', u, b, opts),
+  del: (u, opts) => request('DELETE', u, undefined, opts),
+  upload: (u, formData, opts) => request('POST', u, formData, opts),
 };
 
 /** Kompyuter nomi qo'lda kiritilmagan bo'lsa taxminiy nom (sozlamalarda o'zgartiriladi). */

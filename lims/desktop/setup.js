@@ -30,6 +30,13 @@ document.getElementById('test').addEventListener('click', async () => {
   }
 });
 
+const autoStart = document.getElementById('autostart');
+
+// Dastur avval o'rnatilgan bo'lsa, joriy holatni ko'rsatamiz.
+window.labcore.getAutoStart?.().then((on) => { autoStart.checked = on !== false; }).catch(() => {});
+
 saveBtn.addEventListener('click', () => {
-  window.labcore.saveServer(urlInput.value.trim().replace(/\/+$/, ''));
+  window.labcore.saveServer(urlInput.value.trim().replace(/\/+$/, ''), {
+    autoStart: autoStart.checked,
+  });
 });

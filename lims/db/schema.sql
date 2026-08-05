@@ -581,3 +581,26 @@ CREATE INDEX IF NOT EXISTS appointments_date_idx  ON appointments(scheduled_date
 CREATE INDEX IF NOT EXISTS appointments_phone_idx ON appointments(phone);
 CREATE INDEX IF NOT EXISTS appointments_due_idx
   ON appointments(scheduled_at) WHERE status IN ('booked','confirmed');
+
+-- ---------------------------------------------------------------------------
+-- YANGILANISHLAR
+--
+-- CREATE TABLE IF NOT EXISTS allaqachon mavjud jadvalga yangi ustun
+-- qo'shmaydi. Shuning uchun keyingi nashrlarda paydo bo'lgan ustunlar shu
+-- yerda alohida yoziladi — `npm run migrate` eski bazani ham yangilaydi.
+-- ---------------------------------------------------------------------------
+
+-- Xodim rasmi (ish stansiyasida "kim kirdi" ni ko'rish va PIN oynasi uchun)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_path        text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_updated_at  timestamptz;
+
+-- Shaxsiy PIN kod bilan kirish.
+-- pin_hash — bcrypt; PIN hech qayerda ochiq saqlanmaydi.
+-- Bloklash parol bloklashidan alohida: PIN ni topa olmaslik xodimni
+-- login/parol bilan kirishdan mahrum qilmasligi kerak.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS pin_hash             text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS pin_set_at           timestamptz;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS pin_failed_attempts  integer NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS pin_locked_until     timestamptz;
+
+CREATE INDEX IF NOT EXISTS users_pin_idx ON users(id) WHERE pin_hash IS NOT NULL;

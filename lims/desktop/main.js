@@ -11,6 +11,8 @@
  *      manzil terib o'tirmaydi.
  *   3. Chop etish, shtrix-kod skaneri va to'liq ekran rejimi tizim
  *      darajasida ishlaydi; F5/Ctrl+P kabi tugmalar sozlangan.
+ *   4. Kompyuter yoqilganda dastur o'zi ochiladi (avtozapusk) — laborant
+ *      ertalab hech narsa qidirmaydi, ekranda LabCore turadi.
  */
 
 const { app, BrowserWindow, session, dialog, Menu, shell } = require('electron');
@@ -38,6 +40,61 @@ function writeConfig(patch) {
   fs.mkdirSync(path.dirname(CONFIG_FILE), { recursive: true });
   fs.writeFileSync(CONFIG_FILE, JSON.stringify(next, null, 2));
   return next;
+}
+
+// ---------------------------------------------------------------------------
+// Avtozapusk — kompyuter yoqilganda dastur o'zi ochilsin
+// ---------------------------------------------------------------------------
+
+/**
+ * Windows'da bu ro'yxatga qo'shish HKCU\...\Run kalitiga yoziladi, ya'ni
+ * administrator huquqi kerak emas va faqat shu foydalanuvchiga tegishli.
+ * Linux/Mac'da Electron o'zining tegishli mexanizmini ishlatadi.
+ */
+function isAutoStart() {
+  try {
+    return app.getLoginItemSettings({ path: process.execPath }).openAtLogin === true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Sozlashdan keyin natija QAYTA O'QIB tekshiriladi. Ba'zi tizimlarda
+ * (masalan qulflangan siyosatli kompyuterlarda) yozuv jimgina o'tmasligi
+ * mumkin — u holda xodim "yoqdim" deb o'ylab qolmasligi kerak.
+ */
+function setAutoStart(enabled) {
+  let err = null;
+  try {
+    app.setLoginItemSettings({
+      openAtLogin: !!enabled,
+      path: process.execPath,
+      args: ['--labcore-autostart'],
+    });
+  } catch (e) {
+    err = e;
+  }
+
+  const actual = isAutoStart();
+  writeConfig({ autoStart: actual });
+
+  if (actual !== !!enabled) {
+    dialog.showMessageBox({
+      type: 'warning',
+      title: 'Avtozapusk',
+      message: enabled
+        ? 'Avtomatik ishga tushirishni yoqib bo‘lmadi'
+        : 'Avtomatik ishga tushirishni o‘chirib bo‘lmadi',
+      detail:
+        (err ? err.message + '\n\n' : '') +
+        'Buni qo\'lda qilish mumkin:\n' +
+        '  Windows: Win+R -> shell:startup -> shu papkaga dastur yorlig\'ini qo\'ying\n' +
+        '  yoki deploy\\windows\\avtozapusk.ps1 skriptini ishga tushiring.',
+    });
+    return false;
+  }
+  return true;
 }
 
 let win = null;
@@ -157,7 +214,7 @@ function showConnectionError(serverUrl, detail = '') {
 function askServerUrl() {
   const setupWin = new BrowserWindow({
     width: 460,
-    height: 400,
+    height: 470,
     resizable: false,
     title: 'LabCore — sozlash',
     webPreferences: {
@@ -195,6 +252,28 @@ function buildMenu(serverUrl) {
       ],
     },
     {
+      label: 'Sozlamalar',
+      submenu: [
+        {
+          label: 'Kompyuter yoqilganda avtomatik ochilsin',
+          type: 'checkbox',
+          checked: isAutoStart(),
+          click: (item) => {
+            if (setAutoStart(item.checked)) {
+              // Menyuni qayta yig'amiz — belgi haqiqiy holatni ko'rsatsin.
+              buildMenu(serverUrl);
+            } else {
+              item.checked = isAutoStart();
+            }
+          },
+        },
+        {
+          label: 'Server manzilini o‘zgartirish',
+          click: () => { writeConfig({ serverUrl: null }); app.relaunch(); app.exit(0); },
+        },
+      ],
+    },
+    {
       label: 'Yordam',
       submenu: [
         {
@@ -206,13 +285,10 @@ function buildMenu(serverUrl) {
             detail:
               `Ish stansiyasi: ${COMPUTER_NAME}\n` +
               `Server: ${serverUrl}\n` +
-              `Versiya: ${app.getVersion()}\n\n` +
+              `Versiya: ${app.getVersion()}\n` +
+              `Avtozapusk: ${isAutoStart() ? 'yoqilgan' : 'o‘chirilgan'}\n\n` +
               'Bu kompyuterdagi har bir amal audit jurnaliga yoziladi.',
           }),
-        },
-        {
-          label: 'Server manzilini o‘zgartirish',
-          click: () => { writeConfig({ serverUrl: null }); app.relaunch(); app.exit(0); },
         },
         { label: 'Dasturchi vositalari', accelerator: 'F12', click: () => win?.webContents.toggleDevTools() },
       ],
@@ -220,20 +296,39 @@ function buildMenu(serverUrl) {
   ]));
 }
 
+// Avtozapusk va ish stoli yorlig'i birga ishlaganda dastur ikki marta
+// ochilib qolmasin — ikkinchi nusxa birinchisining oynasini ko'taradi.
+if (!app.requestSingleInstanceLock()) {
+  app.exit(0);
+} else {
+  app.on('second-instance', () => {
+    if (!win) return;
+    if (win.isMinimized()) win.restore();
+    win.focus();
+  });
+}
+
 app.whenReady().then(() => {
   const cfg = readConfig();
+  const { ipcMain } = require('electron');
+  ipcMain.handle('labcore:test-server', (_e, url) => checkServer(url));
+  // Sozlash oynasi uchun: xodim hali tanlamagan bo'lsa undefined qaytadi va
+  // oynada belgi yoqilgan holda turadi (tavsiya etiladigan holat).
+  ipcMain.handle('labcore:get-autostart', () => readConfig().autoStart ?? (isAutoStart() || undefined));
+  ipcMain.handle('labcore:set-autostart', (_e, on) => { setAutoStart(on); return isAutoStart(); });
 
   if (!cfg.serverUrl) {
     const setupWin = askServerUrl();
-    const { ipcMain } = require('electron');
-    ipcMain.handle('labcore:save-server', (_e, url) => {
+    ipcMain.handle('labcore:save-server', (_e, url, options = {}) => {
       writeConfig({ serverUrl: url });
+      // Birinchi sozlashda avtozapusk odatda kerak bo'ladi, lekin qaror
+      // xodimda qoladi: sozlash oynasidagi belgi shu yerga keladi.
+      if (options.autoStart !== undefined) setAutoStart(options.autoStart);
       setupWin.close();
       buildMenu(url);
       createWindow(url);
       return true;
     });
-    ipcMain.handle('labcore:test-server', (_e, url) => checkServer(url));
     return;
   }
 

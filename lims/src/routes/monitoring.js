@@ -113,7 +113,8 @@ router.get(
   wrap(async (req, res) => {
     const items = await many(
       `SELECT DISTINCT ON (u.id) u.id, u.full_name, u.role, s.computer_name,
-              s.ip_address, s.login_at, s.last_seen_at
+              s.ip_address, s.login_at, s.last_seen_at,
+              (u.photo_path IS NOT NULL) AS has_photo, u.photo_updated_at
          FROM sessions s JOIN users u ON u.id = s.user_id
         WHERE s.logout_at IS NULL AND s.last_seen_at > now() - ($1 || ' minutes')::interval
         ORDER BY u.id, s.last_seen_at DESC`,

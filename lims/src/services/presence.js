@@ -101,6 +101,7 @@ export async function attendanceForDate(date, userId = null) {
 
   const staff = await many(
     `SELECT u.id, u.full_name, u.role,
+            (u.photo_path IS NOT NULL) AS has_photo, u.photo_updated_at,
             coalesce(round(sum(extract(epoch FROM
               coalesce(s.logout_at, s.last_seen_at) - s.login_at))/60.0)::int, 0) AS session_minutes,
             min(s.login_at) AS first_login,
@@ -108,7 +109,7 @@ export async function attendanceForDate(date, userId = null) {
        FROM users u
        LEFT JOIN sessions s ON s.user_id = u.id AND s.login_at::date = $1::date
       WHERE u.is_active ${userId ? 'AND u.id = $2' : ''}
-      GROUP BY u.id, u.full_name, u.role
+      GROUP BY u.id, u.full_name, u.role, u.photo_path, u.photo_updated_at
       ORDER BY u.full_name`,
     userId ? [date, userId] : [date],
   );

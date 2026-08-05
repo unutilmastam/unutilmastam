@@ -39,13 +39,35 @@ export const config = {
 
   dataDir,
   filesDir: path.join(dataDir, 'Patients'),
+  staffPhotoDir: path.join(dataDir, 'Staff'),
   maxUploadBytes: Number(process.env.MAX_UPLOAD_MB || 50) * 1024 * 1024,
+  maxPhotoBytes: Number(process.env.MAX_PHOTO_MB || 5) * 1024 * 1024,
 
   jwtSecret: resolveJwtSecret(dataDir),
   sessionHours: Number(process.env.SESSION_HOURS || 12),
   // login himoyasi
   maxFailedLogins: Number(process.env.MAX_FAILED_LOGINS || 5),
   lockMinutes: Number(process.env.LOCK_MINUTES || 15),
+  // Bir IP'dan bir daqiqada nechta kirish urinishi. Butun laboratoriya
+  // bitta routerdan chiqsa (NAT) barcha kompyuterlar bitta IP ko'rinadi —
+  // shuning uchun sozlanadigan qilingan.
+  loginRateMax: Number(process.env.LOGIN_RATE_MAX || 10),
+
+  /**
+   * Shaxsiy PIN kod bilan kirish (ish stansiyasi uchun tez usul).
+   * Kirish oynasida PIN qo'ygan xodimlarning ismi va rasmi ko'rinadi —
+   * laboratoriya ichki tarmog'ida bu qulaylik, lekin server internetga
+   * ochiq bo'lsa PIN_LOGIN=0 qilib o'chirib qo'ying.
+   * PIN qisqa bo'lgani uchun bloklash paroldagidan qattiqroq.
+   */
+  pin: {
+    enabled: process.env.PIN_LOGIN !== '0',
+    minLength: Math.max(4, Number(process.env.PIN_MIN_LENGTH || 4)),
+    maxLength: 8,
+    maxFailed: Number(process.env.PIN_MAX_FAILED || 3),
+    lockMinutes: Number(process.env.PIN_LOCK_MINUTES || 10),
+  },
+
   // xodim "online" deb hisoblanadigan oxirgi faollik oynasi
   onlineWindowMinutes: Number(process.env.ONLINE_WINDOW_MINUTES || 10),
 

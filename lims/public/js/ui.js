@@ -119,6 +119,30 @@ export const fullName = (p) => [p.last_name, p.first_name, p.middle_name].filter
 export const initials = (name) =>
   String(name || '?').split(/\s+/).slice(0, 2).map((s) => s[0]?.toUpperCase()).join('');
 
+/**
+ * Xodim rasmi. Rasm yo'q bo'lsa (yoki yuklanmasa) ism harflari ko'rinadi —
+ * ro'yxat hech qachon bo'sh kvadratlar bilan qolmaydi.
+ *
+ * @param {object} u    — { id, full_name, has_photo, photo_updated_at }
+ * @param {object} opts — { size: px, src: to'liq manzil (kirish oynasi uchun) }
+ */
+export function avatar(u = {}, { size = 34, src } = {}) {
+  const box = el('span.avatar', {
+    style: `width:${size}px;height:${size}px;font-size:${Math.round(size * 0.38)}px`,
+    title: u.full_name || '',
+  }, [el('span', { text: initials(u.full_name) })]);
+
+  const url = src || (u.has_photo
+    ? `/api/users/${u.id}/photo?v=${encodeURIComponent(u.photo_updated_at || '1')}`
+    : null);
+  if (!url) return box;
+
+  const img = el('img', { src: url, alt: u.full_name || '', loading: 'lazy' });
+  img.onerror = () => img.remove();
+  box.append(img);
+  return box;
+}
+
 // ---------------------------------------------------------------------------
 // Xabarnoma va modal
 // ---------------------------------------------------------------------------

@@ -1,10 +1,10 @@
 import { api, auth } from '../api.js';
 import { state } from '../app.js';
 import {
-  ACTION_LABEL, ROLE_LABEL, clear, el, emptyRow, field, fmtDateTime, fmtMoney, fmtTime,
+  ACTION_LABEL, ROLE_LABEL, avatar, clear, el, emptyRow, field, fmtDateTime, fmtMoney, fmtTime,
   modal, readForm, table, toastError, toastOk,
 } from '../ui.js';
-import { changePasswordForm, twoFactorPanel } from './auth.js';
+import { changePasswordForm, pinPanel, photoPanel, twoFactorPanel } from './auth.js';
 
 // ---------------------------------------------------------------------------
 // Xodimlar
@@ -16,18 +16,28 @@ export async function staffView() {
   async function load() {
     const d = await api.get('/users');
     clear(box).append(table(
-      ['', 'F.I.O.', 'Login', 'Rol', 'Telefon', '2FA', 'Oxirgi kirish', 'Holat', ''],
+      ['', 'Rasm', 'F.I.O.', 'Login', 'Rol', 'Telefon', 'PIN', '2FA', 'Oxirgi kirish', 'Holat', ''],
       d.items.map((u) => el('tr', {}, [
         el('td', {}, [el(`span.dot${u.is_online ? '.online' : ''}`)]),
+        el('td', {}, [avatar(u, { size: 36 })]),
         el('td', { text: u.full_name }),
         el('td.mono', { text: u.username }),
         el('td', {}, [el('span.badge.info', { text: ROLE_LABEL[u.role] })]),
         el('td.small', { text: u.phone || '—' }),
+        el('td', {}, [
+          u.pin_locked
+            ? el('span.badge.warn', { text: 'bloklangan' })
+            : u.has_pin
+              ? el('span.badge.ok', { text: 'qo‘yilgan' })
+              : el('span.muted', { text: '—' }),
+        ]),
         el('td', {}, [u.totp_enabled ? el('span.badge.ok', { text: 'yoqilgan' }) : el('span.muted', { text: '—' })]),
         el('td.small', { text: u.last_login_at ? fmtDateTime(u.last_login_at) : 'hech qachon' }),
         el('td', {}, [u.is_active ? el('span.badge.ok', { text: 'Faol' }) : el('span.badge', { text: 'Faolsiz' })]),
         el('td.row', {}, [
           el('button.sm', { text: 'Tahrir', onclick: () => editUserDialog(u, load) }),
+          el('button.sm', { text: 'Rasm', onclick: () => photoDialog(u, load) }),
+          el('button.sm', { text: u.has_pin ? 'PIN tiklash' : 'PIN qo‘yish', onclick: () => pinDialog(u, load) }),
           el('button.sm', { text: 'Parol', onclick: () => resetPasswordDialog(u) }),
           el('button.sm', {
             text: 'Sessiyalarni yopish',
@@ -119,6 +129,99 @@ function editUserDialog(u, onDone) {
   });
 }
 
+/**
+ * Xodim rasmi. Rasm ish stansiyasida "hozir kim ishlayapti" ro'yxatida va
+ * PIN bilan kirish oynasida ko'rinadi — shuning uchun yuz aniq tushsin.
+ */
+function photoDialog(u, onDone) {
+  const preview = avatar(u, { size: 120 });
+  const file = el('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp' });
+  const info = el('p.small.muted', {
+    text: 'JPG, PNG yoki WEBP. Eng ko‘pi 5 MB. Kvadrat rasm eng chiroyli ko‘rinadi.',
+  });
+
+  file.onchange = () => {
+    const f = file.files?.[0];
+    if (!f) return;
+    const url = URL.createObjectURL(f);
+    clear(preview).append(el('img', { src: url, alt: '' }));
+  };
+
+  modal({
+    title: `Rasm — ${u.full_name}`,
+    body: el('div', { style: 'display:grid;gap:14px;justify-items:center' }, [
+      preview,
+      file,
+      info,
+      u.has_photo
+        ? el('button.danger.sm', {
+            text: 'Rasmni o‘chirish',
+            onclick: async () => {
+              try {
+                await api.del(`/users/${u.id}/photo`);
+                toastOk('Rasm o‘chirildi');
+                onDone?.();
+              } catch (err) { toastError(err); }
+            },
+          })
+        : null,
+    ]),
+    actions: [{
+      label: 'Yuklash', primary: true,
+      onClick: async () => {
+        const f = file.files?.[0];
+        if (!f) throw new Error('Rasm tanlanmadi');
+        const fd = new FormData();
+        fd.append('photo', f);
+        await api.upload(`/users/${u.id}/photo`, fd);
+        toastOk('Rasm saqlandi');
+        onDone?.();
+      },
+    }],
+  });
+}
+
+/**
+ * PIN kodni administrator qo'yadi yoki tiklaydi (xodim unutganda).
+ * Yangi PIN xodimga og'zaki aytiladi — u keyin Sozlamalarda o'zgartira oladi.
+ */
+function pinDialog(u, onDone) {
+  const pin = el('input', {
+    inputmode: 'numeric', maxlength: '8', autocomplete: 'off',
+    placeholder: '4–8 raqam',
+  });
+  modal({
+    title: `PIN kod — ${u.full_name}`,
+    body: el('div', {}, [
+      el('p.small.muted', {
+        text: 'PIN bilan xodim kirish oynasida o‘z rasmini bosib, kodni terib kiradi. '
+            + 'Ketma-ket (1234) va bir xil (0000) raqamlar qabul qilinmaydi.',
+      }),
+      field('Yangi PIN', pin),
+      u.has_pin
+        ? el('button.danger.sm', {
+            text: 'PIN kodni o‘chirish',
+            onclick: async () => {
+              try {
+                await api.del(`/users/${u.id}/pin`);
+                toastOk('PIN o‘chirildi — xodim endi parol bilan kiradi');
+                onDone?.();
+              } catch (err) { toastError(err); }
+            },
+          })
+        : null,
+    ]),
+    actions: [{
+      label: 'Saqlash', primary: true,
+      onClick: async () => {
+        await api.post(`/users/${u.id}/pin`, { pin: pin.value.trim() });
+        toastOk('PIN saqlandi — xodimga aytib qo‘ying');
+        onDone?.();
+      },
+    }],
+  });
+}
+
 function resetPasswordDialog(u) {
   const pw = el('input', { type: 'password', placeholder: 'kamida 8 belgi' });
   modal({
@@ -189,10 +292,15 @@ export async function monitoringView() {
     el('div.card', {}, [
       el('h3', { text: `🟢 Hozir ishlayotgan xodimlar (${online.items.length})` }),
       online.items.length
-        ? el('div.grid.cols-3', {}, online.items.map((o) => el('div.stat', {}, [
-            el('div.label', {}, [el('span.dot.online'), o.full_name]),
-            el('div', { class: 'small', text: `${ROLE_LABEL[o.role]} · ${o.computer_name || '—'}` }),
-            el('div.hint', { text: `Kirgan: ${fmtTime(o.login_at)} · oxirgi faollik: ${fmtTime(o.last_seen_at)}` }),
+        ? el('div.grid.cols-3', {}, online.items.map((o) => el('div.stat.row', {
+            style: 'align-items:flex-start;flex-wrap:nowrap;gap:12px',
+          }, [
+            avatar(o, { size: 44 }),
+            el('div', { style: 'min-width:0' }, [
+              el('div.label', {}, [el('span.dot.online'), o.full_name]),
+              el('div', { class: 'small', text: `${ROLE_LABEL[o.role]} · ${o.computer_name || '—'}` }),
+              el('div.hint', { text: `Kirgan: ${fmtTime(o.login_at)} · oxirgi faollik: ${fmtTime(o.last_seen_at)}` }),
+            ]),
           ])))
         : el('div.empty', { text: 'Hozir hech kim tizimda emas' }),
     ]),
@@ -495,7 +603,9 @@ export async function settingsView() {
             onclick: () => { auth.computerName = station.value.trim(); toastOk('Saqlandi'); },
           }),
     ]),
+    el('div.card', {}, [el('h3', { text: 'Mening rasmim' }), photoPanel(state.user)]),
     el('div.card', {}, [el('h3', { text: 'Parolni o‘zgartirish' }), changePasswordForm()]),
+    el('div.card', {}, [el('h3', { text: 'PIN kod bilan kirish' }), pinPanel(state.user)]),
     el('div.card', {}, [el('h3', { text: 'Ikki bosqichli login' }), twoFactorPanel(state.user)]),
     el('div.card', {}, [
       el('h3', { text: 'Tizim haqida' }),

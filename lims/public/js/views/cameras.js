@@ -1,6 +1,6 @@
 import { api } from '../api.js';
 import {
-  ROLE_LABEL, clear, el, emptyRow, field, fmtDateTime, fmtTime, modal, readForm,
+  ROLE_LABEL, avatar, clear, el, emptyRow, field, fmtDateTime, fmtTime, modal, readForm,
   table, toastError, toastOk,
 } from '../ui.js';
 
@@ -318,8 +318,13 @@ export async function attendanceView() {
         d.items.length
           ? d.items.map((i) => el('tr', {}, [
               el('td', {}, [
-                el('div', { text: i.full_name }),
-                el('div.small.muted', { text: ROLE_LABEL[i.role] }),
+                el('div.row', { style: 'flex-wrap:nowrap;gap:10px' }, [
+                  avatar(i, { size: 34 }),
+                  el('div', {}, [
+                    el('div', { text: i.full_name }),
+                    el('div.small.muted', { text: ROLE_LABEL[i.role] }),
+                  ]),
+                ]),
               ]),
               el('td', {}, [bar(i.camera_minutes), el('span.small', { text: ` ${hhmm(i.camera_minutes)}` })]),
               el('td', {}, [bar(i.session_minutes, 'var(--muted)'), el('span.small', { text: ` ${hhmm(i.session_minutes)}` })]),

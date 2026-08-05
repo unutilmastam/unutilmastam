@@ -1,11 +1,23 @@
 import express from 'express';
+import multer from 'multer';
+import fs from 'node:fs';
+import fsp from 'node:fs/promises';
+import path from 'node:path';
 import { many, one, query } from '../db.js';
 import { audit, diff } from '../lib/audit.js';
 import { ROLES, hashPassword, requireAuth, requireRole } from '../lib/auth.js';
 import { HttpError, conflict, notFound, required, wrap } from '../lib/http.js';
 import { config } from '../config.js';
+import { setUserPin } from './auth.js';
 
 export const router = express.Router();
+
+// Xodim rasmi: faqat oddiy rasm formatlari va kichik hajm.
+const PHOTO_TYPES = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' };
+const photoUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: config.maxPhotoBytes, files: 1 },
+});
 
 router.use(requireAuth);
 
@@ -17,6 +29,9 @@ router.get(
     const rows = await many(
       `SELECT u.id, u.username, u.full_name, u.role, u.phone, u.is_active,
               u.totp_enabled, u.last_login_at, u.created_at, b.name AS branch_name,
+              (u.photo_path IS NOT NULL) AS has_photo, u.photo_updated_at,
+              (u.pin_hash IS NOT NULL) AS has_pin, u.pin_set_at,
+              (u.pin_locked_until IS NOT NULL AND u.pin_locked_until > now()) AS pin_locked,
               (SELECT count(*) FROM sessions s
                 WHERE s.user_id = u.id AND s.logout_at IS NULL
                   AND s.last_seen_at > now() - ($1 || ' minutes')::interval) > 0 AS is_online
@@ -145,6 +160,137 @@ router.post(
       description: `Xodimning ${rowCount} ta sessiyasi majburan yopildi`,
     });
     res.json({ closed: rowCount });
+  }),
+);
+
+// ---------------------------------------------------------------------------
+// Xodim rasmi
+// ---------------------------------------------------------------------------
+
+/**
+ * Rasmni ko'rish. Har qanday kirgan xodim ko'ra oladi — rasm ish stansiyasida
+ * "hozir kim ishlayapti" ro'yxatida va kirish oynasida ko'rsatiladi.
+ * Brauzer eski rasmni saqlab qolmasligi uchun manzilga ?v=photo_updated_at
+ * qo'shiladi; shuning uchun uzoq muddatli kesh xavfsiz.
+ */
+router.get(
+  '/:id/photo',
+  wrap(async (req, res) => {
+    const u = await one('SELECT photo_path FROM users WHERE id = $1', [req.params.id]);
+    if (!u?.photo_path || !fs.existsSync(u.photo_path)) throw notFound('Rasm topilmadi');
+    if (req.query.v) res.set('Cache-Control', 'private, max-age=31536000, immutable');
+    res.sendFile(u.photo_path);
+  }),
+);
+
+/** Rasm yuklash. Xodim o'zinikini, administrator har kimnikini qo'ya oladi. */
+router.post(
+  '/:id/photo',
+  photoUpload.single('photo'),
+  wrap(async (req, res) => {
+    const targetId = Number(req.params.id);
+    if (req.user.role !== 'admin' && req.user.id !== targetId)
+      throw new HttpError(403, 'Faqat o‘z rasmingizni almashtira olasiz');
+    if (!req.file) throw new HttpError(400, 'Rasm yuborilmadi');
+
+    const ext = PHOTO_TYPES[req.file.mimetype];
+    if (!ext) throw new HttpError(400, 'Faqat JPG, PNG yoki WEBP rasm bo‘lishi mumkin');
+
+    const user = await one('SELECT id, full_name, photo_path FROM users WHERE id = $1', [targetId]);
+    if (!user) throw notFound('Xodim topilmadi');
+
+    await fsp.mkdir(config.staffPhotoDir, { recursive: true });
+    const file = path.join(config.staffPhotoDir, `${user.id}${ext}`);
+    await fsp.writeFile(file, req.file.buffer);
+
+    // Format o'zgargan bo'lsa eski fayl qolib ketmasin.
+    if (user.photo_path && user.photo_path !== file) {
+      await fsp.rm(user.photo_path, { force: true });
+    }
+
+    await query('UPDATE users SET photo_path = $2, photo_updated_at = now() WHERE id = $1', [user.id, file]);
+    await audit(req, {
+      action: 'UPLOAD',
+      entity: 'user',
+      entityId: user.id,
+      description: `${user.full_name} uchun rasm yuklandi`,
+      newData: { photo: path.basename(file), size_bytes: req.file.size },
+    });
+    res.json({ ok: true, photo_updated_at: new Date().toISOString() });
+  }),
+);
+
+/** Rasmni o'chirish. */
+router.delete(
+  '/:id/photo',
+  wrap(async (req, res) => {
+    const targetId = Number(req.params.id);
+    if (req.user.role !== 'admin' && req.user.id !== targetId)
+      throw new HttpError(403, 'Faqat o‘z rasmingizni o‘chira olasiz');
+
+    const user = await one('SELECT id, full_name, photo_path FROM users WHERE id = $1', [targetId]);
+    if (!user) throw notFound('Xodim topilmadi');
+    if (user.photo_path) await fsp.rm(user.photo_path, { force: true });
+
+    await query('UPDATE users SET photo_path = NULL, photo_updated_at = NULL WHERE id = $1', [user.id]);
+    await audit(req, {
+      action: 'DELETE',
+      entity: 'user',
+      entityId: user.id,
+      description: `${user.full_name} rasmi o‘chirildi`,
+    });
+    res.json({ ok: true });
+  }),
+);
+
+// ---------------------------------------------------------------------------
+// PIN kod — administrator tomonidan
+// ---------------------------------------------------------------------------
+
+/** Xodimga PIN qo'yish yoki tiklash (xodim PIN'ini unutganda). */
+router.post(
+  '/:id/pin',
+  requireRole('admin'),
+  wrap(async (req, res) => {
+    required(req.body, ['pin']);
+    const user = await one('SELECT id, full_name, pin_hash FROM users WHERE id = $1', [req.params.id]);
+    if (!user) throw notFound('Xodim topilmadi');
+
+    await setUserPin(user.id, req.body.pin);
+    await audit(req, {
+      action: 'UPDATE',
+      entity: 'user',
+      entityId: user.id,
+      description: `${user.full_name} uchun PIN kod administrator tomonidan ${user.pin_hash ? 'tiklandi' : 'o‘rnatildi'}`,
+      newData: { pin_set: true },
+    });
+    res.json({ ok: true });
+  }),
+);
+
+/** Xodimning PIN kodini o'chirish (u endi faqat parol bilan kiradi). */
+router.delete(
+  '/:id/pin',
+  requireRole('admin'),
+  wrap(async (req, res) => {
+    const user = await one('SELECT id, full_name FROM users WHERE id = $1', [req.params.id]);
+    if (!user) throw notFound('Xodim topilmadi');
+
+    await query(
+      `UPDATE users SET pin_hash = NULL, pin_set_at = NULL,
+              pin_failed_attempts = 0, pin_locked_until = NULL
+        WHERE id = $1`,
+      [user.id],
+    );
+    await audit(req, {
+      action: 'UPDATE',
+      entity: 'user',
+      entityId: user.id,
+      description: `${user.full_name} uchun PIN kod o‘chirildi`,
+      oldData: { pin_set: true },
+      newData: { pin_set: false },
+    });
+    res.json({ ok: true });
   }),
 );
 
