@@ -3,6 +3,33 @@
 Bu shoxobcha faqat tayyor to'plamni saqlash uchun. Kod
 `claude/lab-management-system-ipsi88` shoxobchasida.
 
+## Tez tuzatish: o'rnatish 3/8-qadamda to'xtab qolsa
+
+Ekranda qizil xato chiqsa:
+
+```
+Exception calling "AddAccessRule" with "1" argument(s):
+"Some or all identity references could not be translated."
+```
+
+bu — **ruscha (yoki boshqa tildagi) Windows** muammosi: skript inglizcha
+`Administrators` / `SYSTEM` hisob nomlarini qidirardi, ular esa faqat
+inglizcha Windows'da bor. Tuzatildi.
+
+**Butun arxivni qayta yuklamasdan tuzatish** — bitta kichik fayl (10 KB):
+
+1. Yuklab oling: https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/install-server.ps1
+2. Faylni arxivni ochgan papkangizdagi shu joyga qo'ying (eskisini almashtiring):
+   `LabCore-toliq\server\deploy\windows\install-server.ps1`
+3. `ORNATISH.bat` → o'ng tugma → **Run as administrator** — boshidan qayta ishga tushiring.
+
+Qayta ishga tushirish xavfsiz: baza mavjud bo'lsa saqlab qolinadi.
+
+Yoki yangilangan `LabCore-toliq.zip` ni to'liq qayta yuklab oling — ichida
+xuddi shu tuzatish bor.
+
+---
+
 ## Internet yo'q bo'lsa (fleshka orqali o'rnatish)
 
 Server kompyuterda internet bo'lishi **shart emas**. Telefonda yoki internet
@@ -85,11 +112,20 @@ Batafsil: arxiv ichidagi `OQING.txt` va `server/docs/ornatish.md`.
 ## Nazorat summasi
 
 ```
-LabCore-toliq.zip      4789a9ec0f6e4c25ef46510fc88c2049ed84baf38968b4cd106310967b833dd3
-LabCore-YANGILASH.zip  4833a833b48333dc5fe8928f9cea4bca497eb9af466971f23b6c5b562fa053a0
+LabCore-toliq.zip      00e36403561f4d28b66cc75593cadc1f878434c4186d9594a2490e7283ad72bf
+LabCore-YANGILASH.zip  4201dc4545de284082263f10e95bd65b259f0756ec936cd8ba369cbad198230a
+install-server.ps1     2fb685e9bb1b0efdb0b2f30d10f89176dd169b15b4909fb5fcc984fbd6a7f733
 ```
 
 ## Tuzatishlar tarixi
+
+**2026-08-05 (3.1-nashr).** Ruscha Windows'da o'rnatish 3/8-qadamda
+to'xtab qolardi: `.env` fayl huquqlari inglizcha `Administrators` va
+`SYSTEM` nomlari bilan qo'yilgan edi, ular boshqa tildagi Windows'da yo'q.
+Endi SID ishlatiladi (`S-1-5-32-544`, `S-1-5-18`) va huquq qo'yilmasa ham
+o'rnatish to'xtamaydi. Shu bilan birga: rejalashtirilgan vazifa `node.exe`
+ni to'liq manzili bilan chaqiradi, server manzili tanlashda
+VirtualBox/WSL/VPN adapterlari chetlab o'tiladi.
 
 **2026-08-05 (3-nashr).** Xodim rasmi, PIN kod bilan kirish va Windows
 avtozapusk qo'shildi. `LabCore-toliq.zip` yangilandi — endi to'g'ridan-to'g'ri
