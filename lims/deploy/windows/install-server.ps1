@@ -40,7 +40,14 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 Step "1/8  Zarur dasturlarni tekshirish"
 
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
-  throw "Node.js topilmadi. https://nodejs.org (LTS) dan o'rnating va PowerShell'ni qayta oching."
+  throw @"
+Node.js topilmadi.
+
+Internet bo'lgan kompyuterda (yoki telefonda) shu faylni yuklab oling:
+   https://nodejs.org/dist/v22.20.0/node-v22.20.0-x64.msi
+Fleshka orqali shu kompyuterga o'tkazing, o'rnating (Next-Next-Install),
+kompyuterni qayta yoqing va ORNATISH.bat ni yana ishga tushiring.
+"@
 }
 $nodeMajor = [int]((node -v) -replace 'v(\d+).*','$1')
 if ($nodeMajor -lt 20) { throw "Node.js 20 yoki undan yangi versiya kerak (hozir: $(node -v))." }
@@ -48,10 +55,21 @@ Ok "Node.js $(node -v)"
 
 $psql = Get-Command psql -ErrorAction SilentlyContinue
 if (-not $psql) {
+  # Eng yangi o'rnatilgan versiyani olamiz. Papka nomlari raqam bo'lgani uchun
+  # matn bo'yicha saralash noto'g'ri ishlaydi ("9.6" > "18"), shuning uchun songa o'giramiz.
   $found = Get-ChildItem "C:\Program Files\PostgreSQL\*\bin\psql.exe" -ErrorAction SilentlyContinue |
-           Sort-Object FullName -Descending | Select-Object -First 1
+           Sort-Object { [double]($_.Directory.Parent.Name) } -Descending | Select-Object -First 1
   if (-not $found) {
-    throw "PostgreSQL topilmadi. https://www.postgresql.org/download/windows/ dan o'rnating."
+    throw @"
+PostgreSQL topilmadi.
+
+Internet bo'lgan kompyuterda (yoki telefonda) yuklab oling:
+   https://www.postgresql.org/download/windows/  ("Download the installer")
+Fleshka orqali o'tkazing va o'rnating. O'rnatishda 'postgres' foydalanuvchisiga
+parol so'raydi - SHU PAROLNI YOZIB QO'YING, bu skript shuni so'raydi.
+Oxirida "Stack Builder" oynasi chiqsa - "Cancel" (ruscha "Otmena") bosing:
+u qo'shimcha dasturlarni internetdan yuklaydi, LabCore uchun kerak emas.
+"@
   }
   $env:Path += ";" + $found.Directory.FullName
   Ok "PostgreSQL topildi: $($found.Directory.FullName)"
