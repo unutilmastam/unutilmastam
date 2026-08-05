@@ -7,23 +7,20 @@ Bu shoxobcha faqat tayyor to'plamni saqlash uchun. Kod
 
 [**LabCore-TUZATISH.zip**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-TUZATISH.zip) — 380 KB
 
-1. Arxivni oching, **`TUZAT.bat`** ni ikki marta bosing —
-   u yangi fayllarni LabCore papkangizga o'zi ko'chiradi
-2. `LabCore-toliq` papkangizdagi `ORNATISH.bat` → o'ng tugma →
-   **Run as administrator**
-3. Parol so'raganda **PostgreSQL `postgres` parolini** kiriting
+1. Arxivni **to'liq oching** (o'ng tugma → Extract All) — arxiv ichidan turib bosmang
+2. **`TUZAT.bat`** → ikki marta bosing (yangi fayllarni LabCore papkangizga ko'chiradi)
+3. **`TEKSHIR.bat`** → ikki marta bosing (server nega ishlamayotganini ko'rsatadi)
 
-Server baribir ishga tushmasa — **`TEKSHIR.bat`**. U endi shunchaki
-"ishlamayapti" demaydi: jurnalni ko'rsatadi va serverni o'zi ishga tushirib,
-**xatoning o'zini** ekranga chiqaradi.
+Ikki marta bosish ishlamasa: `tuzat.ps1` yoki `tekshir.ps1` → o'ng tugma →
+**"Run with PowerShell"**.
 
 **Nima tuzatildi:**
 
 | Xato | Endi |
 |---|---|
-| Server ishga tushmasa sababi hech qayerda ko'rinmasdi | `C:\LabCore\logs\server.log` jurnali; `TEKSHIR.bat` xatoni o'zi ko'rsatadi |
+| `.bat` oynasi ochilib darrov yopilib ketardi | Fayllar Windows qator tugashi (CRLF) bilan; skript o'zi Enter kutadi |
+| Server ishga tushmasa sababi hech qayerda ko'rinmasdi | `logs\server.log` jurnali; `TEKSHIR.bat` xatoni o'zi ko'rsatadi |
 | `HOLAT.bat`: `parameter 'SkipCertificateCheck'` xatosi | PowerShell 5.1 uchun to'g'ri usul |
-| `Manzil: http://:4000` (bo'sh manzil) | Tarmoq yo'q bo'lsa `localhost` deb yoziladi |
 | `postgres` paroli noto'g'ri bo'lsa ham "OK" deb davom etardi | Parol oldindan tekshiriladi, 3 marta qayta so'raladi |
 | `localhost` IPv6 (`::1`) → `Permission denied (10013)` | `psql` aniq `127.0.0.1` ga ulanadi |
 | `openssl topilmadi` → HTTPS yasalmasdi | Windows PFX to'g'ridan-to'g'ri ishlatiladi |
@@ -113,12 +110,18 @@ Batafsil: arxiv ichidagi `OQING.txt` va `server/docs/ornatish.md`.
 ## Nazorat summasi
 
 ```
-LabCore-toliq.zip      623918750c6e368fd379b3c022da599a9cea241571ce897164d78c5756f399b3
-LabCore-TUZATISH.zip   647966f5ee50916836a236e6ba903df3c69bbca9cc214e1d06e0ea1dc1eab587
+LabCore-toliq.zip      26c007c7c4f73fae4dd505fbc09155c2d17a97d13e0862c52fdcea83be3c7d44
+LabCore-TUZATISH.zip   1413d662517d6549e6314fc265802d2ff06bedc91f20a6652ea703044721a91f
 LabCore-YANGILASH.zip  4201dc4545de284082263f10e95bd65b259f0756ec936cd8ba369cbad198230a
 ```
 
 ## Tuzatishlar tarixi
+
+**2026-08-05 (3.5-nashr).** `.bat` fayllar Linux'da yasalgani uchun qator
+tugashi `\n` edi; `cmd.exe` esa `\r\n` kutadi va faylni buzib o'qir,
+oyna `pause` ga yetmasdan yopilib ketardi. Barcha `.bat` lar CRLF ga
+o'girildi, `TUZAT.bat`/`TEKSHIR.bat` 5 qatorga qisqartirildi va
+skriptlarning o'zi Enter kutadigan bo'ldi.
 
 **2026-08-05 (3.4-nashr).** Server ishga tushmasa sababi endi ko'rinadi:
 vazifa chiqishini `logs\server.log` ga yozadi, `TEKSHIR.bat` esa jurnalni
