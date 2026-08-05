@@ -80,6 +80,11 @@ export const config = {
   ssl: {
     certFile: process.env.LABCORE_SSL_CERT || '',
     keyFile: process.env.LABCORE_SSL_KEY || '',
+    // Windows sertifikatni PFX (.pfx) ko'rinishida beradi. PEM'ga o'girish
+    // uchun openssl kerak, u esa Windows'da ko'pincha yo'q — shuning uchun
+    // Node PFX'ni to'g'ridan-to'g'ri o'qiy oladi.
+    pfxFile: process.env.LABCORE_SSL_PFX || '',
+    pfxPassword: process.env.LABCORE_SSL_PFX_PASSWORD || '',
     // HTTP portida turib, HTTPS'ga yo'naltirish (0 = o'chirilgan)
     redirectFromPort: Number(process.env.LABCORE_SSL_REDIRECT_PORT || 0),
   },

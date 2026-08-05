@@ -118,6 +118,9 @@ $dataDir = "$InstallDir\data"
 New-Item -ItemType Directory -Force -Path $dataDir, "$InstallDir\backups", "$InstallDir\ssl" | Out-Null
 
 $jwt = -join ((48..57) + (97..102) | Get-Random -Count 96 | ForEach-Object {[char]$_})
+# Sertifikat paroli 5/8-qadamda ishlatiladi, lekin .env shu yerda yozilgani
+# uchun oldindan yasaymiz.
+$certPass = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 20 | ForEach-Object {[char]$_})
 @"
 DATABASE_URL=postgres://$DbUser`:$dbPassword@127.0.0.1:5432/$DbName
 PORT=$Port
@@ -128,8 +131,8 @@ JWT_SECRET=$jwt
 LAB_NAME=$LabName
 CURRENCY=so'm
 TZ_NAME=Asia/Tashkent
-LABCORE_SSL_CERT=$InstallDir\ssl\labcore.crt
-LABCORE_SSL_KEY=$InstallDir\ssl\labcore.key
+LABCORE_SSL_PFX=$InstallDir\ssl\labcore.pfx
+LABCORE_SSL_PFX_PASSWORD=$certPass
 LABCORE_SSL_REDIRECT_PORT=$HttpPort
 BACKUP_KEEP_DAYS=30
 "@ | Set-Content "$InstallDir\.env" -Encoding UTF8
@@ -211,17 +214,18 @@ $cert = New-SelfSignedCertificate `
   -NotAfter (Get-Date).AddYears(10) `
   -FriendlyName "LabCore LIMS"
 
-# PEM formatiga chiqaramiz (Node shu formatni o'qiydi)
-$pfxPass = ConvertTo-SecureString -String "labcore-temp" -Force -AsPlainText
+# Sertifikatni PFX ko'rinishida saqlaymiz. Node PFX'ni to'g'ridan-to'g'ri
+# o'qiy oladi, shuning uchun openssl KERAK EMAS (Windows'da u ko'pincha yo'q).
+# Parol .env ga 3/8-qadamda yozilgan.
+$pfxPass = ConvertTo-SecureString -String $certPass -Force -AsPlainText
 Export-PfxCertificate -Cert $cert -FilePath "$InstallDir\ssl\labcore.pfx" -Password $pfxPass | Out-Null
+Ok "Sertifikat tayyor: $InstallDir\ssl\labcore.pfx"
 
+# openssl bo'lsa PEM nusxasini ham yasaymiz (boshqa dasturlar uchun qulay).
 if (Get-Command openssl -ErrorAction SilentlyContinue) {
-  openssl pkcs12 -in "$InstallDir\ssl\labcore.pfx" -clcerts -nokeys -out "$InstallDir\ssl\labcore.crt" -passin pass:labcore-temp
-  openssl pkcs12 -in "$InstallDir\ssl\labcore.pfx" -nocerts -nodes -out "$InstallDir\ssl\labcore.key" -passin pass:labcore-temp
-  Ok "Sertifikat tayyor: $InstallDir\ssl\labcore.crt"
-} else {
-  Warn "openssl topilmadi - sertifikatni qo'lda PEM'ga o'giring yoki HTTPS'ni o'chiring."
-  Warn "Vaqtincha HTTP rejimi uchun .env dagi SSL_ satrlarini # bilan izohga oling."
+  openssl pkcs12 -in "$InstallDir\ssl\labcore.pfx" -clcerts -nokeys -out "$InstallDir\ssl\labcore.crt" -passin "pass:$certPass" 2>$null
+  openssl pkcs12 -in "$InstallDir\ssl\labcore.pfx" -nocerts -nodes -out "$InstallDir\ssl\labcore.key" -passin "pass:$certPass" 2>$null
+  if (Test-Path "$InstallDir\ssl\labcore.key") { Ok "PEM nusxasi ham yasaldi" }
 }
 
 # Sertifikatni bu kompyuterda ishonchli deb belgilaymiz

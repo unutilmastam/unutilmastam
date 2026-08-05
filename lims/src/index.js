@@ -106,21 +106,31 @@ export function createApp() {
  * Nginx/Apache o'rnatish shart emas — Windows serverlar uchun muhim.
  */
 function createServer(app) {
-  const { certFile, keyFile, redirectFromPort } = config.ssl;
-  if (!certFile || !keyFile) return http.createServer(app);
+  const { certFile, keyFile, pfxFile, pfxPassword, redirectFromPort } = config.ssl;
+
+  // Ikki xil ko'rinish qo'llanadi:
+  //   PEM (.crt + .key) — Linux serverlarda odatiy;
+  //   PFX (.pfx)        — Windows sertifikatni shu ko'rinishda beradi va
+  //                       uni PEM'ga o'girish uchun openssl kerak bo'ladi.
+  // PFX birinchi tekshiriladi: Windows'da openssl ko'pincha o'rnatilmagan.
+  const usePfx = !!pfxFile;
+  if (!usePfx && (!certFile || !keyFile)) return http.createServer(app);
 
   // Sertifikat buzuq bo'lsa tizim butunlay ishlamay qolmasin: aniq xabar
   // beramiz va HTTP rejimida davom etamiz (telefon ilovasi ishlamaydi,
   // lekin laboratoriya to'xtab qolmaydi).
   let options;
   try {
-    options = { cert: fs.readFileSync(certFile), key: fs.readFileSync(keyFile) };
+    options = usePfx
+      ? { pfx: fs.readFileSync(pfxFile), passphrase: pfxPassword || undefined }
+      : { cert: fs.readFileSync(certFile), key: fs.readFileSync(keyFile) };
     https.createServer(options).close();   // juftlikni oldindan tekshiramiz
   } catch (err) {
     console.error(
       '\n[!] HTTPS sertifikatini o‘qib bo‘lmadi — server HTTP rejimida ishlaydi.\n' +
-      `    Sertifikat: ${certFile}\n` +
-      `    Kalit:      ${keyFile}\n` +
+      (usePfx
+        ? `    Sertifikat (PFX): ${pfxFile}\n`
+        : `    Sertifikat: ${certFile}\n    Kalit:      ${keyFile}\n`) +
       `    Sabab:      ${err.code === 'ERR_OSSL_X509_KEY_VALUES_MISMATCH'
         ? 'sertifikat va kalit bir-biriga mos emas'
         : err.message}\n` +

@@ -130,3 +130,30 @@ test('rejalashtirilgan vazifa SID orqali yaratiladi', () => {
   assert.match(text, /Translate\(\[System\.Security\.Principal\.NTAccount\]\)/,
     'SID mahalliy nomga o‘girilmagan');
 });
+
+/**
+ * Windows sertifikatni PFX ko'rinishida beradi. Uni PEM'ga o'girish uchun
+ * openssl kerak, u esa Windows'da odatda yo'q — o'rnatish shu joyda
+ * "openssl topilmadi" deb HTTPS'siz qolib ketardi. Endi Node PFX'ni
+ * to'g'ridan-to'g'ri o'qiydi va o'rnatuvchi ham shuni yozadi.
+ */
+test('o‘rnatuvchi sertifikatni openssl’siz sozlaydi', () => {
+  const text = fs.readFileSync(
+    path.join(config.root, 'deploy', 'windows', 'install-server.ps1'), 'utf8');
+
+  assert.match(text, /LABCORE_SSL_PFX=/, '.env ga PFX yozilmaydi');
+  assert.match(text, /LABCORE_SSL_PFX_PASSWORD=/, 'PFX paroli yozilmaydi');
+  assert.doesNotMatch(text, /LABCORE_SSL_CERT=\$InstallDir/,
+    'hali ham PEM yo‘liga tayanadi (openssl kerak bo‘lib qoladi)');
+  assert.match(text, /Export-PfxCertificate/, 'PFX eksport qilinmaydi');
+});
+
+/** Ulanmaganda sabab topish uchun tekshiruv skripti bo'lishi kerak. */
+test('tekshiruv skripti bor va manzilni aytadi', () => {
+  const file = path.join(config.root, 'deploy', 'windows', 'tekshir.ps1');
+  assert.ok(fs.existsSync(file), 'tekshir.ps1 yo‘q');
+  const text = fs.readFileSync(file, 'utf8');
+  assert.match(text, /Get-NetTCPConnection/, 'port tinglanayotgani tekshirilmaydi');
+  assert.match(text, /api\/health/, 'serverga so‘rov yuborilmaydi');
+  assert.match(text, /DASTURGA SHU MANZILNI YOZING/, 'manzil aytilmaydi');
+});
