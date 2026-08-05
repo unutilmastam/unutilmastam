@@ -3,6 +3,32 @@
 Bu shoxobcha faqat tayyor to'plamni saqlash uchun. Kod
 `claude/lab-management-system-ipsi88` shoxobchasida.
 
+## Internet yo'q bo'lsa (fleshka orqali o'rnatish)
+
+Server kompyuterda internet bo'lishi **shart emas**. Telefonda yoki internet
+bor boshqa kompyuterda uchta faylni yuklab oling va fleshkaga soling:
+
+| Fayl | Hajmi | Havola |
+|---|---|---|
+| `LabCore-toliq.zip` | 82 MB | https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-toliq.zip |
+| Node.js LTS | ~30 MB | https://nodejs.org/dist/v22.20.0/node-v22.20.0-x64.msi |
+| PostgreSQL | ~350 MB | https://www.postgresql.org/download/windows/ |
+
+Tartib: **Node.js → PostgreSQL → kompyuterni qayta yoqing → `ORNATISH.bat`
+(o'ng tugma → Run as administrator)**.
+
+LabCore'ning o'z kutubxonalari arxiv ichida keladi — o'rnatish paytida
+internet umuman so'ralmaydi.
+
+**Ikkita tuzoq:**
+
+* PostgreSQL o'rnatilgach **"Stack Builder"** oynasi chiqadi — **Cancel**
+  bosing. U qo'shimcha dasturlarni internetdan yuklaydi, LabCore uchun kerak emas.
+* Internetdan **Chocolatey** o'rnatadigan buyruqlarni (`choco install ...`)
+  ishlatmang — ular internet talab qiladi va bu yerda umuman kerak emas.
+
+---
+
 ## LabCore-YANGILASH.zip (2.8 MB) — allaqachon o'rnatganlar uchun
 
 Tizim o'rnatilgan bo'lsa, hammasini qayta o'rnatish shart emas: shu kichik
@@ -29,7 +55,7 @@ u serverdagi interfeysni ochadi, yangi bo'limlar o'zi paydo bo'ladi.
 
 ---
 
-## LabCore-toliq.zip (77 MB) — birinchi marta o'rnatish uchun
+## LabCore-toliq.zip (82 MB) — birinchi marta o'rnatish uchun
 
 Ichida:
 
@@ -59,16 +85,20 @@ Batafsil: arxiv ichidagi `OQING.txt` va `server/docs/ornatish.md`.
 ## Nazorat summasi
 
 ```
-LabCore-toliq.zip      f9bf90ebde3bcce9b1e035e474b7e563a4f9e5155b575e163392dbb58483c42a
+LabCore-toliq.zip      4789a9ec0f6e4c25ef46510fc88c2049ed84baf38968b4cd106310967b833dd3
 LabCore-YANGILASH.zip  4833a833b48333dc5fe8928f9cea4bca497eb9af466971f23b6c5b562fa053a0
 ```
 
 ## Tuzatishlar tarixi
 
 **2026-08-05 (3-nashr).** Xodim rasmi, PIN kod bilan kirish va Windows
-avtozapusk qo'shildi. O'rnatilgan tizim uchun `LabCore-YANGILASH.zip`
-(yuqoriga qarang). `LabCore-toliq.zip` hali 2-nashr — yangi o'rnatishdan
-keyin yangilash to'plamini ham ishlating.
+avtozapusk qo'shildi. `LabCore-toliq.zip` yangilandi — endi to'g'ridan-to'g'ri
+3-nashrni o'rnatadi. Internetsiz o'rnatish yo'riqnomasi ham qo'shildi
+(`OQING.txt` va yuqoridagi bo'lim).
+
+Ichidagi `LabCore-DASTUR.exe` 2-nashrdan qolgan: u serverdagi interfeysni
+ochgani uchun yangi bo'limlarning hammasi unda ko'rinadi, faqat dastur
+menyusidagi avtozapusk belgisi yo'q — buning o'rniga `avtozapusk.ps1`.
 
 **2026-08-04 (2-nashr).** Windows PowerShell 5.1 `.ps1` faylni ANSI deb
 o'qigani uchun skriptlar ishga tushmasdi ("Unexpected token" xatolari).

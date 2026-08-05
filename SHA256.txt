@@ -1,2 +1,2 @@
-LabCore-toliq.zip     f9bf90ebde3bcce9b1e035e474b7e563a4f9e5155b575e163392dbb58483c42a
+LabCore-toliq.zip     4789a9ec0f6e4c25ef46510fc88c2049ed84baf38968b4cd106310967b833dd3
 LabCore-YANGILASH.zip 4833a833b48333dc5fe8928f9cea4bca497eb9af466971f23b6c5b562fa053a0
