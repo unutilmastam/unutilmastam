@@ -299,3 +299,32 @@ test('tekshiruv va tuzatish oynasi o‘zi yopilmaydi', () => {
     assert.deepEqual(bareReturn, [], `${path.basename(f)}: kutmasdan chiqib ketadigan joy bor`);
   }
 });
+
+/**
+ * .env faylini ataylab faqat administratorlar o'qiy oladi (tibbiy ma'lumot
+ * himoyasi). Shu sababli tuzatish va tekshiruv skriptlari administrator
+ * huquqisiz ishlatilsa, ular ".env yo'q", "vazifa yo'q" deb NOTO'G'RI
+ * xulosa chiqarardi. Endi skript o'zini administrator sifatida qayta ochadi.
+ */
+test('tuzatish va tekshiruv skriptlari huquqni o‘zi so‘raydi', () => {
+  for (const f of [
+    path.join(config.root, 'deploy', 'windows', 'tekshir.ps1'),
+    path.join(config.root, 'deploy', 'windows', 'paket', 'tuzat.ps1'),
+  ]) {
+    const text = fs.readFileSync(f, 'utf8');
+    assert.match(text, /WindowsBuiltInRole\]::Administrator/,
+      `${path.basename(f)}: administrator huquqi tekshirilmaydi`);
+    assert.match(text, /Start-Process powershell -Verb RunAs/,
+      `${path.basename(f)}: huquq so'ralmaydi`);
+  }
+});
+
+/** Fayllar almashtirilgach server qayta ishga tushmasa, foyda yo'q. */
+test('tuzatish skripti serverni qayta ishga tushiradi', () => {
+  const text = fs.readFileSync(
+    path.join(config.root, 'deploy', 'windows', 'paket', 'tuzat.ps1'), 'utf8');
+  assert.match(text, /Stop-ScheduledTask -TaskName "LabCore"/, 'vazifa to‘xtatilmaydi');
+  assert.match(text, /Start-ScheduledTask -TaskName "LabCore"/, 'vazifa ishga tushirilmaydi');
+  assert.match(text, /api\/health/, 'natija tekshirilmaydi');
+  assert.match(text, /DASTURGA SHU MANZILNI YOZING/, 'manzil aytilmaydi');
+});

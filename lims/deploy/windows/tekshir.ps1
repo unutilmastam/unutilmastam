@@ -18,6 +18,26 @@ function Wait-Enter {
   Write-Host "Yopish uchun Enter bosing..." -ForegroundColor DarkGray
   try { Read-Host | Out-Null } catch { }
 }
+# ---------------------------------------------------------------------------
+# Administrator huquqi kerak: .env faylini faqat administratorlar o'qiy oladi
+# (tibbiy ma'lumot himoyasi), "LabCore" vazifasini ko'rish ham shuni talab
+# qiladi. Huquqsiz ishlatilsa tekshiruv "hech narsa yo'q" deb noto'g'ri
+# xulosa chiqarardi - shuning uchun oyna o'zini qayta ochadi.
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
+           ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $isAdmin) {
+  Write-Host "Administrator huquqi so'ralmoqda (Windows tasdiq oynasida 'Ha' bosing)..." -ForegroundColor Yellow
+  try {
+    Start-Process powershell -Verb RunAs -ArgumentList @(
+      '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`""
+    )
+    exit
+  } catch {
+    Write-Host "DIQQAT: administrator huquqisiz ishlayapmiz." -ForegroundColor Yellow
+    Write-Host "        .env va vazifa ko'rinmaydi - xulosa to'liq bo'lmaydi." -ForegroundColor Yellow
+  }
+}
+
 function Head($t) { Write-Host "`n=== $t ===" -ForegroundColor Cyan }
 function Ok($t)   { Write-Host "  OK: $t" -ForegroundColor Green }
 function Bad($t)  { Write-Host "  XATO: $t" -ForegroundColor Red }
@@ -61,6 +81,18 @@ if ($task) { Note "Vazifa holati: $($task.State)" } else { Bad "'LabCore' vazifa
 $listen = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
 if ($listen) {
   Ok "$port port ochiq (tinglayapti)"
+} elseif ($task -and $isAdmin) {
+  Bad "$port portda hech kim tinglamayapti"
+  Note "Vazifani qayta ishga tushirib ko'ramiz..."
+  Stop-ScheduledTask -TaskName "LabCore" -ErrorAction SilentlyContinue
+  Start-Sleep -Seconds 2
+  Start-ScheduledTask -TaskName "LabCore" -ErrorAction SilentlyContinue
+  for ($i = 1; $i -le 15; $i++) {
+    Start-Sleep -Seconds 1
+    $listen = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
+    if ($listen) { break }
+  }
+  if ($listen) { Ok "$port port ochildi" } else { Bad "server baribir ko'tarilmadi" }
 } else {
   Bad "$port portda hech kim tinglamayapti - server ishlamayapti"
 }
