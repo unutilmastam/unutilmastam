@@ -16,14 +16,20 @@ bu — **ruscha (yoki boshqa tildagi) Windows** muammosi: skript inglizcha
 `Administrators` / `SYSTEM` hisob nomlarini qidirardi, ular esa faqat
 inglizcha Windows'da bor. Tuzatildi.
 
-**Butun arxivni qayta yuklamasdan tuzatish** — bitta kichik fayl (10 KB):
+**Butun arxivni qayta yuklamasdan tuzatish — 8 KB:**
 
-1. Yuklab oling: https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/install-server.ps1
-2. Faylni arxivni ochgan papkangizdagi shu joyga qo'ying (eskisini almashtiring):
-   `LabCore-toliq\server\deploy\windows\install-server.ps1`
-3. `ORNATISH.bat` → o'ng tugma → **Run as administrator** — boshidan qayta ishga tushiring.
+[**LabCore-TUZATISH.zip**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-TUZATISH.zip)
+
+1. Shu arxivni yuklab oling (telefonda ham bo'ladi) va fleshka orqali kompyuterga o'tkazing
+2. Arxivni oching va ichidagi **`TUZAT.bat`** ni ikki marta bosing —
+   u LabCore papkangizni o'zi topib, yangi faylni eskisining ustiga yozadi
+3. `LabCore-toliq` papkangizdagi `ORNATISH.bat` → o'ng tugma →
+   **Run as administrator** — boshidan qayta ishga tushiring
 
 Qayta ishga tushirish xavfsiz: baza mavjud bo'lsa saqlab qolinadi.
+
+Qo'lda qo'ymoqchi bo'lsangiz — arxivdagi `install-server.ps1` ni shu joyga ko'chiring:
+`LabCore-toliq\server\deploy\windows\install-server.ps1`
 
 Yoki yangilangan `LabCore-toliq.zip` ni to'liq qayta yuklab oling — ichida
 xuddi shu tuzatish bor.
@@ -115,6 +121,7 @@ Batafsil: arxiv ichidagi `OQING.txt` va `server/docs/ornatish.md`.
 LabCore-toliq.zip      00e36403561f4d28b66cc75593cadc1f878434c4186d9594a2490e7283ad72bf
 LabCore-YANGILASH.zip  4201dc4545de284082263f10e95bd65b259f0756ec936cd8ba369cbad198230a
 install-server.ps1     2fb685e9bb1b0efdb0b2f30d10f89176dd169b15b4909fb5fcc984fbd6a7f733
+LabCore-TUZATISH.zip   40532e3be63408a6d4b807e118fb97798c92e1e155febcdc213252ba2124a4e0
 ```
 
 ## Tuzatishlar tarixi
