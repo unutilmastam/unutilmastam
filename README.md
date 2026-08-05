@@ -13,19 +13,21 @@ Bu shoxobcha faqat tayyor to'plamni saqlash uchun. Kod
    **Run as administrator**
 3. Parol so'raganda **PostgreSQL `postgres` parolini** kiriting
 
-Ichida **`TEKSHIR.bat`** ham bor: server ishlayaptimi, qaysi portda,
-`http` yoki `https` — hammasini ko'rsatadi va dasturga yoziladigan aniq
-manzilni aytadi.
+Server baribir ishga tushmasa — **`TEKSHIR.bat`**. U endi shunchaki
+"ishlamayapti" demaydi: jurnalni ko'rsatadi va serverni o'zi ishga tushirib,
+**xatoning o'zini** ekranga chiqaradi.
 
 **Nima tuzatildi:**
 
 | Xato | Endi |
 |---|---|
-| `postgres` paroli noto'g'ri bo'lsa ham skript "OK" deb davom etardi, baza yaratilmasdi | Parol oldindan tekshiriladi, 3 marta qayta so'raladi |
-| `localhost` IPv6 (`::1`) orqali `Permission denied (10013)` berardi | `psql` aniq `127.0.0.1` ga ulanadi |
-| `openssl topilmadi` → HTTPS yasalmasdi → `ECONNREFUSED` | Windows PFX to'g'ridan-to'g'ri ishlatiladi, openssl kerak emas |
+| Server ishga tushmasa sababi hech qayerda ko'rinmasdi | `C:\LabCore\logs\server.log` jurnali; `TEKSHIR.bat` xatoni o'zi ko'rsatadi |
+| `HOLAT.bat`: `parameter 'SkipCertificateCheck'` xatosi | PowerShell 5.1 uchun to'g'ri usul |
+| `Manzil: http://:4000` (bo'sh manzil) | Tarmoq yo'q bo'lsa `localhost` deb yoziladi |
+| `postgres` paroli noto'g'ri bo'lsa ham "OK" deb davom etardi | Parol oldindan tekshiriladi, 3 marta qayta so'raladi |
+| `localhost` IPv6 (`::1`) → `Permission denied (10013)` | `psql` aniq `127.0.0.1` ga ulanadi |
+| `openssl topilmadi` → HTTPS yasalmasdi | Windows PFX to'g'ridan-to'g'ri ishlatiladi |
 | Ruscha Windows'da `identity references` xatosi | Hisob nomlari o'rniga SID |
-| "O'rnatildi" deb yozardi, server esa ishlamasligi mumkin edi | Oxirida `/api/health` orqali tekshiriladi |
 
 ---
 
@@ -111,12 +113,18 @@ Batafsil: arxiv ichidagi `OQING.txt` va `server/docs/ornatish.md`.
 ## Nazorat summasi
 
 ```
-LabCore-toliq.zip      88634683add29187b107a0ccd25a51d077269dc5a2f9f010aec66faa3d916bbd
-LabCore-TUZATISH.zip   af80a0710bd5f98fe737e6143bb77629a06eea2a304acebb274e3190982403bc
+LabCore-toliq.zip      623918750c6e368fd379b3c022da599a9cea241571ce897164d78c5756f399b3
+LabCore-TUZATISH.zip   647966f5ee50916836a236e6ba903df3c69bbca9cc214e1d06e0ea1dc1eab587
 LabCore-YANGILASH.zip  4201dc4545de284082263f10e95bd65b259f0756ec936cd8ba369cbad198230a
 ```
 
 ## Tuzatishlar tarixi
+
+**2026-08-05 (3.4-nashr).** Server ishga tushmasa sababi endi ko'rinadi:
+vazifa chiqishini `logs\server.log` ga yozadi, `TEKSHIR.bat` esa jurnalni
+ko'rsatib, serverni o'zi sinab ishga tushiradi va xatoni ekranga chiqaradi.
+`HOLAT.bat` PowerShell 5.1 da yiqilib qolardi (`-SkipCertificateCheck`
+faqat PowerShell 7 da bor) - tuzatildi.
 
 **2026-08-05 (3.3-nashr).** O'rnatuvchi `psql` xatosini yutib yuborardi:
 `postgres` paroli noto'g'ri kiritilsa ham "OK" deb davom etar, baza va
