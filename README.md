@@ -3,35 +3,34 @@
 Bu shoxobcha faqat tayyor to'plamni saqlash uchun. Kod
 `claude/lab-management-system-ipsi88` shoxobchasida.
 
-## Server ishga tushmayaptimi? Sabab topildi
+## Ulanmayaptimi? Bitta tugma bilan tuzatiladi
 
-[**LabCore-TUZATISH.zip**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-TUZATISH.zip) — 380 KB
+[**LabCore-TUZATISH.zip**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-TUZATISH.zip) — 390 KB
 
 1. Arxivni **to'liq oching** (o'ng tugma → Extract All)
-2. **`TUZAT.bat`** → ikki marta bosing
-3. **`TEKSHIR.bat`** → ikki marta bosing
+2. **`TUZAT.bat`** → ikki marta bosing → Windows "Ha" so'raydi, tasdiqlang
 
-**Asosiy sabab** — server dasturidagi "meni to'g'ridan-to'g'ri ishga
-tushirishdimi?" degan tekshiruv Linux uchun to'g'ri, Windows uchun noto'g'ri
-yozilgan edi:
+Skript yangi fayllarni qo'yadi, **serverni qayta ishga tushiradi** va
+oxirida dasturga yoziladigan manzilni aytadi:
 
 ```
-Linux'da   yo'l:  /opt/labcore/src/index.js   -> mos keladi
-Windows'da yo'l:  C:\LabCore\src\index.js     -> MOS KELMAYDI
+ Server ishlayapti
+
+ DASTURGA SHU MANZILNI YOZING:
+   https://localhost:4000
 ```
 
-Shuning uchun Windows'da Node dasturni yuklardi, lekin serverni ishga
-tushirish buyrug'i **umuman bajarilmasdi** — jarayon xatosiz, bir og'iz
-xabarsiz tugardi. Vazifa "Ready" turardi, port bo'sh edi, jurnal ham
-bo'sh edi.
+Server ko'tarilmasa — **`TEKSHIR.bat`** sababini ko'rsatadi.
 
-**Boshqa tuzatishlar:**
+**Nima tuzatildi:**
 
 | Xato | Endi |
 |---|---|
-| Windows'da server jimgina ishga tushmasdi | Yo'l farqi Node'ning o'z vositasi bilan hisobga olinadi |
-| `.bat` oynasi ochilib darrov yopilib ketardi | CRLF qator tugashi; skript o'zi Enter kutadi |
-| Server xatosi hech qayerda ko'rinmasdi | `logs\server.log` jurnali; `TEKSHIR.bat` xatoni ko'rsatadi |
+| Skriptlar administrator huquqisiz ishlab, ".env yo'q" deb noto'g'ri xulosa chiqarardi | Huquqni o'zi so'raydi (UAC) |
+| Fayllar almashtirilardi, server esa eski holatda qolardi | `TUZAT.bat` serverni qayta ishga tushiradi va tekshiradi |
+| Windows'da server jimgina ishga tushmasdi | Yo'l farqi `pathToFileURL` bilan hisobga olinadi |
+| `.bat` oynasi ochilib darrov yopilib ketardi | CRLF; skript o'zi Enter kutadi |
+| Server xatosi hech qayerda ko'rinmasdi | `logs\server.log` jurnali |
 | `HOLAT.bat`: `parameter 'SkipCertificateCheck'` | PowerShell 5.1 uchun to'g'ri usul |
 | `postgres` paroli noto'g'ri bo'lsa ham "OK" | Parol oldindan tekshiriladi |
 | `localhost` IPv6 → `Permission denied (10013)` | `psql` aniq `127.0.0.1` ga ulanadi |
@@ -122,12 +121,19 @@ Batafsil: arxiv ichidagi `OQING.txt` va `server/docs/ornatish.md`.
 ## Nazorat summasi
 
 ```
-LabCore-toliq.zip      9aaa460134a4013b72b937c5f316f30fb25064eaed9b8571c9c3e2c8b213aabb
-LabCore-TUZATISH.zip   51e9a9a8f5cb47b15231872d547a7c120147b6430773ff020b0044a42435271a
+LabCore-toliq.zip      a0143b279445ecfe636308e6d3c0f225988b6c864a1842926a15f8bc905658c0
+LabCore-TUZATISH.zip   d47aa91a5d0d5cfdd046a65efc6c50fccd0597a4b4f6c762858aad9d3bd30673
 LabCore-YANGILASH.zip  4201dc4545de284082263f10e95bd65b259f0756ec936cd8ba369cbad198230a
 ```
 
 ## Tuzatishlar tarixi
+
+**2026-08-05 (3.7-nashr).** `.env` ataylab faqat administratorlarga ochiq
+(unda baza paroli bor). Skriptlar oddiy huquq bilan ishlatilganda faylni
+o'qiy olmay, "sozlanmagan" deb noto'g'ri xulosa chiqarardi; node esa
+`DATABASE_URL` ni sukut qiymatiga tushirib `SASL: client password must be
+a string` xatosini berardi. Endi skriptlar huquqni o'zi so'raydi va
+`TUZAT.bat` serverni qayta ishga tushirib, natijani tekshiradi.
 
 **2026-08-05 (3.6-nashr).** Windows'da server umuman ishga tushmasdi:
 `import.meta.url === \`file://${process.argv[1]}\`` tekshiruvi Windows
