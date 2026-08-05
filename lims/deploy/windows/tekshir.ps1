@@ -103,13 +103,48 @@ Head "NATIJA"
 
 if (-not $ishlaydi) {
   Write-Host ""
-  Bad "Server ishlamayapti."
+  Bad "Server ishlamayapti. Sababini o'zimiz qidiramiz."
+
+  # 1) Vazifa yozib qoldirgan jurnal
+  $log = Join-Path $InstallDir "logs\server.log"
+  if (Test-Path $log) {
+    $satrlar = Get-Content $log -Tail 25 -ErrorAction SilentlyContinue
+    if ($satrlar) {
+      Head "5. Jurnaldagi oxirgi satrlar"
+      $satrlar | ForEach-Object { Write-Host "   $_" -ForegroundColor DarkYellow }
+    }
+  }
+
+  # 2) Serverni shu yerda ishga tushirib, xatoni o'z ko'zimiz bilan ko'ramiz.
+  #    Vazifa sifatida ishlaganda ekran bo'lmaydi - xato ko'rinmay qoladi.
+  Head "6. Serverni sinab ishga tushiramiz"
+  if (-not (Test-Path "$InstallDir\src\index.js")) {
+    Bad "$InstallDir\src\index.js topilmadi"
+  } else {
+    $node = (Get-Command node -ErrorAction SilentlyContinue).Source
+    if (-not $node) {
+      Bad "node.exe topilmadi - Node.js o'rnatilmagan yoki PATH'da yo'q"
+    } else {
+      $out = Join-Path $env:TEMP "labcore-sinov-out.log"
+      $err = Join-Path $env:TEMP "labcore-sinov-err.log"
+      $p = Start-Process -FilePath $node -ArgumentList "src\index.js" `
+             -WorkingDirectory $InstallDir -PassThru -NoNewWindow `
+             -RedirectStandardOutput $out -RedirectStandardError $err
+      Start-Sleep -Seconds 8
+      if (-not $p.HasExited) { $p.Kill(); Note "(server ishga tushdi va 8 soniyadan keyin to'xtatildi)" }
+
+      foreach ($f in @($out, $err)) {
+        if (Test-Path $f) {
+          $t = Get-Content $f -ErrorAction SilentlyContinue
+          if ($t) { $t | ForEach-Object { Write-Host "   $_" -ForegroundColor Yellow } }
+          Remove-Item $f -Force -ErrorAction SilentlyContinue
+        }
+      }
+    }
+  }
+
   Write-Host ""
-  Write-Host " Xatoni ko'rish uchun serverni qo'lda ishga tushiring:" -ForegroundColor Yellow
-  Write-Host "     cd $InstallDir"
-  Write-Host "     node src\index.js"
-  Write-Host ""
-  Write-Host " Ekranda chiqqan xatoni menga yuboring."
+  Write-Host " Yuqoridagi sariq satrlarni menga yuboring - sabab o'sha yerda." -ForegroundColor Yellow
   Write-Host ""
   return
 }

@@ -204,3 +204,46 @@ test('o‘rnatuvchi oxirida serverni tekshiradi', () => {
   assert.match(text, /api\/health/, 'server javob berishi tekshirilmaydi');
   assert.match(text, /Server ishlayapti \(\$scheme\)/, 'natija aytilmaydi');
 });
+
+/**
+ * Windows'da odatiy qobiq — PowerShell 5.1. Unda Invoke-RestMethod'ning
+ * -SkipCertificateCheck bayrog'i YO'Q (u PowerShell 7 da paydo bo'lgan) va
+ * "A parameter cannot be found that matches parameter name
+ * 'SkipCertificateCheck'" xatosini beradi. Foydalanuvchida aynan shu chiqqan.
+ */
+test('skriptlar PowerShell 5.1 da ishlaydi', () => {
+  const faqatPs7 = ['-SkipCertificateCheck', '-SkipHttpErrorCheck', 'ForEach-Object -Parallel'];
+  const bad = [];
+
+  for (const { name, file } of psScripts()) {
+    const lines = fs.readFileSync(file, 'utf8').split('\n');
+    lines.forEach((line, i) => {
+      if (line.trim().startsWith('#')) return;
+      for (const flag of faqatPs7) {
+        if (line.includes(flag)) bad.push(`${name}:${i + 1} — ${flag}`);
+      }
+    });
+  }
+
+  assert.deepEqual(bad, [],
+    `PowerShell 7 ga xos imkoniyat ishlatilgan (5.1 da yiqiladi):\n  ${bad.join('\n  ')}`);
+});
+
+/**
+ * Server vazifa sifatida ishlaganda ekran bo'lmaydi. Xatoni ko'radigan
+ * yagona joy — jurnal fayli. Usiz "nega ishlamayapti?" degan savolga
+ * javob topib bo'lmaydi.
+ */
+test('server chiqishi jurnalga yoziladi', () => {
+  const text = fs.readFileSync(
+    path.join(config.root, 'deploy', 'windows', 'install-server.ps1'), 'utf8');
+  assert.match(text, /logs\\server\.log|Join-Path \$logDir "server\.log"/,
+    'vazifa jurnal yozmaydi');
+  assert.match(text, /New-ScheduledTaskAction -Execute "cmd\.exe"/,
+    'chiqishni faylga yo‘naltirish uchun cmd ishlatilmagan');
+
+  const tekshir = fs.readFileSync(
+    path.join(config.root, 'deploy', 'windows', 'tekshir.ps1'), 'utf8');
+  assert.match(tekshir, /server\.log/, 'tekshiruv jurnalni ko‘rsatmaydi');
+  assert.match(tekshir, /Start-Process/, 'tekshiruv serverni sinab ko‘rmaydi');
+});

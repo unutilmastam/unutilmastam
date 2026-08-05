@@ -334,7 +334,15 @@ $systemAccount = (New-Object System.Security.Principal.SecurityIdentifier("S-1-5
 # foydalanuvchinikidan boshqacha bo'lishi mumkin.
 $nodeExe = (Get-Command node).Source
 
-$action  = New-ScheduledTaskAction -Execute $nodeExe -Argument "src\index.js" -WorkingDirectory $InstallDir
+# Server chiqishini faylga yozamiz. Vazifa sifatida ishlaganda ekran yo'q -
+# xato bo'lsa, uni ko'radigan yagona joy shu jurnal.
+$logDir = Join-Path $InstallDir "logs"
+New-Item -ItemType Directory -Force -Path $logDir | Out-Null
+$logFile = Join-Path $logDir "server.log"
+Set-Content -Path $logFile -Value "" -Encoding UTF8   # har o'rnatishda tozalanadi
+
+$cmdArgs = '/c ""{0}" src\index.js >> "{1}" 2>&1"' -f $nodeExe, $logFile
+$action  = New-ScheduledTaskAction -Execute "cmd.exe" -Argument $cmdArgs -WorkingDirectory $InstallDir
 $trigger = New-ScheduledTaskTrigger -AtStartup
 $settings = New-ScheduledTaskSettingsSet -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) `
             -ExecutionTimeLimit ([TimeSpan]::Zero) -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
@@ -432,8 +440,14 @@ for ($i = 1; $i -le 20; $i++) {
 if ($scheme) {
   Ok "Server ishlayapti ($scheme)"
 } else {
-  Warn "Server hali javob bermayapti."
-  Warn "Xatoni ko'rish uchun: cd $InstallDir  va  node src\index.js"
+  Warn "Server hali javob bermayapti. Jurnaldagi oxirgi satrlar:"
+  if (Test-Path $logFile) {
+    Get-Content $logFile -Tail 25 | ForEach-Object { Write-Host "      $_" -ForegroundColor DarkYellow }
+  } else {
+    Warn "jurnal fayli yo'q: $logFile"
+  }
+  Warn "To'liq jurnal: $logFile"
+  Warn "Yoki qo'lda: cd $InstallDir  va  node src\index.js"
   $scheme = "https"
 }
 
