@@ -19,6 +19,12 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # secrets konteksti step-level `if` da ishlamaydi — shuning uchun env orqali
+    env:
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -35,17 +41,13 @@ jobs:
       # Boʻlmasa build.gradle.kts debug kalitiga qaytadi; APK baribir imzolangan
       # boʻladi va istalgan qurilmaga oʻrnatiladi.
       - name: Imzo kalitini tayyorlash
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "$GITHUB_WORKSPACE/android/release.keystore"
+          echo "$KEYSTORE_BASE64" | base64 -d > "$GITHUB_WORKSPACE/android/release.keystore"
           echo "KEYSTORE_FILE=$GITHUB_WORKSPACE/android/release.keystore" >> $GITHUB_ENV
 
       - name: Release APK
         working-directory: android
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew --no-daemon assembleRelease
 
       - name: Imzo va mosligini tekshirish
@@ -80,20 +82,20 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          cat > /tmp/notes.md <<'NOTES'
+          **BRILIANT** — universal kamera platformasi, Android ilovasi.
+
+          Telefonda shu sahifani ochib, pastdagi `.apk` faylni bosing.
+          Android "Nomaʼlum manbadan oʻrnatish" ruxsatini soʻraydi — ruxsat bering.
+
+          * Android 6.0 va undan yuqori qurilmalar
+          * Imzolangan APK — imzosiz fayl hech qanday qurilmaga oʻrnatilmaydi
+          * Ilova offline ochiladi; sinash uchun "Demo rejimda koʻrish" tugmasi bor
+          * "App not installed" chiqsa — avvalgi versiyani oʻchirib, qaytadan oʻrnating
+          NOTES
           gh release delete android-latest --yes --cleanup-tag 2>/dev/null || true
           gh release create android-latest "$APK_PATH" \
             --title "BRILIANT — Android ilova (oxirgi versiya)" \
             --target "$GITHUB_SHA" \
-            --notes "$(cat <<'NOTES'
-**BRILIANT** — universal kamera platformasi, Android ilovasi.
-
-Telefonda shu sahifani ochib, pastdagi `.apk` faylni bosing.
-Android "Nomaʼlum manbadan oʻrnatish" ruxsatini soʻraydi — ruxsat bering.
-
-* Android 6.0 va undan yuqori qurilmalar
-* Imzolangan APK — imzosiz fayl hech qanday qurilmaga oʻrnatilmaydi
-* Ilova offline ochiladi; sinash uchun "Demo rejimda koʻrish" tugmasi bor
-* Avvalgi versiya oʻrnatilgan boʻlsa va "App not installed" chiqsa — eskisini oʻchirib, qaytadan oʻrnating
-NOTES
-)"
+            --notes-file /tmp/notes.md
           echo "Yuklab olish: https://github.com/${{ github.repository }}/releases/tag/android-latest"
