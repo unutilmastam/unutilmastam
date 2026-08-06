@@ -15,6 +15,34 @@ pg.types.setTypeParser(pg.types.builtins.DATE, (v) => v);
 export const pool = new pg.Pool({
   connectionString: config.db.connectionString,
   max: config.db.max,
+  // Bo'sh turgan ulanishni o'zimiz yangilaymiz. Aks holda uni tashqi
+  // tomon (antivirus, VPN, brandmauer yoki PostgreSQL'ning o'zi) uzib
+  // qo'yishi mumkin va bu xato bo'lib qaytadi.
+  keepAlive: true,
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 10_000,
+});
+
+/**
+ * ENG MUHIM SATR.
+ *
+ * pg.Pool bo'sh turgan (idle) ulanishda xato yuz berganda 'error'
+ * hodisasini chiqaradi. Node'da EventEmitter'ning 'error' hodisasini
+ * hech kim tinglamasa, jarayon BUTUNLAY QULAB TUSHADI.
+ *
+ * Amalda bu shunday ko'rinadi: server ishlab turadi, keyin PostgreSQL
+ * ulanishni uzadi yoki antivirus/VPN bo'sh TCP ulanishini yopadi va
+ * server "sababsiz" o'chib qoladi. Vazifa uni qayta ishga tushiradi,
+ * bir necha daqiqadan keyin yana o'chadi - "bir ishlab, bir ishlamaydi".
+ *
+ * Bu yerda xatoni ushlab, faqat yozib qo'yamiz: buzilgan ulanish
+ * hovuzdan chiqarib tashlanadi, keyingi so'rov yangisini oladi.
+ */
+pool.on('error', (err) => {
+  console.error(
+    `[baza] bo'sh ulanishda xato: ${err.message} — ` +
+    'ulanish tashlab yuborildi, server ishlashda davom etadi',
+  );
 });
 
 export function query(text, params) {
@@ -42,7 +70,9 @@ export async function tx(cb) {
     await client.query('COMMIT');
     return result;
   } catch (err) {
-    await client.query('ROLLBACK');
+    // ROLLBACK ning o'zi ham yiqilishi mumkin (ulanish uzilgan bo'lsa).
+    // U holda asosiy xatoni yashirib qo'ymaymiz.
+    try { await client.query('ROLLBACK'); } catch { /* ulanish allaqachon yo'q */ }
     throw err;
   } finally {
     client.release();

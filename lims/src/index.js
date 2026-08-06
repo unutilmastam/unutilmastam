@@ -221,6 +221,36 @@ export async function start() {
 }
 
 /**
+ * Jurnalga vaqt qo'yamiz va "sababsiz o'chib qolish"ni yozib qoldiramiz.
+ *
+ * Server Windows'da vazifa (Task Scheduler) sifatida ishlaydi — ekran yo'q.
+ * Agar jarayon ushlanmagan xato tufayli qulasa, hech qayerda hech narsa
+ * qolmasdi: vazifa uni qayta ko'taradi, foydalanuvchi esa "bir ishlaydi,
+ * bir ishlamaydi" deb ko'radi. Endi har bir satr vaqt bilan yoziladi va
+ * qulash sababi logs\server.log ga tushadi.
+ */
+export function installCrashLogging() {
+  const stamp = () => new Date().toISOString().replace('T', ' ').slice(0, 19);
+  for (const level of ['log', 'error', 'warn']) {
+    const asl = console[level].bind(console);
+    console[level] = (...args) => asl(`[${stamp()}]`, ...args);
+  }
+
+  process.on('uncaughtException', (err) => {
+    console.error('[QULASH] ushlanmagan xato:', err && err.stack ? err.stack : err);
+    // Jurnal diskka yozilib ulgursin, keyin chiqamiz — vazifa qayta ko'taradi.
+    setTimeout(() => process.exit(1), 300).unref();
+  });
+  process.on('unhandledRejection', (reason) => {
+    console.error('[QULASH] ushlanmagan rad etish:', reason && reason.stack ? reason.stack : reason);
+    setTimeout(() => process.exit(1), 300).unref();
+  });
+  process.on('exit', (code) => {
+    if (code !== 0) console.error(`[QULASH] jarayon ${code} kodi bilan tugadi`);
+  });
+}
+
+/**
  * Fayl to'g'ridan-to'g'ri ishga tushirilganda serverni ko'taramiz
  * (import qilinganda — masalan testlarda — ko'tarmaymiz).
  *
@@ -231,4 +261,7 @@ export async function start() {
  * hech qanday xabarsiz ishga tushmay chiqib ketardi. pathToFileURL
  * bu farqni o'zi hisobga oladi.
  */
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) start();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  installCrashLogging();
+  start();
+}

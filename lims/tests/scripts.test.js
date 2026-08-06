@@ -249,6 +249,43 @@ test('server chiqishi jurnalga yoziladi', () => {
 });
 
 /**
+ * "Bir ishlaydi, bir ishlamaydi" holatida server tekshiruv paytida
+ * ko'tarilgan bo'lishi mumkin — o'shanda ham qulash tarixi ko'rinishi shart,
+ * aks holda tekshiruv "hammasi joyida" deb noto'g'ri xulosa beradi.
+ */
+test('tekshiruv jurnaldagi qulash izlarini har doim ko‘rsatadi', () => {
+  const text = fs.readFileSync(
+    path.join(config.root, 'deploy', 'windows', 'tekshir.ps1'), 'utf8');
+
+  assert.match(text, /QULASH/, 'qulash izlari qidirilmaydi');
+
+  // Qulash tarixi "server ishlamayapti" shartidan OLDIN, ya'ni har qanday
+  // holatda bajarilishi kerak.
+  const qulashJoyi = text.indexOf('Qulash tarixi');
+  const shartJoyi = text.indexOf('if (-not $ishlaydi)');
+  assert.ok(qulashJoyi > 0, 'qulash tarixi bo‘limi yo‘q');
+  assert.ok(qulashJoyi < shartJoyi,
+    'qulash tarixi faqat server o‘chganda ko‘rsatilyapti — ishlab turganda ham kerak');
+
+  // 8 soniyadan keyin serverni tekshiruvning O'ZI to'xtatishi aytilishi kerak:
+  // foydalanuvchi buni "server yana uchib ketdi" deb tushunmasin.
+  assert.match(text, /ataylab to'xtatdi/,
+    'sinov serverini tekshiruv o‘zi to‘xtatgani tushuntirilmagan');
+});
+
+/**
+ * Server vazifa sifatida ishlaydi — ekran yo'q. Qulash sababi jurnalga
+ * tushmasa, "sababsiz o'chib qolish"ni hech kim topa olmaydi.
+ */
+test('server qulash sababini jurnalga yozadi', () => {
+  const text = fs.readFileSync(path.join(config.root, 'src', 'index.js'), 'utf8');
+  assert.match(text, /uncaughtException/, 'ushlanmagan xato tutilmaydi');
+  assert.match(text, /unhandledRejection/, 'ushlanmagan rad etish tutilmaydi');
+  assert.match(text, /installCrashLogging\(\);\s*\n\s*start\(\);/,
+    'kirish nuqtasida qulash jurnali yoqilmagan');
+});
+
+/**
  * Windows'ning cmd.exe .bat faylni CRLF (\r\n) bilan kutadi. Linux'da
  * yasalgan fayl faqat \n bilan chiqadi va cmd uni noto'g'ri o'qiydi:
  * oyna bir lahza ochilib, "pause" ga yetmasdan yopilib ketadi.

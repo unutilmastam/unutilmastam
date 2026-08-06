@@ -129,7 +129,36 @@ foreach ($scheme in @("https", "http")) {
 }
 
 # ---------------------------------------------------------------------------
-Head "4. Shu kompyuterning tarmoq manzillari"
+# "Bir ishlaydi, bir ishlamaydi" holati: server hozir ko'tarilgan bo'lsa ham,
+# jurnalda qulash izlari qolgan bo'lishi mumkin. Ularni ko'rsatmasak,
+# tekshiruv "hammasi joyida" deb noto'g'ri xulosa beradi.
+Head "4. Qulash tarixi (server o'chib qolganmi?)"
+
+$log = Join-Path $InstallDir "logs\server.log"
+if (Test-Path $log) {
+  $qulash = Select-String -Path $log -Pattern "QULASH" -ErrorAction SilentlyContinue
+  if ($qulash) {
+    Bad "$($qulash.Count) marta qulagan. Oxirgi sabablar:"
+    $qulash | Select-Object -Last 5 | ForEach-Object {
+      Write-Host "   $($_.Line)" -ForegroundColor DarkYellow
+    }
+    Note ""
+    Note "Shu satrlarni menga yuboring - sabab o'sha yerda."
+  } else {
+    Ok "jurnalda qulash izi yo'q"
+  }
+
+  $bazaXato = Select-String -Path $log -Pattern "\[baza\] bo'sh ulanishda xato" -ErrorAction SilentlyContinue
+  if ($bazaXato) {
+    Note "$($bazaXato.Count) marta bo'sh ulanish uzilgan (antivirus/VPN yoki PostgreSQL)."
+    Note "Bu xavfli emas: server ulanishni yangilab, ishlashda davom etadi."
+  }
+} else {
+  Note "Jurnal fayli hali yo'q: $log"
+}
+
+# ---------------------------------------------------------------------------
+Head "5. Shu kompyuterning tarmoq manzillari"
 
 $addrs = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
          Where-Object { $_.IPAddress -notlike "169.254.*" }
@@ -146,18 +175,17 @@ if (-not $ishlaydi) {
   Bad "Server ishlamayapti. Sababini o'zimiz qidiramiz."
 
   # 1) Vazifa yozib qoldirgan jurnal
-  $log = Join-Path $InstallDir "logs\server.log"
   if (Test-Path $log) {
     $satrlar = Get-Content $log -Tail 25 -ErrorAction SilentlyContinue
     if ($satrlar) {
-      Head "5. Jurnaldagi oxirgi satrlar"
+      Head "6. Jurnaldagi oxirgi satrlar"
       $satrlar | ForEach-Object { Write-Host "   $_" -ForegroundColor DarkYellow }
     }
   }
 
   # 2) Serverni shu yerda ishga tushirib, xatoni o'z ko'zimiz bilan ko'ramiz.
   #    Vazifa sifatida ishlaganda ekran bo'lmaydi - xato ko'rinmay qoladi.
-  Head "6. Serverni sinab ishga tushiramiz"
+  Head "7. Serverni sinab ishga tushiramiz"
   if (-not (Test-Path "$InstallDir\src\index.js")) {
     Bad "$InstallDir\src\index.js topilmadi"
   } else {
@@ -171,7 +199,15 @@ if (-not $ishlaydi) {
              -WorkingDirectory $InstallDir -PassThru -NoNewWindow `
              -RedirectStandardOutput $out -RedirectStandardError $err
       Start-Sleep -Seconds 8
-      if (-not $p.HasExited) { $p.Kill(); Note "(server ishga tushdi va 8 soniyadan keyin to'xtatildi)" }
+      if (-not $p.HasExited) {
+        $p.Kill()
+        Note ""
+        Note "(Server ishga tushdi. Uni SHU TEKSHIRUV 8 soniyadan keyin"
+        Note " ataylab to'xtatdi - bu nosozlik emas. Doimiy ishlashi uchun"
+        Note " 'LabCore' vazifasi javob beradi.)"
+      } else {
+        Bad "Server o'zi to'xtab qoldi - sabab quyidagi sariq satrlarda."
+      }
 
       foreach ($f in @($out, $err)) {
         if (Test-Path $f) {
