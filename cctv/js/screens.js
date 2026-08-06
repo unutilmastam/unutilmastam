@@ -1,4 +1,4 @@
-/* ITCode CCTV — asosiy ekranlar: auth, dashboard, kameralar, kamera qoʻshish, tafsilotlar */
+/* BRILIANT — asosiy ekranlar: auth, dashboard, kameralar, kamera qoʻshish, tafsilotlar */
 import { S, save, log, seedDemo, addCamera, updateCamera, removeCamera, getCam, addGroup,
          localLogin, localRegister, can, plan, camLimitReached, timeAgo, clock, PLANS } from './store.js';
 import { api } from './api.js';
@@ -66,7 +66,7 @@ route('/login', () => {
     btn.disabled = false; btn.textContent = 'Kirish';
   };
 
-  return authShell('ITCode CCTV', 'Barcha kameralaringiz — bitta ilovada',
+  return authShell('BRILIANT', 'Barcha kameralaringiz — bitta ilovada',
     h('div', {},
       field('Email', email),
       field('Parol', pass),
@@ -79,7 +79,7 @@ route('/login', () => {
 
 function demoEnter() {
   S.settings.demo = true;
-  S.user = { id: 'demo', name: 'Demo foydalanuvchi', email: 'demo@itcode.uz', role: 'owner', plan: 'business' };
+  S.user = { id: 'demo', name: 'Demo foydalanuvchi', email: 'demo@briliant.uz', role: 'owner', plan: 'business' };
   save('user', 'settings');
   seedDemo(true);
   toast('Demo rejim yoqildi', 'ok');
@@ -217,7 +217,7 @@ export function eventCard(e) {
 /* =====================  KAMERALAR  ===================== */
 route('/cameras', () => {
   killPlayers(); onLeave(killPlayers);
-  let mode = localStorage.getItem('itcctv:camview') || 'grid';
+  let mode = localStorage.getItem('briliant:camview') || 'grid';
   let filter = 'all', q = '';
 
   const listBox = h('div', { class: 'cams' + (mode === 'list' ? ' list' : '') });
@@ -255,7 +255,7 @@ route('/cameras', () => {
   const viewBtn = h('button', {
     class: 'iconbtn', html: ico(mode === 'grid' ? 'list' : 'grid', 20), onclick: () => {
       mode = mode === 'grid' ? 'list' : 'grid';
-      localStorage.setItem('itcctv:camview', mode);
+      localStorage.setItem('briliant:camview', mode);
       viewBtn.innerHTML = ico(mode === 'grid' ? 'list' : 'grid', 20);
       render();
     }

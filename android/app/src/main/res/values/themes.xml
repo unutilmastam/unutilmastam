@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.ITCodeCCTV" parent="Theme.Material3.Dark.NoActionBar">
+    <style name="Theme.BRILIANT" parent="Theme.Material3.Dark.NoActionBar">
         <item name="android:windowBackground">@color/bg</item>
         <item name="android:statusBarColor">@color/bg</item>
         <item name="android:navigationBarColor">@color/bg</item>
     </style>
 
-    <style name="Theme.ITCodeCCTV.Splash" parent="Theme.ITCodeCCTV">
+    <style name="Theme.BRILIANT.Splash" parent="Theme.BRILIANT">
         <item name="android:windowBackground">@drawable/splash</item>
     </style>
 </resources>

@@ -1,6 +1,6 @@
-/* ITCode CCTV — holat (state) va lokal saqlash */
+/* BRILIANT — holat (state) va lokal saqlash */
 
-const K = 'itcctv:';
+const K = 'briliant:';
 const read = (k, d) => { try { const v = localStorage.getItem(K + k); return v ? JSON.parse(v) : d; } catch { return d; } };
 const write = (k, v) => { try { localStorage.setItem(K + k, JSON.stringify(v)); } catch {} };
 

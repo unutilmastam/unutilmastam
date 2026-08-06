@@ -1,4 +1,4 @@
-/* ITCode CCTV — brendlar, RTSP shablonlari va ONVIF aniqlash */
+/* BRILIANT — brendlar, RTSP shablonlari va ONVIF aniqlash */
 
 /**
  * support: full   — RTSP/ONVIF toʻliq, PTZ, audio, hodisalar
@@ -113,11 +113,11 @@ export function buildSnapshot(cam) {
 
 /* ---------- ONVIF aniqlash ----------
  * Brauzer UDP multicast yubora olmaydi. Shuning uchun uch manba:
- *  1. Android ilova koʻprigi (window.ITCCTV.discoverOnvif) — WS-Discovery to'g'ridan-to'g'ri telefondan
+ *  1. Android ilova koʻprigi (window.BRILIANT.discoverOnvif) — WS-Discovery to'g'ridan-to'g'ri telefondan
  *  2. Backend `/cameras/discover` — server lokal tarmoqda boʻlsa
  *  3. Demo natijalar
  */
-export const hasNativeBridge = () => typeof window.ITCCTV?.discoverOnvif === 'function';
+export const hasNativeBridge = () => typeof window.BRILIANT?.discoverOnvif === 'function';
 
 export async function discoverOnvif({ api = null, timeout = 6000 } = {}) {
   if (hasNativeBridge()) {
@@ -140,7 +140,7 @@ function nativeDiscover(timeout) {
     const done = list => { delete window[cbName]; resolve(list || []); };
     window[cbName] = json => { try { done(JSON.parse(json)); } catch { done([]); } };
     setTimeout(() => window[cbName] && done([]), timeout + 1500);
-    try { window.ITCCTV.discoverOnvif(cbName, timeout); } catch { done([]); }
+    try { window.BRILIANT.discoverOnvif(cbName, timeout); } catch { done([]); }
   });
 }
 

@@ -1,5 +1,5 @@
-/* ITCode CCTV — Service Worker */
-const CACHE = 'itcctv-v1';
+/* BRILIANT — Service Worker */
+const CACHE = 'briliant-v1';
 const SHELL = [
   './index.html', './manifest.webmanifest', './css/app.css',
   './js/app.js', './js/ui.js', './js/store.js', './js/api.js', './js/brands.js',
@@ -18,7 +18,7 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE && k.startsWith('itcctv-')).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE && k.startsWith('briliant-')).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -72,13 +72,13 @@ self.addEventListener('fetch', e => {
 /* --- Push bildirishnomalar --- */
 self.addEventListener('push', e => {
   let d = {};
-  try { d = e.data ? e.data.json() : {}; } catch { d = { title: 'ITCode CCTV', body: e.data?.text() || '' }; }
-  const title = d.title || 'ITCode CCTV';
+  try { d = e.data ? e.data.json() : {}; } catch { d = { title: 'BRILIANT', body: e.data?.text() || '' }; }
+  const title = d.title || 'BRILIANT';
   e.waitUntil(self.registration.showNotification(title, {
     body: d.body || '',
     icon: './icons/icon-192.png',
     badge: './icons/icon-192.png',
-    tag: d.cameraId || d.tag || 'itcctv',
+    tag: d.cameraId || d.tag || 'briliant',
     renotify: true,
     data: { path: d.cameraId ? '/live/' + d.cameraId : d.path || '/notifications' },
     actions: [{ action: 'open', title: "Koʻrish" }],

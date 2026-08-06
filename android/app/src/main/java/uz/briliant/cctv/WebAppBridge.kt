@@ -1,4 +1,4 @@
-package uz.itcode.cctv
+package uz.briliant.cctv
 
 import android.app.Activity
 import android.content.ContentValues
@@ -15,7 +15,7 @@ import java.io.File
 import java.io.FileOutputStream
 
 /**
- * JavaScript koʻprigi. Sahifada `window.ITCCTV` sifatida koʻrinadi.
+ * JavaScript koʻprigi. Sahifada `window.BRILIANT` sifatida koʻrinadi.
  * Faqat ilova ichidagi (assets yoki oʻz domenimizdagi) sahifa uchun ochiladi.
  */
 class WebAppBridge(private val activity: Activity, private val web: WebView) {
@@ -76,7 +76,7 @@ class WebAppBridge(private val activity: Activity, private val web: WebView) {
     /** FCM token (google-services.json qoʻshilganda toʻldiriladi) */
     @JavascriptInterface
     fun getPushToken(): String = activity
-        .getSharedPreferences("itcctv", Context.MODE_PRIVATE)
+        .getSharedPreferences("briliant", Context.MODE_PRIVATE)
         .getString("fcm_token", "") ?: ""
 
     /** Qurilma haqida qisqa maʼlumot — ilova diagnostikasi uchun */

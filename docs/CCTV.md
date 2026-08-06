@@ -1,4 +1,4 @@
-# ITCode CCTV — universal kamera platformasi
+# BRILIANT — universal kamera platformasi
 
 Turli ishlab chiqaruvchilarning IP kameralarini bitta akkaunt orqali ulash,
 koʻrish va boshqarish uchun **mobil ilova (Android)** va **PWA (iPhone/desktop)**.
@@ -126,7 +126,7 @@ mikrofon orqali gapirish (WHIP → ONVIF backchannel), tungi rejim (IR), PTZ va 
 - Orqaga tugmasi PWA router bilan integratsiya, pull-to-refresh, splash;
 - Push token uchun tayyor interfeys (FCM qoʻshilganda `getPushToken()` toʻldiriladi).
 
-JavaScript koʻprigi (`window.ITCCTV`):
+JavaScript koʻprigi (`window.BRILIANT`):
 
 | Metod | Vazifasi |
 |---|---|
@@ -153,7 +153,7 @@ va kalitni CI secret'lari orqali bering.
 
 Push (FCM) qoʻshish: `google-services.json` ni `android/app/` ga qoʻying,
 `com.google.gms.google-services` plaginini yoqing va tokenni
-`SharedPreferences("itcctv").fcm_token` ga yozadigan `FirebaseMessagingService` qoʻshing —
+`SharedPreferences("briliant").fcm_token` ga yozadigan `FirebaseMessagingService` qoʻshing —
 koʻprikning qolgan qismi tayyor.
 
 ---

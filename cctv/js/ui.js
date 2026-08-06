@@ -1,4 +1,4 @@
-/* ITCode CCTV — UI yordamchilari: ikonkalar, router, sheet, toast */
+/* BRILIANT — UI yordamchilari: ikonkalar, router, sheet, toast */
 
 export function h(tag, attrs = {}, ...kids) {
   const e = document.createElement(tag);

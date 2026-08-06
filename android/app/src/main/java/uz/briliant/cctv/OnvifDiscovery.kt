@@ -1,4 +1,4 @@
-package uz.itcode.cctv
+package uz.briliant.cctv
 
 import android.content.Context
 import android.net.wifi.WifiManager
@@ -39,7 +39,7 @@ class OnvifDiscovery(private val context: Context) {
 
     fun probe(timeoutMs: Int): JSONArray {
         val wifi = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
-        val lock = wifi?.createMulticastLock("itcctv-onvif")?.apply { setReferenceCounted(true); acquire() }
+        val lock = wifi?.createMulticastLock("briliant-onvif")?.apply { setReferenceCounted(true); acquire() }
         val found = LinkedHashMap<String, JSONObject>()
         var socket: DatagramSocket? = null
         try {

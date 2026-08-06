@@ -1,4 +1,4 @@
-/* ITCode CCTV — pleyer: WebRTC (WHEP), HLS, MJPEG/snapshot va demo generator */
+/* BRILIANT — pleyer: WebRTC (WHEP), HLS, MJPEG/snapshot va demo generator */
 import { S, addEvent, notify, getCam } from './store.js';
 
 /* --------- Umumiy rAF halqasi: barcha tayler bitta sikldan yangilanadi --------- */
@@ -416,16 +416,16 @@ class DemoPlayer {
 export function downloadCanvas(canvas, name) {
   const file = name || `snapshot_${Date.now()}.jpg`;
   // Android ilovasida blob: yuklab olish ishlamaydi — native koʻprik orqali saqlanadi
-  if (typeof window.ITCCTV?.saveBase64 === 'function') {
-    try { window.ITCCTV.saveBase64(canvas.toDataURL('image/jpeg', 0.92), file, 'image/jpeg'); return; } catch {}
+  if (typeof window.BRILIANT?.saveBase64 === 'function') {
+    try { window.BRILIANT.saveBase64(canvas.toDataURL('image/jpeg', 0.92), file, 'image/jpeg'); return; } catch {}
   }
   canvas.toBlob(b => saveBlob(b, file), 'image/jpeg', 0.92);
 }
 
 function saveBlob(blob, file, mime = 'application/octet-stream') {
-  if (typeof window.ITCCTV?.saveBase64 === 'function' && blob.size < 24 * 1024 * 1024) {
+  if (typeof window.BRILIANT?.saveBase64 === 'function' && blob.size < 24 * 1024 * 1024) {
     const fr = new FileReader();
-    fr.onload = () => { try { window.ITCCTV.saveBase64(fr.result, file, mime); } catch { linkDownload(blob, file); } };
+    fr.onload = () => { try { window.BRILIANT.saveBase64(fr.result, file, mime); } catch { linkDownload(blob, file); } };
     fr.onerror = () => linkDownload(blob, file);
     fr.readAsDataURL(blob);
     return;

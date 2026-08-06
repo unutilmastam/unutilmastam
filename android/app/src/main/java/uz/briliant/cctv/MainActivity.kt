@@ -1,4 +1,4 @@
-package uz.itcode.cctv
+package uz.briliant.cctv
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -26,7 +26,7 @@ import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewFeature
 
 /**
- * ITCode CCTV — PWA ni WebView ichida ishga tushiradi va brauzerda mavjud
+ * BRILIANT — PWA ni WebView ichida ishga tushiradi va brauzerda mavjud
  * boʻlmagan imkoniyatlarni (ONVIF WS-Discovery, fayl saqlash, push token)
  * JavaScript koʻprigi orqali beradi.
  */
@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity() {
             setSupportMultipleWindows(false)
             // Lokal kameralar koʻpincha HTTP (snapshot/MJPEG) beradi
             mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
-            userAgentString = "$userAgentString ITCodeCCTV/${BuildConfig.VERSION_NAME}"
+            userAgentString = "$userAgentString BRILIANT/${BuildConfig.VERSION_NAME}"
         }
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, true)
@@ -179,11 +179,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        web.addJavascriptInterface(WebAppBridge(this, web), "ITCCTV")
+        web.addJavascriptInterface(WebAppBridge(this, web), "BRILIANT")
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                web.evaluateJavascript("(window.__itcctvBack && window.__itcctvBack())===true") { r ->
+                web.evaluateJavascript("(window.__briliantBack && window.__briliantBack())===true") { r ->
                     if (r != "true") {
                         if (web.canGoBack()) web.goBack() else finish()
                     }

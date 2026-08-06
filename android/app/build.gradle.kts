@@ -15,7 +15,7 @@ val copyPwa = tasks.register<Copy>("copyPwa") {
 tasks.named("preBuild") { dependsOn(copyPwa) }
 
 android {
-    namespace = "uz.itcode.cctv"
+    namespace = "uz.briliant.cctv"
     compileSdk = 35
 
     sourceSets.getByName("main") {
@@ -23,7 +23,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "uz.itcode.cctv"
+        applicationId = "uz.briliant.cctv"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

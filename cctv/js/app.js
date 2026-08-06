@@ -1,4 +1,4 @@
-/* ITCode CCTV — ilova yadrosi: yoʻnaltirish, navigatsiya, SW, native koʻprik */
+/* BRILIANT — ilova yadrosi: yoʻnaltirish, navigatsiya, SW, native koʻprik */
 import { S, save, seedDemo, on, notify } from './store.js';
 import { api } from './api.js';
 import { h, ico, toast, renderRoute, currentPath, go, $ } from './ui.js';
@@ -61,7 +61,7 @@ if ('serviceWorker' in navigator) {
 let installEvt = null;
 addEventListener('beforeinstallprompt', e => {
   e.preventDefault(); installEvt = e;
-  if (localStorage.getItem('itcctv:installed') || sessionStorage.getItem('itcctv:nobanner')) return;
+  if (localStorage.getItem('briliant:installed') || sessionStorage.getItem('briliant:nobanner')) return;
   setTimeout(showInstallBanner, 4000);
 });
 function showInstallBanner() {
@@ -76,38 +76,38 @@ function showInstallBanner() {
         b.remove();
         installEvt.prompt();
         const r = await installEvt.userChoice;
-        if (r.outcome === 'accepted') localStorage.setItem('itcctv:installed', '1');
+        if (r.outcome === 'accepted') localStorage.setItem('briliant:installed', '1');
         installEvt = null;
       }
     }, "Oʻrnatish"),
-    h('button', { class: 'iconbtn plain', html: ico('x', 16), onclick: () => { b.remove(); sessionStorage.setItem('itcctv:nobanner', '1'); } }));
+    h('button', { class: 'iconbtn plain', html: ico('x', 16), onclick: () => { b.remove(); sessionStorage.setItem('briliant:nobanner', '1'); } }));
   document.body.append(b);
   setTimeout(() => b.remove(), 12000);
 }
-addEventListener('appinstalled', () => localStorage.setItem('itcctv:installed', '1'));
+addEventListener('appinstalled', () => localStorage.setItem('briliant:installed', '1'));
 
 /* --- iOS uchun qoʻlda oʻrnatish maslahati --- */
 function iosHint() {
   const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
-  if (!isIos || standalone || localStorage.getItem('itcctv:ioshint')) return;
+  if (!isIos || standalone || localStorage.getItem('briliant:ioshint')) return;
   setTimeout(() => {
     toast("Safari'da 'Ulashish → Home Screen' orqali ilovani oʻrnating");
-    localStorage.setItem('itcctv:ioshint', '1');
+    localStorage.setItem('briliant:ioshint', '1');
   }, 6000);
 }
 
 /* --- Android ilova koʻprigi (WebView) --- */
 function bridgeInit() {
-  if (!window.ITCCTV) return;
+  if (!window.BRILIANT) return;
   document.documentElement.classList.add('native');
   // Push token
   try {
-    const tok = window.ITCCTV.getPushToken?.();
+    const tok = window.BRILIANT.getPushToken?.();
     if (tok && api.enabled) api.post('/notifications/device', { platform: 'android', token: tok }).catch(() => {});
   } catch {}
   // Orqaga tugmasi
-  window.__itcctvBack = () => {
+  window.__briliantBack = () => {
     if (document.querySelector('.sheet')) { document.querySelector('.veil')?.click(); return true; }
     if (currentPath() === '/dashboard' || currentPath() === '/login') return false;
     history.back(); return true;

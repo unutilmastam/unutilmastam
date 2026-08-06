@@ -1,4 +1,4 @@
-/* ITCode CCTV — backend adapteri (REST + WebSocket).
+/* BRILIANT — backend adapteri (REST + WebSocket).
  * apiBase boʻsh boʻlsa ilova demo rejimda ishlaydi: barcha maʼlumot qurilmada.
  * Endpointlar shartnomasi: docs/API.md
  */

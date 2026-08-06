@@ -1,8 +1,8 @@
-# ITCode CCTV — Backend API shartnomasi
+# BRILIANT — Backend API shartnomasi
 
 Mijoz (PWA + Android ilova) quyidagi HTTP/WebSocket interfeysni kutadi.
 Backend manzili ilovada **Sozlamalar → Server ulanishi** boʻlimida kiritiladi
-(`localStorage: itcctv:settings.apiBase`). Manzil boʻsh boʻlsa yoki demo rejim
+(`localStorage: briliant:settings.apiBase`). Manzil boʻsh boʻlsa yoki demo rejim
 yoqilgan boʻlsa, ilova qurilmadagi maʼlumotlar bilan mustaqil ishlaydi.
 
 Barcha soʻrovlar `Content-Type: application/json`, javoblar UTF-8.

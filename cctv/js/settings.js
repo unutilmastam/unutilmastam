@@ -1,4 +1,4 @@
-/* ITCode CCTV — sozlamalar, akkaunt, obuna, yordam */
+/* BRILIANT — sozlamalar, akkaunt, obuna, yordam */
 import { S, save, log, resetAll, seedDemo, PLANS, ROLES, plan, timeAgo } from './store.js';
 import { api } from './api.js';
 import { h, ico, toast, sheet, closeSheet, confirmSheet, route, go, topbar, empty, field, input, select, toggleRow, navRow } from './ui.js';
@@ -31,7 +31,7 @@ route('/settings', () => {
   }
 
   wrap.append(h('div', { class: 'sec' }, h('h3', {}, 'Server ulanishi')));
-  const apiInp = input({ value: S.settings.apiBase, placeholder: 'https://api.itcode-cctv.uz' });
+  const apiInp = input({ value: S.settings.apiBase, placeholder: 'https://api.briliant.uz' });
   wrap.append(
     toggleRow('Demo rejim', "Serversiz, qurilmada sintez qilingan oqim", S.settings.demo, v => {
       S.settings.demo = v; save('settings');
@@ -123,7 +123,7 @@ function exportData() {
   const data = { exportedAt: new Date().toISOString(), user: S.user, cameras: S.cameras.map(c => ({ ...c, password: undefined })), groups: S.groups, events: S.events, settings: { ...S.settings, apiBase: undefined } };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = `itcctv_export_${Date.now()}.json`;
+  a.href = URL.createObjectURL(blob); a.download = `briliant_export_${Date.now()}.json`;
   document.body.appendChild(a); a.click(); a.remove();
   toast('Eksport qilindi', 'ok');
 }
@@ -160,8 +160,8 @@ route('/settings/notifications', () => {
     h('button', {
       class: 'btn sec', style: { marginTop: '10px' }, onclick: () => {
         if (!('Notification' in window)) return toast('Brauzer qoʻllamaydi', 'err');
-        if (Notification.permission === 'granted') { new Notification('ITCode CCTV', { body: 'Sinov bildirishnomasi', icon: './icons/icon-192.png' }); toast('Yuborildi', 'ok'); }
-        else Notification.requestPermission().then(p => p === 'granted' && new Notification('ITCode CCTV', { body: 'Sinov bildirishnomasi' }));
+        if (Notification.permission === 'granted') { new Notification('BRILIANT', { body: 'Sinov bildirishnomasi', icon: './icons/icon-192.png' }); toast('Yuborildi', 'ok'); }
+        else Notification.requestPermission().then(p => p === 'granted' && new Notification('BRILIANT', { body: 'Sinov bildirishnomasi' }));
       }
     }, 'Sinov bildirishnomasi'));
 });
@@ -299,7 +299,7 @@ route('/subscription', () => {
       k === cur ? h('button', { class: 'btn sec', style: { marginTop: '12px' }, disabled: true }, 'Joriy tarif')
         : h('button', {
           class: 'btn', style: { marginTop: '12px' }, onclick: async () => {
-            if (k === 'enterprise') return toast('Savdo boʻlimi bilan bogʻlaning: sales@itcode.uz');
+            if (k === 'enterprise') return toast('Savdo boʻlimi bilan bogʻlaning: sales@briliant.uz');
             if (api.enabled) {
               try { const r = await api.post('/billing/checkout', { plan: k }); if (r.url) return location.assign(r.url); } catch (e) { return toast(e.message, 'err'); }
             }
@@ -327,15 +327,15 @@ route('/help', () => {
         h('div', { class: 'row between' }, h('b', { style: { fontSize: '14px' } }, q), h('span', { class: 'dim', html: ico('chevd', 16) })), body);
     }),
     h('div', { class: 'sec' }, h('h3', {}, 'Bogʻlanish')),
-    navRow('Telegram qoʻllab-quvvatlash', '@itcode_support', 'tg', () => open('https://t.me/itcode_support')),
-    navRow('Email', 'support@itcode.uz', 'mail', () => open('mailto:support@itcode.uz')));
+    navRow('Telegram qoʻllab-quvvatlash', '@briliant_support', 'tg', () => open('https://t.me/briliant_support')),
+    navRow('Email', 'support@briliant.uz', 'mail', () => open('mailto:support@briliant.uz')));
 });
 
 route('/about', () => h('div', { class: 'screen' },
   topbar('Ilova haqida'),
   h('div', { class: 'center', style: { padding: '18px 0' } },
     h('div', { style: { width: '72px', height: '72px', borderRadius: '22px', background: 'linear-gradient(140deg,var(--brand),#7C3AED)', display: 'grid', placeItems: 'center', margin: '0 auto 12px', color: '#fff' }, html: ico('cctv', 36) }),
-    h('h2', {}, 'ITCode CCTV'),
+    h('h2', {}, 'BRILIANT'),
     h('p', { class: 'muted', style: { fontSize: '13px' } }, 'Universal CCTV platformasi · v1.0.0')),
   h('div', { class: 'card' },
     h('b', { style: { fontSize: '13px' } }, 'Qoʻllab-quvvatlanadigan kameralar'),
@@ -349,4 +349,4 @@ route('/about', () => h('div', { class: 'screen' },
     h('b', { style: { fontSize: '13px' } }, 'Maxfiylik'),
     h('p', { class: 'muted', style: { fontSize: '12.5px', marginTop: '6px' } },
       'Demo rejimda barcha maʼlumot faqat qurilmangizda saqlanadi va hech qayerga yuborilmaydi. Server rejimida video oqim TLS orqali uzatiladi.')),
-  h('p', { class: 'dim', style: { textAlign: 'center', fontSize: '12px', marginTop: '20px' } }, '© 2026 ITCode. Barcha huquqlar himoyalangan.')));
+  h('p', { class: 'dim', style: { textAlign: 'center', fontSize: '12px', marginTop: '20px' } }, '© 2026 BRILIANT. Barcha huquqlar himoyalangan.')));

@@ -1,4 +1,4 @@
-/* ITCode CCTV — admin panel */
+/* BRILIANT — admin panel */
 import { S, save, log, ROLES, PLANS, timeAgo, clock, dateStr, EVENT_TYPES } from './store.js';
 import { api } from './api.js';
 import { brandOf } from './brands.js';
@@ -12,18 +12,18 @@ const guard = () => {
 
 /* Demo admin maʼlumotlari */
 const demoUsers = () => {
-  const stored = JSON.parse(localStorage.getItem('itcctv:adminusers') || 'null');
+  const stored = JSON.parse(localStorage.getItem('briliant:adminusers') || 'null');
   if (stored) return stored;
   const list = [
-    { id: 'u1', name: S.user?.name || 'Siz', email: S.user?.email || 'demo@itcode.uz', role: 'owner', plan: S.user?.plan || 'business', cams: S.cameras.length, active: true, last: Date.now() },
+    { id: 'u1', name: S.user?.name || 'Siz', email: S.user?.email || 'demo@briliant.uz', role: 'owner', plan: S.user?.plan || 'business', cams: S.cameras.length, active: true, last: Date.now() },
     { id: 'u2', name: 'Aziz Karimov', email: 'aziz@example.com', role: 'admin', plan: 'pro', cams: 8, active: true, last: Date.now() - 36e5 },
     { id: 'u3', name: 'Dilnoza R.', email: 'dilnoza@example.com', role: 'operator', plan: 'pro', cams: 4, active: true, last: Date.now() - 5 * 36e5 },
     { id: 'u4', name: 'Sardor T.', email: 'sardor@example.com', role: 'viewer', plan: 'free', cams: 2, active: false, last: Date.now() - 9 * 864e5 },
   ];
-  localStorage.setItem('itcctv:adminusers', JSON.stringify(list));
+  localStorage.setItem('briliant:adminusers', JSON.stringify(list));
   return list;
 };
-const saveUsers = list => localStorage.setItem('itcctv:adminusers', JSON.stringify(list));
+const saveUsers = list => localStorage.setItem('briliant:adminusers', JSON.stringify(list));
 
 route('/admin', () => {
   if (!guard()) return;
@@ -213,7 +213,7 @@ route('/admin/notifications', () => {
   return h('div', { class: 'screen' }, topbar('Bildirishnomalar'),
     h('div', { class: 'stats' }, st('1 284', 'Push'), st('312', 'Email'), st('96', 'Telegram'), st('2.1', '% xato', 'warn')),
     h('div', { class: 'sec' }, h('h3', {}, 'Kanallar')),
-    ...[['Firebase Cloud Messaging', 'Android + Web Push', 'ok'], ['APNs (iOS)', 'Web Push · iOS 16.4+', 'ok'], ['SMTP', 'notify@itcode.uz', 'ok'], ['Telegram Bot', '@itcode_cctv_bot', 'ok']]
+    ...[['Firebase Cloud Messaging', 'Android + Web Push', 'ok'], ['APNs (iOS)', 'Web Push · iOS 16.4+', 'ok'], ['SMTP', 'notify@briliant.uz', 'ok'], ['Telegram Bot', '@briliant_cctv_bot', 'ok']]
       .map(([n, s, k]) => h('div', { class: 'rowitem' },
         h('div', { class: 'ic', html: ico('bell', 18) }),
         h('div', { class: 'grow' }, h('b', {}, n), h('small', {}, s)),
@@ -309,8 +309,8 @@ route('/admin/analytics', () => {
 /* --- Tizim sozlamalari --- */
 route('/admin/system', () => {
   if (!guard()) return;
-  const cfg = JSON.parse(localStorage.getItem('itcctv:sys') || '{}');
-  const setCfg = (k, v) => { cfg[k] = v; localStorage.setItem('itcctv:sys', JSON.stringify(cfg)); };
+  const cfg = JSON.parse(localStorage.getItem('briliant:sys') || '{}');
+  const setCfg = (k, v) => { cfg[k] = v; localStorage.setItem('briliant:sys', JSON.stringify(cfg)); };
   return h('div', { class: 'screen' }, topbar('Tizim sozlamalari'),
     toggleRow("Roʻyxatdan oʻtish ochiq", 'Yangi akkauntlar yaratilishi mumkin', cfg.openReg !== false, v => setCfg('openReg', v), 'user'),
     toggleRow('IP Whitelist', 'Faqat ruxsat etilgan IP lardan kirish', !!cfg.ipWhitelist, v => setCfg('ipWhitelist', v), 'shield'),

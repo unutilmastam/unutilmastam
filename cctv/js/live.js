@@ -1,4 +1,4 @@
-/* ITCode CCTV — jonli koʻrish, multi-ekran, PTZ, arxiv, hodisalar, bildirishnomalar, xarita */
+/* BRILIANT — jonli koʻrish, multi-ekran, PTZ, arxiv, hodisalar, bildirishnomalar, xarita */
 import { S, save, log, getCam, can, timeAgo, clock, dateStr, pad, EVENT_TYPES } from './store.js';
 import { api } from './api.js';
 import { createPlayer, Recorder, Talkback, downloadCanvas } from './player.js';
@@ -13,7 +13,7 @@ function stopAll() { players.forEach(p => { try { p.stop(); } catch {} }); playe
 /** Jonli koʻrish davomida ekran oʻchmasin (Android ilovasida native, brauzerda Wake Lock API) */
 let wakeLock = null;
 async function keepAwake(on) {
-  try { window.ITCCTV?.keepAwake?.(on); } catch {}
+  try { window.BRILIANT?.keepAwake?.(on); } catch {}
   try {
     if (on && 'wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
     else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
@@ -50,11 +50,11 @@ function liveView(camId) {
   const activeCam = () => getCam(slots[sel]) || getCam(slots.find(Boolean)) || cams[0];
 
   function readSlots(g, list) {
-    const saved = JSON.parse(localStorage.getItem('itcctv:slots' + g) || 'null');
+    const saved = JSON.parse(localStorage.getItem('briliant:slots' + g) || 'null');
     const arr = Array.from({ length: g }, (_, i) => (saved?.[i] && getCam(saved[i]) ? saved[i] : list[i]?.id || null));
     return arr;
   }
-  function persistSlots() { if (!single) localStorage.setItem('itcctv:slots' + grid, JSON.stringify(slots)); }
+  function persistSlots() { if (!single) localStorage.setItem('briliant:slots' + grid, JSON.stringify(slots)); }
 
   function renderStage() {
     stopAll();

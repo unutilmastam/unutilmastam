@@ -1,6 +1,6 @@
 # JavaScript koʻprigi metodlari obfuskatsiya qilinmasin
--keepclassmembers class uz.itcode.cctv.WebAppBridge {
+-keepclassmembers class uz.briliant.cctv.WebAppBridge {
     @android.webkit.JavascriptInterface <methods>;
 }
--keep class uz.itcode.cctv.OnvifDiscovery { *; }
+-keep class uz.briliant.cctv.OnvifDiscovery { *; }
 -dontwarn android.webkit.**
