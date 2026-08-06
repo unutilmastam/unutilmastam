@@ -1,0 +1,26 @@
+{
+  "name": "ITCode CCTV — universal kamera platformasi",
+  "short_name": "ITCode CCTV",
+  "description": "Turli brenddagi IP kameralarni bitta ilovada boshqaring: jonli video, arxiv, PTZ, AI aniqlash va bildirishnomalar.",
+  "lang": "uz",
+  "dir": "ltr",
+  "id": "/cctv/",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "fullscreen"],
+  "orientation": "any",
+  "background_color": "#0B0F14",
+  "theme_color": "#0B0F14",
+  "categories": ["utilities", "security", "productivity"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Jonli koʻrish", "short_name": "Jonli", "url": "./index.html#/live", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "AI hodisalar", "short_name": "Hodisalar", "url": "./index.html#/events", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Kamera qoʻshish", "short_name": "Qoʻshish", "url": "./index.html#/add", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

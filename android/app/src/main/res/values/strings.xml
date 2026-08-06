@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ITCode CCTV</string>
+    <string name="saved_to_downloads">Yuklamalar papkasiga saqlandi</string>
+    <string name="download_failed">Faylni saqlab boʻlmadi</string>
+</resources>

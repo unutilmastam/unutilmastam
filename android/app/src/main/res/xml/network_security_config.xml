@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!--
+      Lokal tarmoqdagi IP kameralar snapshot/MJPEG/ONVIF ni koʻpincha HTTP orqali beradi,
+      ularning IP manzillari esa oldindan maʼlum emas (foydalanuvchi tarmogʻiga bogʻliq).
+      Shu sabab cleartext ruxsat etilgan; bulut backend bilan aloqa doim HTTPS orqali boradi.
+    -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

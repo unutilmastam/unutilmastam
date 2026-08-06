@@ -1,5 +1,5 @@
 /* Unutilmas Ta'm — Service Worker */
-const CACHE = 'unutilmas-v43';
+const CACHE = 'unutilmas-v44';
 const APP_SHELL = ['./index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -16,6 +16,9 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET') return;
+
+  // /cctv/ — alohida ilova (ITCode CCTV), oʻz Service Worker'i bor: bu yerda tegmaymiz
+  if (url.origin === location.origin && url.pathname.startsWith('/cctv/')) return;
 
   // Ilova sahifasi: avval internet (yangilanish kelsin), bo'lmasa kesh (oflayn ishlasin)
   if (e.request.mode === 'navigate' || url.pathname.endsWith('index.html')) {

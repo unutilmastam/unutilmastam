@@ -1,0 +1,11 @@
+.gradle/
+build/
+app/build/
+app/src/main/assets/web/
+local.properties
+*.iml
+.idea/
+captures/
+signing.properties
+*.jks
+*.keystore
