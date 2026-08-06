@@ -280,6 +280,7 @@ route('/add', () => {
   const methods = [
     ['qr', 'QR kod skaner', 'Qurilma yorligʻidagi QR kodni skanerlang', 'qr'],
     ['onvif', 'ONVIF avtomatik topish', 'Lokal tarmoqdagi kameralarni topadi', 'wifi'],
+    ['stream', 'Gateway oqimi (HLS / WebRTC)', 'MediaMTX yoki NVR bergan tayyor havola', 'wave'],
     ['rtsp', 'RTSP manzil', "To'g'ridan-to'g'ri oqim havolasi", 'link'],
     ['ip', 'IP + login + parol', 'Klassik usul, brend boʻyicha', 'lan'],
     ['cloud', 'Cloud API', 'Tuya, EZVIZ, IMOU, UniFi Protect', 'cloud'],
@@ -370,6 +371,65 @@ route('/add/onvif', () => {
   return h('div', { class: 'screen' },
     topbar('ONVIF avtomatik topish', { sub: 'Lokal tarmoq (WS-Discovery)' }),
     btn, status, list);
+});
+
+/* --- Gateway oqimi: telefonda haqiqiy video koʻrsatishning eng qisqa yoʻli ---
+ * Brauzer RTSP ni ijro eta olmaydi. MediaMTX (yoki NVR) RTSP ni WebRTC/HLS ga
+ * aylantiradi va shu yerda oʻsha tayyor havola kiritiladi. Backend shart emas.
+ */
+route('/add/stream', () => {
+  const name = input({ placeholder: 'Masalan: Kirish darvozasi' });
+  const base = input({ placeholder: '192.168.1.10  yoki  cctv.example.uz' });
+  const path = input({ placeholder: 'cam1' });
+  const hls = input({ placeholder: 'http://192.168.1.10:8888/cam1/index.m3u8' });
+  const whep = input({ placeholder: 'http://192.168.1.10:8889/cam1/whep' });
+  const snap = input({ placeholder: "ixtiyoriy — JPEG snapshot manzili" });
+
+  const build = () => {
+    const b = base.value.trim().replace(/\/+$/, '');
+    const p = path.value.trim();
+    if (!b || !p) return;
+    let u; try { u = new URL(/^https?:\/\//.test(b) ? b : 'http://' + b); } catch { return; }
+    const host = u.protocol + '//' + u.hostname;
+    // TLS orqali chiqarilganda gateway odatda 443 dagi proxy ortida turadi
+    const secure = u.protocol === 'https:';
+    hls.value = secure ? `${host}/${p}/index.m3u8` : `${host}:8888/${p}/index.m3u8`;
+    whep.value = secure ? `${host}/${p}/whep` : `${host}:8889/${p}/whep`;
+  };
+  base.addEventListener('input', build);
+  path.addEventListener('input', build);
+
+  return h('div', { class: 'screen' },
+    topbar('Gateway oqimi', { sub: 'MediaMTX / NVR bergan havola' }),
+    h('div', { class: 'card', style: { marginBottom: '14px' } },
+      h('div', { class: 'row', style: { gap: '8px', marginBottom: '6px' } },
+        h('span', { style: { color: 'var(--brand)' }, html: ico('info', 16) }), h('b', {}, 'Nima uchun kerak?')),
+      h('p', { class: 'muted', style: { margin: 0, fontSize: '12.5px' } },
+        'Telefon RTSP ni toʻgʻridan-toʻgʻri ijro eta olmaydi. MediaMTX kameradan RTSP ni olib, '
+        + 'WebRTC va HLS koʻrinishida beradi — shu havolani quyida kiriting.')),
+    field('Nom', name),
+    h('div', { class: 'sec' }, h('h3', {}, 'Tez sozlash')),
+    field('Gateway manzili', base),
+    field('Oqim yoʻli (path)', path),
+    h('div', { class: 'sec' }, h('h3', {}, 'Havolalar')),
+    field('WebRTC (WHEP) — tavsiya etiladi', whep),
+    field('HLS (zaxira)', hls),
+    field('Snapshot (JPEG)', snap),
+    h('button', {
+      class: 'btn', onclick: () => {
+        if (!whep.value.trim() && !hls.value.trim() && !snap.value.trim())
+          return toast('Kamida bitta havola kiriting', 'err');
+        openCameraForm({
+          method: 'rtsp', brand: 'custom',
+          name: name.value.trim() || path.value.trim() || 'Kamera',
+          whepUrl: whep.value.trim(), hlsUrl: hls.value.trim(), snapshotUrl: snap.value.trim(),
+          host: base.value.trim(),
+        });
+      }
+    }, 'Qoʻshish'),
+    h('p', { class: 'muted', style: { fontSize: '12px', marginTop: '12px' } },
+      'iPhone (Safari) HTTPS sahifadan HTTP oqimni ochmaydi — uzoqdan koʻrish uchun gateway TLS bilan '
+      + 'chiqarilishi kerak (Cloudflare Tunnel yoki Nginx + Let’s Encrypt). Android ilovasida lokal HTTP ishlaydi.'));
 });
 
 /* --- 3-usul: RTSP --- */
@@ -600,6 +660,26 @@ route('/camera/:id', id => {
         }, 'Nusxalash')),
       h('div', { class: 'mono muted', style: { wordBreak: 'break-all', marginTop: '6px' } }, buildRtsp(cam, { hidePass: true }) || '—'),
       buildSnapshot(cam) ? h('div', { class: 'mono dim', style: { wordBreak: 'break-all', marginTop: '8px', fontSize: '11px' } }, 'Snapshot: ' + buildSnapshot(cam)) : null),
+
+    h('div', { class: 'sec' }, h('h3', {}, 'Oqim manzillari')),
+    h('p', { class: 'muted', style: { fontSize: '12.5px', marginTop: '-4px' } },
+      'Telefonda haqiqiy video koʻrish uchun gateway (MediaMTX/NVR) bergan havolani kiriting. '
+      + 'Boʻsh boʻlsa demo oqim koʻrsatiladi.'),
+    field('WebRTC (WHEP)', input({
+      value: cam.whepUrl || '', placeholder: 'http://192.168.1.10:8889/cam1/whep',
+      onchange: e => { updateCamera(id, { whepUrl: e.target.value.trim() }); toast('Saqlandi', 'ok'); },
+    })),
+    field('HLS', input({
+      value: cam.hlsUrl || '', placeholder: 'http://192.168.1.10:8888/cam1/index.m3u8',
+      onchange: e => { updateCamera(id, { hlsUrl: e.target.value.trim() }); toast('Saqlandi', 'ok'); },
+    })),
+    field('Snapshot (JPEG)', input({
+      value: cam.snapshotUrl || '', placeholder: buildSnapshot(cam) || 'http://192.168.1.64/snapshot.jpg',
+      onchange: e => { updateCamera(id, { snapshotUrl: e.target.value.trim() }); toast('Saqlandi', 'ok'); },
+    })),
+    h('button', {
+      class: 'btn sec', onclick: () => go('/live/' + id),
+    }, 'Oqimni tekshirish'),
 
     h('div', { class: 'sec' }, h('h3', {}, 'Joylashuv')),
     h('div', { class: 'row', style: { gap: '10px' } },

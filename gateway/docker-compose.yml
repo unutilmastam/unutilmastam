@@ -1,0 +1,45 @@
+# BRILIANT — kamera gateway
+#
+#   docker compose up -d
+#
+# Ishga tushgach ilovada (Kamera qo'shish → Gateway oqimi):
+#   WebRTC : http://<shu-kompyuter-IP>:8889/cam1/whep
+#   HLS    : http://<shu-kompyuter-IP>:8888/cam1/index.m3u8
+
+services:
+  mediamtx:
+    image: bluenviron/mediamtx:latest-ffmpeg
+    container_name: briliant-gateway
+    restart: unless-stopped
+    # WebRTC uchun host tarmog'i eng ishonchli variant (ICE nomzodlari to'g'ri bo'ladi).
+    # Windows/macOS da network_mode ishlamaydi — pastdagi "ports" blokini oching.
+    network_mode: host
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml:ro
+      - ./recordings:/recordings
+    environment:
+      - MTX_PROTOCOLS=tcp
+    # ports:
+    #   - "8554:8554"          # RTSP
+    #   - "8888:8888"          # HLS
+    #   - "8889:8889"          # WebRTC (WHEP)
+    #   - "8189:8189/udp"      # WebRTC ICE/UDP
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8888"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # --- Uzoqdan (internet orqali) ko'rish uchun: Cloudflare Tunnel ---
+  # Oq IP, port ochish va TLS sertifikati kerak emas; iPhone PWA ham ishlaydi.
+  # 1) https://one.dash.cloudflare.com → Networks → Tunnels → yangi tunnel → token oling
+  # 2) TUNNEL_TOKEN ni .env ga yozing va quyidagi blokni oching
+  # 3) Tunnel'da public hostname: cctv.example.uz → http://localhost:8889
+  #                               hls.example.uz → http://localhost:8888
+  #
+  # cloudflared:
+  #   image: cloudflare/cloudflared:latest
+  #   container_name: briliant-tunnel
+  #   restart: unless-stopped
+  #   network_mode: host
+  #   command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}

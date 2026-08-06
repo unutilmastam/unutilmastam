@@ -25,10 +25,11 @@ function loadHls() {
 
 /** Kamera uchun qaysi manba ishlatilishini aniqlash */
 export function sourceOf(cam) {
-  if (S.settings.demo || (!cam.whepUrl && !cam.hlsUrl && !cam.snapshotUrl && !S.settings.apiBase)) return 'demo';
+  // Kameraning oʻz oqim manzili boʻlsa — demo rejimda ham haqiqiy video koʻrsatiladi
   if (cam.whepUrl) return 'whep';
   if (cam.hlsUrl) return 'hls';
   if (cam.snapshotUrl) return 'mjpeg';
+  if (S.settings.demo || !S.settings.apiBase) return 'demo';
   return 'gateway'; // backend RTSP → HLS/WebRTC ga aylantiradi
 }
 
@@ -127,9 +128,25 @@ class NetPlayer {
     this._r = setTimeout(() => { if (!this.dead) { this.stop(true); this.start(); } }, 3000);
   }
   fail(msg) {
+    const url = this.cam.whepUrl || this.cam.hlsUrl || this.cam.snapshotUrl || '';
+    const mixed = location.protocol === 'https:' && /^http:\/\//i.test(url);
+    const hint = mixed
+      ? 'HTTPS sahifadan HTTP oqim ochilmaydi. Gateway ni HTTPS orqali chiqaring (masalan Cloudflare Tunnel) yoki Android ilovasidan foydalaning.'
+      : 'Gateway ishlayaptimi va telefon shu tarmoqdami — tekshiring.';
     const v = document.createElement('div');
     v.className = 'offline-veil';
-    v.innerHTML = `<div>⚠️<br>${msg || 'Oqim mavjud emas'}</div>`;
+    v.style.padding = '10px';
+    v.innerHTML = `<div style="max-width:80%">
+      <div style="font-size:20px">⚠️</div>
+      <b style="display:block;margin:4px 0 3px">Oqim ochilmadi</b>
+      <div style="font-weight:500;line-height:1.35">${hint}</div>
+      <div style="opacity:.6;margin-top:4px;font-size:10.5px">${msg || ''}</div>
+      <button style="margin-top:8px;padding:6px 12px;border-radius:9px;background:#2E8FFF;color:#fff;font-size:11.5px;font-weight:700">Qayta urinish</button>
+    </div>`;
+    v.querySelector('button').onclick = e => {
+      e.stopPropagation();
+      v.remove(); this.stop(true); this.start();
+    };
     this.box.appendChild(v);
   }
   setMuted(m) { this.el && (this.el.muted = m); }

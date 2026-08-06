@@ -7,6 +7,7 @@ koʻrish va boshqarish uchun **mobil ilova (Android)** va **PWA (iPhone/desktop)
 |---|---|
 | PWA (mijoz ilovasi) | [`/cctv`](../cctv) → `https://unutilmastam.uz/cctv/` |
 | Android ilova (WebView + ONVIF koʻprigi) | [`/android`](../android) |
+| Haqiqiy kameralarni ulash (gateway) | [`/gateway`](../gateway) — MediaMTX + Docker |
 | Backend API shartnomasi | [`CCTV-API.md`](CCTV-API.md) |
 | APK yigʻish (CI) | [`.github/workflows/android.yml`](../.github/workflows/android.yml) |
 
@@ -73,6 +74,7 @@ Kutubxonasiz, toza ES-modullar. Yagona tashqi bogʻliqlik — HLS uchun
 | Usul | Qanday ishlaydi |
 |---|---|
 | **QR kod** | `BarcodeDetector` API bilan skaner; RTSP URL, JSON yoki qurilma yorligʻi (SN/CODE) tanib olinadi |
+| **Gateway oqimi** | MediaMTX/NVR bergan WebRTC (WHEP) yoki HLS havolasi — **backendsiz haqiqiy video** koʻrishning eng qisqa yoʻli, qarang [`/gateway`](../gateway) |
 | **ONVIF avtomatik topish** | Android ilovada — telefondan UDP multicast WS-Discovery; brauzerda — backend `/cameras/discover` |
 | **RTSP manzil** | Foydalanuvchi havolani kiritadi; brendlar boʻyicha yoʻllar jadvali koʻrsatiladi |
 | **IP + login + parol** | Brend tanlanadi → RTSP manzil avtomatik yigʻiladi va koʻrsatiladi |

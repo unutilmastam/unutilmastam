@@ -1,0 +1,105 @@
+# BRILIANT — kamera gateway (MediaMTX)
+# Kameralardan RTSP olib, telefon tushunadigan WebRTC (WHEP) va HLS ga aylantiradi.
+# To'liq hujjat: https://github.com/bluenviron/mediamtx
+
+logLevel: info
+readTimeout: 10s
+writeTimeout: 10s
+
+###############################################
+# Protokollar
+###############################################
+rtsp: yes
+rtspAddress: :8554
+rtspTransports: [tcp]          # NAT ortida eng barqarori
+
+webrtc: yes
+webrtcAddress: :8889
+# Telefon tashqi tarmoqdan ulanishi uchun serverning oq IP manzili:
+# webrtcAdditionalHosts: [cctv.example.uz]
+webrtcICEServers2:
+  - url: stun:stun.l.google.com:19302
+  # Uyali internet (CGNAT) ortidan ulanish uchun TURN kerak bo'ladi:
+  # - url: turn:turn.example.uz:3478
+  #   username: briliant
+  #   password: TURN_PAROLI
+
+hls: yes
+hlsAddress: :8888
+hlsVariant: lowLatency         # ~2 s kechikish
+hlsAlwaysRemux: no             # faqat tomoshabin bo'lganda ishlaydi
+hlsSegmentCount: 7
+hlsSegmentDuration: 1s
+hlsAllowOrigin: '*'
+
+rtmp: no
+srt: no
+
+###############################################
+# Xavfsizlik
+# Ilovada havola: http://<gateway>:8889/cam1/whep?user=viewer&pass=PAROL
+###############################################
+authInternalUsers:
+  - user: viewer
+    pass: PAROLNI_ALMASHTIRING
+    ips: []
+    permissions:
+      - action: read
+  - user: publisher
+    pass: PUBLISH_PAROLI
+    ips: [127.0.0.1, 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12]
+    permissions:
+      - action: publish
+      - action: read
+
+###############################################
+# Kameralar
+# Har bir kamera uchun bitta "path". Ilovada:
+#   WebRTC : http://<gateway>:8889/<path>/whep
+#   HLS    : http://<gateway>:8888/<path>/index.m3u8
+#
+# sourceOnDemand: yes  → hech kim ko'rmayotganda kameraga ulanmaydi (trafik/CPU tejaydi)
+###############################################
+paths:
+  # --- Hikvision ---
+  cam1:
+    source: rtsp://admin:KAMERA_PAROLI@192.168.1.64:554/Streaming/Channels/101
+    sourceOnDemand: yes
+    sourceOnDemandCloseAfter: 30s
+
+  # Tejamkor (sub) oqim — multi-ekran uchun
+  cam1_sub:
+    source: rtsp://admin:KAMERA_PAROLI@192.168.1.64:554/Streaming/Channels/102
+    sourceOnDemand: yes
+
+  # --- Dahua / IMOU ---
+  cam2:
+    source: rtsp://admin:KAMERA_PAROLI@192.168.1.65:554/cam/realmonitor?channel=1&subtype=0
+    sourceOnDemand: yes
+
+  # --- Reolink ---
+  cam3:
+    source: rtsp://admin:KAMERA_PAROLI@192.168.1.67:554/h264Preview_01_main
+    sourceOnDemand: yes
+
+  # --- Uniview ---
+  # cam4:
+  #   source: rtsp://admin:KAMERA_PAROLI@192.168.1.66:554/media/video1
+  #   sourceOnDemand: yes
+
+  # --- TP-Link VIGI ---
+  # cam5:
+  #   source: rtsp://admin:KAMERA_PAROLI@192.168.1.68:554/stream1
+  #   sourceOnDemand: yes
+
+  # H.265 (HEVC) kamera bo'lsa — brauzer ko'pincha tushunmaydi, H.264 ga o'giramiz:
+  # cam6:
+  #   runOnDemand: >
+  #     ffmpeg -rtsp_transport tcp -i rtsp://admin:PAROL@192.168.1.70:554/stream1
+  #     -c:v libx264 -preset veryfast -tune zerolatency -b:v 2M -g 30
+  #     -c:a aac -f rtsp rtsp://localhost:8554/cam6
+  #   runOnDemandRestart: yes
+  #   runOnDemandCloseAfter: 20s
+
+  # Boshqa barcha yo'llar uchun standart sozlama
+  all_others:
