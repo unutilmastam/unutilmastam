@@ -3,7 +3,39 @@
 Bu shoxobcha faqat tayyor to'plamni saqlash uchun. Kod
 `claude/lab-management-system-ipsi88` shoxobchasida.
 
-## 📘 Bitta faylda hammasi
+## ⬇ TO'LIQ DASTUR — birinchi marta o'rnatish uchun
+
+[**LabCore-toliq.zip**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-toliq.zip) — **81 MB, 4-nashr**
+
+Butun tizim shu bitta arxivda. **Internet kerak emas** — kutubxonalarning
+hammasi (1794 ta fayl) ichida keladi.
+
+| Ichida | Nima |
+|---|---|
+| `ORNATISH.bat` | hamma narsani o'zi o'rnatadi (o'ng tugma → Run as administrator) |
+| `LabCore-DASTUR.exe` | xodim kompyuterlari uchun dastur, 71 MB, o'rnatish shart emas |
+| `server/` | tizimning o'zi — kod, baza sxemasi, kutubxonalar |
+| `server/docs/LabCore-HAMMASI.html` | to'liq hujjat: 13 bo'lim, 44 rasm |
+| `TEKSHIR.bat` `HOLAT.bat` `TELEFONGA-ULASH.bat` | tekshiruv va yordamchi tugmalar |
+| `OQING.txt` | qadamma-qadam ko'rsatma |
+
+**Bu nashrda:** server barqarorligi tuzatildi (quyida), ish stansiyasi
+dasturi qayta yig'ildi, xodim rasmi, PIN kod bilan kirish va avtozapusk
+qo'shildi. Arxivdagi 108 ta test o'z ichidagi kutubxonalar bilan
+tekshirilgan — hammasi o'tadi.
+
+Kerak bo'ladigan boshqa ikkita fayl (telefonda yuklab olib, fleshkaga soling):
+
+| Fayl | Hajmi | Havola |
+|---|---|---|
+| Node.js LTS | ~30 MB | https://nodejs.org/dist/v22.20.0/node-v22.20.0-x64.msi |
+| PostgreSQL | ~350 MB | https://www.postgresql.org/download/windows/ |
+
+Tartib: **Node.js → PostgreSQL → kompyuterni qayta yoqing → `ORNATISH.bat`**
+
+---
+
+## 📘 Bitta faylda hammasi (hujjat)
 
 [**LabCore-HAMMASI.html**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-HAMMASI.html) — 4.3 MB
 
@@ -202,7 +234,7 @@ Batafsil: arxiv ichidagi `OQING.txt` va `server/docs/ornatish.md`.
 ## Nazorat summasi
 
 ```
-LabCore-toliq.zip      7554eecc3f3fc4ea15e2d2e38d7d7b63532d090ae2c72032f6dd06a2b8855823
+LabCore-toliq.zip      420cf4051a2bee670dbb4c82e52afb94a8f797339f4427502f0b75b97f87736f
 LabCore-DASTUR.exe     6c407448f4d0a708dddfd46120923fdb51ae3cc79ecea5f2ad0f29b8ae5f2d40
 LabCore-TUZATISH.zip   2df91b05056d32f44e2a549a17b01c2a25d2ecbe7e6abcaad19b68b6dfe94c1d
 LabCore-YANGILASH.zip  8b4c0650eeb3364cc6d18837db1e6001a75fa95477a6fea90b511b68859cded5
@@ -210,6 +242,14 @@ LabCore-HAMMASI.html   e1b6bbdc1873e8b42949c8788fb9229668e2cd26e6ccd37aa59e74d62
 ```
 
 ## Tuzatishlar tarixi
+
+**2026-08-06 (to'liq arxiv qayta yig'ildi).** `LabCore-toliq.zip` boshidan
+qayta yasaldi: server kodi, interfeys, baza sxemasi, testlar va ish
+stansiyasi dasturining manbasi joriy holatdan olindi (ilgari arxivdagi
+`desktop/main.js` va testlar bir nashr orqada qolib ketgan edi).
+Arxivdagi nusxa yig'ishdan oldin tekshirildi: o'z ichidagi kutubxonalar
+bilan server ko'tariladi va 108 ta testning hammasi o'tadi.
+`OQING.txt` yangilandi.
 
 **2026-08-06.** `LabCore-HAMMASI.html` qo'shildi — qilingan ishlarning
 hammasi bitta faylda: tizim imkoniyatlari, internetsiz o'rnatish, rasmli

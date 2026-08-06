@@ -1,4 +1,4 @@
-LabCore-toliq.zip     7554eecc3f3fc4ea15e2d2e38d7d7b63532d090ae2c72032f6dd06a2b8855823
+LabCore-toliq.zip     420cf4051a2bee670dbb4c82e52afb94a8f797339f4427502f0b75b97f87736f
 LabCore-DASTUR.exe    6c407448f4d0a708dddfd46120923fdb51ae3cc79ecea5f2ad0f29b8ae5f2d40
 LabCore-TUZATISH.zip  2df91b05056d32f44e2a549a17b01c2a25d2ecbe7e6abcaad19b68b6dfe94c1d
 LabCore-YANGILASH.zip 8b4c0650eeb3364cc6d18837db1e6001a75fa95477a6fea90b511b68859cded5
