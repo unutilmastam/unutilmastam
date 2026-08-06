@@ -142,16 +142,57 @@ for ($i = 1; $i -le 25; $i++) {
   Start-Sleep -Seconds 1
 }
 
+# ---------------------------------------------------------------------------
+# BARQARORLIK. Server ko'tarilishi yetarli emas: eski nusxada u bir necha
+# soniya ishlab, keyin o'chib qolardi. Shuning uchun 30 soniya davomida
+# kuzatib turamiz - "ishlayapti" degan xulosa shundan keyin chiqadi.
+$barqaror = $true
+if ($scheme) {
+  Write-Host ""
+  Write-Host "Server ko'tarildi. Endi 30 soniya barqarorligini kuzatamiz..." -ForegroundColor Cyan
+  for ($i = 1; $i -le 10; $i++) {
+    Start-Sleep -Seconds 3
+    try {
+      $r = Invoke-RestMethod -Uri "$scheme`://localhost`:$port/api/health" -TimeoutSec 3
+      if (-not $r.ok) { $barqaror = $false; break }
+      Write-Host "  $($i * 3) soniya: ishlayapti" -ForegroundColor DarkGray
+    } catch {
+      $barqaror = $false
+      break
+    }
+  }
+}
+
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Green
-if ($scheme) {
-  Write-Host " Server ishlayapti" -ForegroundColor Green
+if ($scheme -and $barqaror) {
+  Write-Host " Server ishlayapti va barqaror" -ForegroundColor Green
   Write-Host "============================================================"
   Write-Host ""
   Write-Host " DASTURGA SHU MANZILNI YOZING:" -ForegroundColor Yellow
   Write-Host "   $scheme`://localhost`:$port" -ForegroundColor Cyan
   Write-Host ""
   Write-Host " Boshqa kompyuterlar uchun manzilni TEKSHIR.bat ko'rsatadi."
+} elseif ($scheme) {
+  Write-Host " Server ko'tarildi, lekin yana o'chib qoldi" -ForegroundColor Red
+  Write-Host "============================================================"
+  $log = "C:\LabCore\logs\server.log"
+  if (Test-Path $log) {
+    $qulash = Select-String -Path $log -Pattern "QULASH" -ErrorAction SilentlyContinue
+    if ($qulash) {
+      Write-Host ""
+      Write-Host " Qulash sababi:" -ForegroundColor Yellow
+      $qulash | Select-Object -Last 5 | ForEach-Object {
+        Write-Host "   $($_.Line)" -ForegroundColor DarkYellow
+      }
+    } else {
+      Write-Host ""
+      Write-Host " Jurnaldagi oxirgi satrlar:" -ForegroundColor Yellow
+      Get-Content $log -Tail 20 | ForEach-Object { Write-Host "   $_" -ForegroundColor DarkYellow }
+    }
+  }
+  Write-Host ""
+  Write-Host " Shu satrlarni menga yuboring." -ForegroundColor Yellow
 } else {
   Write-Host " Server hali javob bermayapti" -ForegroundColor Yellow
   Write-Host "============================================================"
