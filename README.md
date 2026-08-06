@@ -3,6 +3,37 @@
 Bu shoxobcha faqat tayyor to'plamni saqlash uchun. Kod
 `claude/lab-management-system-ipsi88` shoxobchasida.
 
+## ⚠ Server "bir ishlab, bir ishlamayaptimi?" — tuzatildi
+
+[**LabCore-TUZATISH.zip**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-TUZATISH.zip) — 390 KB
+→ arxivni oching → **`TUZAT.bat`** → ikki marta bosing.
+
+**Sabab.** Server bazaga bir nechta ulanishni ochiq saqlab turadi. Ulardan
+biri **bo'sh turganda** uzilib qolsa — antivirus, brandmauer yoki VPN bo'sh
+TCP ulanishini yopsa, yoki PostgreSQL'ning o'zi uzsa — bu xato hech kim
+tomonidan ushlanmasdi va Node butun serverni **o'sha zahoti**, hech qanday
+xabar qoldirmasdan to'xtatib qo'yardi. Windows vazifasi uni qayta ko'tarardi,
+bir necha daqiqadan keyin yana o'chardi.
+
+**Endi:**
+
+* bo'sh ulanishdagi xato ushlanadi — buzilgan ulanish tashlab yuboriladi,
+  keyingi so'rov yangisini oladi, **server ishlashda davom etadi**;
+* ulanishlar `keepAlive` bilan yangilanib turadi va 30 soniya ishlatilmasa
+  yopiladi — tashqi tomon ularni "o'ldirishga" ulgurmaydi;
+* har qanday kutilmagan xato **vaqti bilan** `logs\server.log` ga yoziladi
+  (`QULASH` so'zi bilan) — server boshqa "sababsiz" o'chmaydi;
+* `TUZAT.bat` serverni qayta ishga tushirgach uni **30 soniya kuzatadi**;
+  "ishlayapti va barqaror" degan xulosa faqat shundan keyin chiqadi;
+* `TEKSHIR.bat` jurnaldan qulash tarixini topib ko'rsatadi — server ayni
+  damda ishlab turgan bo'lsa ham.
+
+> `TEKSHIR.bat` ning "Serverni sinab ishga tushiramiz" bo'limi serverni
+> 8 soniya ishlatib, keyin **o'zi** to'xtatadi. Bu nosozlik emas — endi
+> ekranda shunday deb yoziladi.
+
+---
+
 ## Ish stansiyasi dasturi yangilandi
 
 Dastur "Ulanib bo'lmadi: server javob bermadi" deb mazmunsiz xabar berardi
@@ -44,6 +75,8 @@ Server ko'tarilmasa — **`TEKSHIR.bat`** sababini ko'rsatadi.
 
 | Xato | Endi |
 |---|---|
+| Server bir necha soniya ishlab, sababsiz o'chib qolardi | Bo'sh ulanishdagi baza xatosi ushlanadi |
+| Qulash sababi hech qayerda qolmasdi | `QULASH` satri jurnalga vaqti bilan yoziladi |
 | Skriptlar administrator huquqisiz ishlab, ".env yo'q" deb noto'g'ri xulosa chiqarardi | Huquqni o'zi so'raydi (UAC) |
 | Fayllar almashtirilardi, server esa eski holatda qolardi | `TUZAT.bat` serverni qayta ishga tushiradi va tekshiradi |
 | Windows'da server jimgina ishga tushmasdi | Yo'l farqi `pathToFileURL` bilan hisobga olinadi |
@@ -139,13 +172,24 @@ Batafsil: arxiv ichidagi `OQING.txt` va `server/docs/ornatish.md`.
 ## Nazorat summasi
 
 ```
-LabCore-toliq.zip      6d71de55d48f6285aa6269c895f0a6b56067f0f0d3b752897db3589bd3e62694
+LabCore-toliq.zip      56fe2f153309590099282cf0363c29d81f680c0695e8c69024c6f180d94a05d3
 LabCore-DASTUR.exe     6c407448f4d0a708dddfd46120923fdb51ae3cc79ecea5f2ad0f29b8ae5f2d40
-LabCore-TUZATISH.zip   d47aa91a5d0d5cfdd046a65efc6c50fccd0597a4b4f6c762858aad9d3bd30673
-LabCore-YANGILASH.zip  4201dc4545de284082263f10e95bd65b259f0756ec936cd8ba369cbad198230a
+LabCore-TUZATISH.zip   2df91b05056d32f44e2a549a17b01c2a25d2ecbe7e6abcaad19b68b6dfe94c1d
+LabCore-YANGILASH.zip  8b4c0650eeb3364cc6d18837db1e6001a75fa95477a6fea90b511b68859cded5
 ```
 
 ## Tuzatishlar tarixi
+
+**2026-08-06 (4-nashr).** Server "bir ishlab, bir ishlamas" edi: ko'tariladi,
+bir necha soniya yoki daqiqadan keyin hech qanday xabarsiz o'chadi, vazifa uni
+qayta ko'taradi — va shu takrorlanaveradi. Sababi `pg.Pool` ning **bo'sh
+turgan ulanishi**: unda xato yuz berganda hovuz `error` hodisasini chiqaradi,
+uni tinglovchi bo'lmagani uchun esa Node butun jarayonni to'xtatib qo'yardi.
+Ulanishni antivirus, brandmauer, VPN yoki PostgreSQL'ning o'zi uzishi kifoya
+edi. Endi bu xato ushlanadi, `keepAlive` va idle vaqti sozlangan, kutilmagan
+har qanday xato esa `logs\server.log` ga vaqti bilan yoziladi. Testlarga
+`tests/barqarorlik.test.js` qo'shildi — haqiqiy PostgreSQL ulanishini uzib,
+jarayon tirik qolishini tekshiradi.
 
 **2026-08-06 (3.8-nashr).** `LabCore-DASTUR.exe` qayta yig'ildi: avtozapusk
 belgisi, bitta nusxa qulfi va ulanish xatosining aniq sababi endi dastur
