@@ -3,6 +3,35 @@
 Bu shoxobcha faqat tayyor to'plamni saqlash uchun. Kod
 `claude/lab-management-system-ipsi88` shoxobchasida.
 
+## 📘 Bitta faylda hammasi
+
+[**LabCore-HAMMASI.html**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-HAMMASI.html) — 4.3 MB
+
+Bitta fayl, 13 ta bo'lim, **44 ta haqiqiy ekran rasmi**. Yuklab olib
+brauzerda oching — internet kerak emas, hamma rasm faylning ichida.
+Telefonda ham, kompyuterda ham o'qiladi.
+
+| Bo'lim | Nima bor |
+|---|---|
+| **A. Tizim nima qila oladi** | 15 ta bo'lim, 25 ta baza jadvali, 111 ta manzil, 4 ta rol |
+| **B. Boshlashdan oldin** | Qanday kompyuter kerak, nima o'rnatiladi |
+| **C. Internetsiz o'rnatish** | Fleshka orqali, uchta fayl, ikkita tuzoq |
+| **D. O'rnatish — sakkiz qadam** | Boshidan oxirigacha, rasmlar bilan |
+| **E. Ochiladigan oyna** | Qayerda nima turadi, rol bo'yicha menyu |
+| **F. Kundalik ish** | Bemor yo'li: navbatdan chekgacha |
+| **G. Rahbar nazorati** | Audit, ish nazorati, kameralar, telefon paneli |
+| **H. Qo'shimcha sozlashlar** | Uskunalar, ombor, sozlamalar |
+| **I. Xodim rasmi, PIN va avtozapusk** | Oxirgi qo'shilgan imkoniyatlar |
+| **J. Har kungi xizmat** | Zaxira, tiklash, tez-tez uchraydigan holatlar |
+| **K. Tuzatishlar tarixi** | **12 ta xato**: belgisi, sababi, yechimi va qo'yilgan test |
+| **L. Texnik ma'lumot** | Tuzilishi, fayllar, buyruqlar, xavfsizlik |
+| **M. Tezkor ma'lumotnoma** | Bir sahifada eng kerakli narsalar |
+
+Shu fayl `LabCore-toliq.zip` ichida ham bor:
+`server\docs\LabCore-HAMMASI.html`.
+
+---
+
 ## ⚠ Server "bir ishlab, bir ishlamayaptimi?" — tuzatildi
 
 [**LabCore-TUZATISH.zip**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-TUZATISH.zip) — 390 KB
@@ -97,7 +126,7 @@ bor boshqa kompyuterda uchta faylni yuklab oling va fleshkaga soling:
 
 | Fayl | Hajmi | Havola |
 |---|---|---|
-| `LabCore-toliq.zip` | 82 MB | https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-toliq.zip |
+| `LabCore-toliq.zip` | 81 MB | https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-toliq.zip |
 | Node.js LTS | ~30 MB | https://nodejs.org/dist/v22.20.0/node-v22.20.0-x64.msi |
 | PostgreSQL | ~350 MB | https://www.postgresql.org/download/windows/ |
 
@@ -142,7 +171,7 @@ u serverdagi interfeysni ochadi, yangi bo'limlar o'zi paydo bo'ladi.
 
 ---
 
-## LabCore-toliq.zip (82 MB) — birinchi marta o'rnatish uchun
+## LabCore-toliq.zip (81 MB) — birinchi marta o'rnatish uchun
 
 Ichida:
 
@@ -153,6 +182,7 @@ Ichida:
 | `HOLAT.bat` | server ishlayaptimi — tekshirish |
 | `TELEFONGA-ULASH.bat` | telefon uchun QR kod sahifasi |
 | `OQING.txt` | qadamma-qadam ko'rsatma |
+| `server/docs/LabCore-HAMMASI.html` | to'liq hujjat — 13 bo'lim, 44 rasm |
 | `server/` | tizimning o'zi (kutubxonalari bilan — internet kerak emas) |
 
 ## Oldindan kerak
@@ -172,13 +202,20 @@ Batafsil: arxiv ichidagi `OQING.txt` va `server/docs/ornatish.md`.
 ## Nazorat summasi
 
 ```
-LabCore-toliq.zip      56fe2f153309590099282cf0363c29d81f680c0695e8c69024c6f180d94a05d3
+LabCore-toliq.zip      7554eecc3f3fc4ea15e2d2e38d7d7b63532d090ae2c72032f6dd06a2b8855823
 LabCore-DASTUR.exe     6c407448f4d0a708dddfd46120923fdb51ae3cc79ecea5f2ad0f29b8ae5f2d40
 LabCore-TUZATISH.zip   2df91b05056d32f44e2a549a17b01c2a25d2ecbe7e6abcaad19b68b6dfe94c1d
 LabCore-YANGILASH.zip  8b4c0650eeb3364cc6d18837db1e6001a75fa95477a6fea90b511b68859cded5
+LabCore-HAMMASI.html   e1b6bbdc1873e8b42949c8788fb9229668e2cd26e6ccd37aa59e74d6270d15a6
 ```
 
 ## Tuzatishlar tarixi
+
+**2026-08-06.** `LabCore-HAMMASI.html` qo'shildi — qilingan ishlarning
+hammasi bitta faylda: tizim imkoniyatlari, internetsiz o'rnatish, rasmli
+qo'llanma (44 ta ekran), tuzatilgan 12 ta xatoning har biri uchun sabab,
+yechim va qo'yilgan test, texnik ma'lumot va tezkor ma'lumotnoma. Fayl
+o'zi yetarli: internet, shrift va tashqi rasm talab qilmaydi.
 
 **2026-08-06 (4-nashr).** Server "bir ishlab, bir ishlamas" edi: ko'tariladi,
 bir necha soniya yoki daqiqadan keyin hech qanday xabarsiz o'chadi, vazifa uni
