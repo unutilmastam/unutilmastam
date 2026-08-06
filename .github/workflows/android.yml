@@ -13,6 +13,9 @@ on:
       - "cctv/**"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,20 +31,69 @@ jobs:
       - name: Gradle cache
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Debug APK
-        working-directory: android
-        run: ./gradlew --no-daemon assembleDebug
+      # Repoda oʻz kalitimiz (secrets) boʻlsa — oʻsha bilan imzolanadi.
+      # Boʻlmasa build.gradle.kts debug kalitiga qaytadi; APK baribir imzolangan
+      # boʻladi va istalgan qurilmaga oʻrnatiladi.
+      - name: Imzo kalitini tayyorlash
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "$GITHUB_WORKSPACE/android/release.keystore"
+          echo "KEYSTORE_FILE=$GITHUB_WORKSPACE/android/release.keystore" >> $GITHUB_ENV
 
-      - name: Release APK (imzosiz)
+      - name: Release APK
         working-directory: android
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew --no-daemon assembleRelease
 
-      - name: Artefaktlarni yuklash
+      - name: Imzo va mosligini tekshirish
+        run: |
+          set -e
+          APK=$(find android/app/build/outputs/apk/release -name "*.apk" | head -1)
+          echo "APK: $APK"
+          case "$APK" in
+            *unsigned*) echo "::error::APK imzolanmagan — bunday fayl hech qanday qurilmaga oʻrnatilmaydi"; exit 1;;
+          esac
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$BT/apksigner" verify --verbose --print-certs "$APK"
+          "$BT/aapt2" dump badging "$APK" | grep -E "^package:|sdkVersion|targetSdkVersion|application-label:" || true
+          VER=$(grep -oP 'versionName = "\K[^"]+' android/app/build.gradle.kts | head -1)
+          OUT="$GITHUB_WORKSPACE/BRILIANT-${VER}.apk"
+          cp "$APK" "$OUT"
+          ls -lh "$OUT"
+          echo "APK_PATH=$OUT" >> $GITHUB_ENV
+
+      - name: Artefakt sifatida yuklash
         uses: actions/upload-artifact@v4
         with:
-          name: briliant-apk
-          path: |
-            android/app/build/outputs/apk/debug/*.apk
-            android/app/build/outputs/apk/release/*.apk
+          name: BRILIANT-apk
+          path: ${{ env.APK_PATH }}
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 90
+
+      # Telefondan toʻgʻridan-toʻgʻri yuklab olish uchun: ZIP emas, aynan .apk fayl
+      # va GitHub'ga kirish talab qilinmaydi.
+      - name: Yuklab olish sahifasini yangilash
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-latest --yes --cleanup-tag 2>/dev/null || true
+          gh release create android-latest "$APK_PATH" \
+            --title "BRILIANT — Android ilova (oxirgi versiya)" \
+            --target "$GITHUB_SHA" \
+            --notes "$(cat <<'NOTES'
+**BRILIANT** — universal kamera platformasi, Android ilovasi.
+
+Telefonda shu sahifani ochib, pastdagi `.apk` faylni bosing.
+Android "Nomaʼlum manbadan oʻrnatish" ruxsatini soʻraydi — ruxsat bering.
+
+* Android 6.0 va undan yuqori qurilmalar
+* Imzolangan APK — imzosiz fayl hech qanday qurilmaga oʻrnatilmaydi
+* Ilova offline ochiladi; sinash uchun "Demo rejimda koʻrish" tugmasi bor
+* Avvalgi versiya oʻrnatilgan boʻlsa va "App not installed" chiqsa — eskisini oʻchirib, qaytadan oʻrnating
+NOTES
+)"
+          echo "Yuklab olish: https://github.com/${{ github.repository }}/releases/tag/android-latest"
