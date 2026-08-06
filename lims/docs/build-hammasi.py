@@ -181,7 +181,7 @@ S_OFFLINE = """
         <thead><tr><th>Nechanchi</th><th>Fayl</th><th>Hajmi</th><th>Qayerdan</th></tr></thead>
         <tbody>
           <tr>
-            <td class="num">1</td><td><code>LabCore-toliq.zip</code></td><td class="num">78 MB</td>
+            <td class="num">1</td><td><code>LabCore-toliq.zip</code></td><td class="num">~80 MB</td>
             <td class="hash">github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-toliq.zip</td>
           </tr>
           <tr>
@@ -570,7 +570,7 @@ S_TEZ = """
       <table>
         <thead><tr><th>Fayl</th><th>Hajmi</th><th>Qachon kerak</th></tr></thead>
         <tbody>
-          <tr><td><code>LabCore-toliq.zip</code></td><td class="num">78 MB</td>
+          <tr><td><code>LabCore-toliq.zip</code></td><td class="num">~80 MB</td>
               <td>Birinchi marta o'rnatishda. Ichida hamma narsa bor.</td></tr>
           <tr><td><code>LabCore-TUZATISH.zip</code></td><td class="num">390 KB</td>
               <td>Muammo chiqqanda. Server fayllarini almashtiradi va qayta ishga tushiradi.</td></tr>
