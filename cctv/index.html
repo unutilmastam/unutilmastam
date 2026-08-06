@@ -29,6 +29,30 @@
     Ilova ishlashi uchun JavaScript yoqilgan boʻlishi kerak.
   </div>
 </noscript>
+
+<!-- Eski brauzer/WebView: oq ekran oʻrniga tushunarli xabar -->
+<script nomodule>
+  document.getElementById('view').innerHTML =
+    '<div style="padding:44px 24px;text-align:center;color:#93A3BA;font-family:sans-serif;line-height:1.5">'
+    + '<div style="font-size:38px">⚠️</div>'
+    + '<h2 style="color:#E8EEF7;margin:12px 0 8px">Brauzer eskirgan</h2>'
+    + '<p style="font-size:14px">Ilova ishlashi uchun brauzeringizni yangilang.<br>'
+    + 'Android’da: Play Market → <b>Android System WebView</b> va <b>Chrome</b> ni yangilang.</p></div>';
+</script>
+
 <script type="module" src="./js/app.js"></script>
+<script type="module">
+  // Ilova umuman ishga tushmasa — foydalanuvchi sababini koʻrsin
+  addEventListener('error', e => {
+    const v = document.getElementById('view');
+    if (!v || v.children.length) return;
+    v.innerHTML = '<div style="padding:44px 24px;text-align:center;color:#93A3BA;font-family:sans-serif">'
+      + '<div style="font-size:38px">⚠️</div>'
+      + '<h2 style="color:#E8EEF7;margin:12px 0 8px">Ilova ochilmadi</h2>'
+      + '<p style="font-size:13px">' + (e.message || 'Nomaʼlum xato') + '</p>'
+      + '<button onclick="location.reload()" style="margin-top:14px;padding:11px 20px;border:0;border-radius:12px;'
+      + 'background:#2E8FFF;color:#fff;font-weight:700;font-size:14px">Qayta yuklash</button></div>';
+  });
+</script>
 </body>
 </html>

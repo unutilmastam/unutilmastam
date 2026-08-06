@@ -16,6 +16,11 @@ on:
 permissions:
   contents: write
 
+# Bir vaqtda bitta build — release yorligʻi (android-latest) ustida poyga boʻlmasin
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
