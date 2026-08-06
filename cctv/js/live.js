@@ -1,5 +1,5 @@
 /* BRILIANT — jonli koʻrish, multi-ekran, PTZ, arxiv, hodisalar, bildirishnomalar, xarita */
-import { S, save, log, getCam, can, timeAgo, clock, dateStr, pad, EVENT_TYPES } from './store.js';
+import { S, save, log, lsGet, lsSet, getCam, can, timeAgo, clock, dateStr, pad, EVENT_TYPES } from './store.js';
 import { api } from './api.js';
 import { createPlayer, Recorder, Talkback, downloadCanvas } from './player.js';
 import { h, ico, toast, sheet, closeSheet, route, go, onLeave, topbar, empty, field, input, select, navRow, $ } from './ui.js';
@@ -50,11 +50,11 @@ function liveView(camId) {
   const activeCam = () => getCam(slots[sel]) || getCam(slots.find(Boolean)) || cams[0];
 
   function readSlots(g, list) {
-    const saved = JSON.parse(localStorage.getItem('briliant:slots' + g) || 'null');
+    const saved = JSON.parse(lsGet('briliant:slots' + g) || 'null');
     const arr = Array.from({ length: g }, (_, i) => (saved?.[i] && getCam(saved[i]) ? saved[i] : list[i]?.id || null));
     return arr;
   }
-  function persistSlots() { if (!single) localStorage.setItem('briliant:slots' + grid, JSON.stringify(slots)); }
+  function persistSlots() { if (!single) lsSet('briliant:slots' + grid, JSON.stringify(slots)); }
 
   function renderStage() {
     stopAll();

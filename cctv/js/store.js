@@ -1,8 +1,15 @@
 /* BRILIANT — holat (state) va lokal saqlash */
 
 const K = 'briliant:';
-const read = (k, d) => { try { const v = localStorage.getItem(K + k); return v ? JSON.parse(v) : d; } catch { return d; } };
-const write = (k, v) => { try { localStorage.setItem(K + k, JSON.stringify(v)); } catch {} };
+
+/* localStorage har doim ham mavjud emas (iframe, Safari private, oʻchirilgan cookie).
+   Shunday holatda seans davomida ishlaydigan xotira zaxirasiga tushamiz. */
+const mem = new Map();
+export const lsGet = k => { try { return localStorage.getItem(k); } catch { return mem.has(k) ? mem.get(k) : null; } };
+export const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch { mem.set(k, v); } };
+
+const read = (k, d) => { const v = lsGet(K + k); try { return v ? JSON.parse(v) : d; } catch { return d; } };
+const write = (k, v) => lsSet(K + k, JSON.stringify(v));
 
 export const uid = (p = 'id') => p + '_' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
 

@@ -1,6 +1,6 @@
 /* BRILIANT — asosiy ekranlar: auth, dashboard, kameralar, kamera qoʻshish, tafsilotlar */
 import { S, save, log, seedDemo, addCamera, updateCamera, removeCamera, getCam, addGroup,
-         localLogin, localRegister, can, plan, camLimitReached, timeAgo, clock, PLANS } from './store.js';
+         localLogin, localRegister, can, plan, camLimitReached, timeAgo, clock, lsGet, lsSet, PLANS } from './store.js';
 import { api } from './api.js';
 import { BRANDS, brandOf, buildRtsp, buildSnapshot, discoverOnvif, parseCameraQR, hasNativeBridge } from './brands.js';
 import { createPlayer, downloadCanvas } from './player.js';
@@ -217,7 +217,7 @@ export function eventCard(e) {
 /* =====================  KAMERALAR  ===================== */
 route('/cameras', () => {
   killPlayers(); onLeave(killPlayers);
-  let mode = localStorage.getItem('briliant:camview') || 'grid';
+  let mode = lsGet('briliant:camview') || 'grid';
   let filter = 'all', q = '';
 
   const listBox = h('div', { class: 'cams' + (mode === 'list' ? ' list' : '') });
@@ -255,7 +255,7 @@ route('/cameras', () => {
   const viewBtn = h('button', {
     class: 'iconbtn', html: ico(mode === 'grid' ? 'list' : 'grid', 20), onclick: () => {
       mode = mode === 'grid' ? 'list' : 'grid';
-      localStorage.setItem('briliant:camview', mode);
+      lsSet('briliant:camview', mode);
       viewBtn.innerHTML = ico(mode === 'grid' ? 'list' : 'grid', 20);
       render();
     }

@@ -1,5 +1,5 @@
 /* BRILIANT — admin panel */
-import { S, save, log, ROLES, PLANS, timeAgo, clock, dateStr, EVENT_TYPES } from './store.js';
+import { S, save, log, lsGet, lsSet, ROLES, PLANS, timeAgo, clock, dateStr, EVENT_TYPES } from './store.js';
 import { api } from './api.js';
 import { brandOf } from './brands.js';
 import { h, ico, toast, sheet, closeSheet, confirmSheet, route, go, topbar, empty, field, input, select, toggleRow, navRow } from './ui.js';
@@ -12,7 +12,7 @@ const guard = () => {
 
 /* Demo admin maʼlumotlari */
 const demoUsers = () => {
-  const stored = JSON.parse(localStorage.getItem('briliant:adminusers') || 'null');
+  const stored = JSON.parse(lsGet('briliant:adminusers') || 'null');
   if (stored) return stored;
   const list = [
     { id: 'u1', name: S.user?.name || 'Siz', email: S.user?.email || 'demo@briliant.uz', role: 'owner', plan: S.user?.plan || 'business', cams: S.cameras.length, active: true, last: Date.now() },
@@ -20,10 +20,10 @@ const demoUsers = () => {
     { id: 'u3', name: 'Dilnoza R.', email: 'dilnoza@example.com', role: 'operator', plan: 'pro', cams: 4, active: true, last: Date.now() - 5 * 36e5 },
     { id: 'u4', name: 'Sardor T.', email: 'sardor@example.com', role: 'viewer', plan: 'free', cams: 2, active: false, last: Date.now() - 9 * 864e5 },
   ];
-  localStorage.setItem('briliant:adminusers', JSON.stringify(list));
+  lsSet('briliant:adminusers', JSON.stringify(list));
   return list;
 };
-const saveUsers = list => localStorage.setItem('briliant:adminusers', JSON.stringify(list));
+const saveUsers = list => lsSet('briliant:adminusers', JSON.stringify(list));
 
 route('/admin', () => {
   if (!guard()) return;
@@ -309,8 +309,8 @@ route('/admin/analytics', () => {
 /* --- Tizim sozlamalari --- */
 route('/admin/system', () => {
   if (!guard()) return;
-  const cfg = JSON.parse(localStorage.getItem('briliant:sys') || '{}');
-  const setCfg = (k, v) => { cfg[k] = v; localStorage.setItem('briliant:sys', JSON.stringify(cfg)); };
+  const cfg = JSON.parse(lsGet('briliant:sys') || '{}');
+  const setCfg = (k, v) => { cfg[k] = v; lsSet('briliant:sys', JSON.stringify(cfg)); };
   return h('div', { class: 'screen' }, topbar('Tizim sozlamalari'),
     toggleRow("Roʻyxatdan oʻtish ochiq", 'Yangi akkauntlar yaratilishi mumkin', cfg.openReg !== false, v => setCfg('openReg', v), 'user'),
     toggleRow('IP Whitelist', 'Faqat ruxsat etilgan IP lardan kirish', !!cfg.ipWhitelist, v => setCfg('ipWhitelist', v), 'shield'),

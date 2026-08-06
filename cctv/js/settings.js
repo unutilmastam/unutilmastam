@@ -113,7 +113,7 @@ route('/settings/account', () => {
       class: 'btn dan', style: { marginTop: '18px' }, onclick: async () => {
         if (await confirmSheet("Akkauntni oʻchirish", "Barcha kameralar, arxiv va hodisalar oʻchiriladi. Bu amalni qaytarib boʻlmaydi.", "Oʻchirish")) {
           if (api.enabled) { try { await api.del('/users/me'); } catch {} }
-          resetAll(); localStorage.clear(); go('/login', true);
+          resetAll(); try { localStorage.clear(); } catch {} go('/login', true);
         }
       }
     }, "Akkauntni oʻchirish"));

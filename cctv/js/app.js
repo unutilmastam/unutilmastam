@@ -1,5 +1,5 @@
 /* BRILIANT — ilova yadrosi: yoʻnaltirish, navigatsiya, SW, native koʻprik */
-import { S, save, seedDemo, on, notify } from './store.js';
+import { S, save, seedDemo, on, notify, lsGet, lsSet } from './store.js';
 import { api } from './api.js';
 import { h, ico, toast, renderRoute, currentPath, go, $ } from './ui.js';
 import './screens.js';
@@ -61,7 +61,7 @@ if ('serviceWorker' in navigator) {
 let installEvt = null;
 addEventListener('beforeinstallprompt', e => {
   e.preventDefault(); installEvt = e;
-  if (localStorage.getItem('briliant:installed') || sessionStorage.getItem('briliant:nobanner')) return;
+  if (lsGet('briliant:installed') || lsGet('briliant:nobanner')) return;
   setTimeout(showInstallBanner, 4000);
 });
 function showInstallBanner() {
@@ -76,24 +76,24 @@ function showInstallBanner() {
         b.remove();
         installEvt.prompt();
         const r = await installEvt.userChoice;
-        if (r.outcome === 'accepted') localStorage.setItem('briliant:installed', '1');
+        if (r.outcome === 'accepted') lsSet('briliant:installed', '1');
         installEvt = null;
       }
     }, "Oʻrnatish"),
-    h('button', { class: 'iconbtn plain', html: ico('x', 16), onclick: () => { b.remove(); sessionStorage.setItem('briliant:nobanner', '1'); } }));
+    h('button', { class: 'iconbtn plain', html: ico('x', 16), onclick: () => { b.remove(); lsSet('briliant:nobanner', '1'); } }));
   document.body.append(b);
   setTimeout(() => b.remove(), 12000);
 }
-addEventListener('appinstalled', () => localStorage.setItem('briliant:installed', '1'));
+addEventListener('appinstalled', () => lsSet('briliant:installed', '1'));
 
 /* --- iOS uchun qoʻlda oʻrnatish maslahati --- */
 function iosHint() {
   const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
-  if (!isIos || standalone || localStorage.getItem('briliant:ioshint')) return;
+  if (!isIos || standalone || lsGet('briliant:ioshint')) return;
   setTimeout(() => {
     toast("Safari'da 'Ulashish → Home Screen' orqali ilovani oʻrnating");
-    localStorage.setItem('briliant:ioshint', '1');
+    lsSet('briliant:ioshint', '1');
   }, 6000);
 }
 
