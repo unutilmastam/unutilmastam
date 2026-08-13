@@ -341,6 +341,9 @@ docker compose logs -f bot
 
 The image runs as a non-root user, keeps the SQLite file in `./data` and logs
 in `./logs`, and exposes the dashboard on port 8000 with a health check.
+`.dockerignore` keeps `.env`, local databases and caches out of the build
+context, and `.env` itself is optional — without it the container still comes
+up on safe defaults (paper trading on, real trading off, no Telegram).
 
 For PostgreSQL:
 
@@ -479,7 +482,7 @@ pytest --cov=app             # with coverage
 pytest tests/test_strategy.py -v
 ```
 
-321 tests, 85% overall coverage. They cover indicator maths, the
+364 tests, 90% overall coverage. They cover indicator maths, the
 no-look-ahead property, candle de-duplication, scoring, TP/SL placement,
 position sizing, the cooldown and duplicate filters, the signal lifecycle,
 paper trading, the backtester, websocket reconnection, REST retries and
@@ -488,6 +491,10 @@ rate-limit handling, the Telegram commands and whitelist, and the dashboard.
 `tests/test_integration.py` drives the real `ScalpingBot` wiring against a
 temporary SQLite database and asserts that a closed candle ends up as rows in
 `signals`, `signal_reasons`, `market_snapshots` and `paper_trades`.
+`tests/test_lifecycle.py` covers start-up, warm-up, the rescan and
+maintenance loops and shutdown; `tests/test_resilience.py` covers websocket
+reconnection, idle-socket recovery, logging setup and Telegram start-up
+failures.
 
 ---
 

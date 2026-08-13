@@ -1,0 +1,30 @@
+# Never let secrets or local state into the build context. The Dockerfile
+# does not COPY these, but the context is uploaded to the daemon regardless.
+.env
+.env.*
+!.env.example
+
+# Local runtime state - the container gets its own volumes for these.
+data/
+logs/
+*.db
+*.sqlite3
+
+# Caches and build artefacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+*.egg-info/
+
+# Tooling
+.git/
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yml
+README.md
+.DS_Store

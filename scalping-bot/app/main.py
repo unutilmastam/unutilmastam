@@ -260,24 +260,41 @@ class ScalpingBot:
                 return
             except asyncio.TimeoutError:
                 pass
+            await self.rescan_once()
 
-            try:
-                await self.scanner.refresh_exchange_info()
-                symbols = await self.scanner.select_symbols()
-                if not symbols:
-                    logger.warning("Rescan produced no symbols; keeping the current universe")
-                    continue
+    async def rescan_once(self) -> bool:
+        """Re-run the scanner and adopt the new universe.
 
-                added = [item for item in symbols if item not in self.store.symbols]
-                if set(symbols) == set(self.store.symbols):
-                    continue
+        Returns ``True`` when the tracked symbols changed. Kept separate from
+        the timing loop so it can be driven directly.
+        """
+        try:
+            await self.scanner.refresh_exchange_info()
+            symbols = await self.scanner.select_symbols()
+            if not symbols:
+                logger.warning("Rescan produced no symbols; keeping the current universe")
+                return False
 
-                self.store.set_symbols(symbols)
-                if added:
-                    await self.warmup(added)
-                await self.streams.resubscribe(symbols)
-            except Exception as exc:  # noqa: BLE001
-                logger.exception("Symbol rescan failed: %s", exc)
+            if set(symbols) == set(self.store.symbols):
+                return False
+
+            added = [item for item in symbols if item not in self.store.symbols]
+            dropped = [item for item in self.store.symbols if item not in symbols]
+            logger.info(
+                "Symbol universe changed: +%s -%s",
+                ",".join(added) or "none",
+                ",".join(dropped) or "none",
+            )
+
+            self.store.set_symbols(symbols)
+            if added:
+                await self.warmup(added)
+            await self.streams.resubscribe(symbols)
+            return True
+
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Symbol rescan failed: %s", exc)
+            return False
 
     async def _maintenance_loop(self) -> None:
         """Daily housekeeping."""
@@ -287,12 +304,18 @@ class ScalpingBot:
                 return
             except asyncio.TimeoutError:
                 pass
-            try:
-                removed = await self.database.prune_snapshots(SNAPSHOT_RETENTION_DAYS)
-                if removed:
-                    logger.info("Pruned %d old market snapshots", removed)
-            except Exception as exc:  # noqa: BLE001
-                logger.exception("Maintenance failed: %s", exc)
+            await self.maintenance_once()
+
+    async def maintenance_once(self) -> int:
+        """Prune old snapshots. Returns how many rows were removed."""
+        try:
+            removed = await self.database.prune_snapshots(SNAPSHOT_RETENTION_DAYS)
+            if removed:
+                logger.info("Pruned %d old market snapshots", removed)
+            return removed
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Maintenance failed: %s", exc)
+            return 0
 
     # ------------------------------------------------------------------
     # Backtesting

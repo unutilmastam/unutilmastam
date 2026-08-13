@@ -4,7 +4,9 @@ services:
     container_name: scalping-bot
     restart: unless-stopped
     env_file:
-      - .env
+      # Optional: the image runs with safe defaults if .env is absent.
+      - path: .env
+        required: false
     environment:
       # Safety defaults; .env can tune everything else but not turn these on.
       PAPER_TRADING: "true"
