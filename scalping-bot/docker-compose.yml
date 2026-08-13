@@ -1,0 +1,58 @@
+services:
+  bot:
+    build: .
+    container_name: scalping-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Safety defaults; .env can tune everything else but not turn these on.
+      PAPER_TRADING: "true"
+      REAL_TRADING: "false"
+      DATABASE_URL: ${DATABASE_URL:-sqlite+aiosqlite:///./data/signals.db}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - |
+          import urllib.request, sys
+          sys.exit(0 if urllib.request.urlopen("http://127.0.0.1:8000/health", timeout=4).status == 200 else 1)
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # Optional PostgreSQL for production. Start it with:
+  #   docker compose --profile postgres up -d
+  # and set DATABASE_URL=postgresql+asyncpg://bot:bot@postgres:5432/signals
+  # (uncomment asyncpg in requirements.txt first).
+  postgres:
+    image: postgres:16-alpine
+    container_name: scalping-bot-db
+    profiles: ["postgres"]
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-bot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bot}
+      POSTGRES_DB: ${POSTGRES_DB:-signals}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bot}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
