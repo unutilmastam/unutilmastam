@@ -438,6 +438,7 @@ class BacktestEngine:
                 break
 
             if level_index == 2:
+                trade.targets_hit = 3
                 balance = self._close(trade, candle, level, "TP3", balance, trades)
                 return True, balance
 

@@ -67,6 +67,8 @@ class EngineStats:
 
     evaluations: int = 0
     signals_published: int = 0
+    rejected_stale: int = 0
+    rejected_warmup: int = 0
     rejected_mandatory: int = 0
     rejected_score: int = 0
     rejected_filters: int = 0
@@ -161,12 +163,14 @@ class SignalEngine:
 
         # 1. Market data must be fresh.
         if self.store.is_stale(symbol):
+            self.stats.rejected_stale += 1
             self._reject(symbol, "market data is stale")
             return None
 
         # 2-13. Indicators and multi-timeframe conditions.
         analysis = self.analyze(symbol)
         if analysis is None or not analysis.complete:
+            self.stats.rejected_warmup += 1
             self._reject(symbol, "not enough candle history yet")
             return None
 
@@ -186,6 +190,7 @@ class SignalEngine:
             if order_book is not None:
                 analysis = self.analyze(symbol, order_book=order_book)
                 if analysis is None:
+                    self.stats.rejected_warmup += 1
                     self._reject(symbol, "analysis unavailable")
                     return None
                 result = (
@@ -517,6 +522,8 @@ class SignalEngine:
             "active_signals": len(self.active_signals),
             "evaluations": self.stats.evaluations,
             "published": self.stats.signals_published,
+            "rejected_stale": self.stats.rejected_stale,
+            "rejected_warmup": self.stats.rejected_warmup,
             "rejected_mandatory": self.stats.rejected_mandatory,
             "rejected_score": self.stats.rejected_score,
             "rejected_filters": self.stats.rejected_filters,

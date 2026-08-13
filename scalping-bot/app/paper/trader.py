@@ -233,6 +233,9 @@ class PaperTrader:
         elif status is SignalStatus.TP2_HIT:
             await self._take_partial(position, update.price, 1, "TP2")
         elif status is SignalStatus.TP3_HIT:
+            # The final target closes the position outright, so record the
+            # third hit here - _close does not go through _take_partial.
+            position.targets_hit = 3
             await self._close(position, update.price, "TP3")
         elif status in (SignalStatus.INVALIDATED, SignalStatus.EXPIRED):
             await self._close(position, update.price, status.value.title())

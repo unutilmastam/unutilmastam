@@ -160,7 +160,8 @@ Key settings:
 | `MIN_24H_VOLUME` | `50000000` | Liquidity floor (quote volume) |
 | `MAX_SPREAD_PERCENT` | `0.06` | Widest spread accepted |
 | `SIGNAL_COOLDOWN_MINUTES` | `5` | Anti-spam window per symbol/side |
-| `RISK_PER_TRADE` | `0.01` | 1% of the paper balance per trade |
+| `RISK_PER_TRADE` | `0.01` | 1% of paper equity risked per trade |
+| `MAX_POSITION_PERCENT` | `0.25` | Largest share of equity in one position |
 | `MIN_RISK_REWARD` | `1.5` | Setups below this are discarded |
 | `PAPER_TRADING` | `true` | Simulate trades from signals |
 | `REAL_TRADING` | `false` | Not implemented; must stay false |
@@ -261,8 +262,13 @@ You also get lifecycle alerts: `TP1 HIT`, `TP2 HIT`, `TP3 HIT`,
 
 Enabled by default, starting from `1000 USDT`.
 
-- Position size makes a stop-out cost exactly `RISK_PER_TRADE` of the balance,
-  capped by the balance itself (spot has no leverage).
+- Position size makes a stop-out cost exactly `RISK_PER_TRADE` of equity.
+- Real cash accounting: buying spends the balance, so several open positions
+  can never together exceed it. Spot has no leverage.
+- Each position is capped at `MAX_POSITION_PERCENT` of equity (default 25%).
+  A tight stop makes the risk-based size larger than the whole account, so
+  without this cap the first signal would spend everything and block every
+  other symbol.
 - Targets close the position in tranches (`TP_ALLOCATION`, default 50/30/20).
 - After TP1 the stop moves to break-even.
 - A 0.1% taker fee is charged on entry and on every exit tranche.
@@ -473,11 +479,15 @@ pytest --cov=app             # with coverage
 pytest tests/test_strategy.py -v
 ```
 
-310 tests, 85% overall coverage. They cover indicator maths, the
+321 tests, 85% overall coverage. They cover indicator maths, the
 no-look-ahead property, candle de-duplication, scoring, TP/SL placement,
 position sizing, the cooldown and duplicate filters, the signal lifecycle,
 paper trading, the backtester, websocket reconnection, REST retries and
 rate-limit handling, the Telegram commands and whitelist, and the dashboard.
+
+`tests/test_integration.py` drives the real `ScalpingBot` wiring against a
+temporary SQLite database and asserts that a closed candle ends up as rows in
+`signals`, `signal_reasons`, `market_snapshots` and `paper_trades`.
 
 ---
 
