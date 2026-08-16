@@ -68,6 +68,10 @@ if ($env:BACKUP_COPY_TO -and (Test-Path $env:BACKUP_COPY_TO)) {
 
 Write-Host "[$(Get-Date -Format 'u')] Tugadi."
 Write-Host ""
-Write-Host "Tiklash:"
-Write-Host "  pg_restore --clean --if-exists --dbname=`"<DATABASE_URL>`" $dumpFile"
-Write-Host "  Expand-Archive $(Join-Path $target 'patients-files.zip') -DestinationPath $dataDir -Force"
+Write-Host "Tiklash kerak bo'lsa:  TIKLASH.bat"
+Write-Host "Zaxira yaxshimi tekshirish (xavfsiz):  ZAXIRANI-SINASH.bat"
+Write-Host ""
+# DIQQAT: bu yerda ilgari "pg_restore --clean --if-exists" maslahat berilardi.
+# U ishlab turgan bazadagi jadvallarni o'chirib, ustiga yozadi - o'rtada
+# yiqilsa laboratoriya butun tarixini yo'qotadi. TIKLASH.bat esa eski bazani
+# chetga surib qo'yadi va xato bo'lsa o'z joyiga qaytaradi.

@@ -4,6 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { config } from '../src/config.js';
 
 /** deploy/windows ichidagi barcha .ps1 fayllar (ichki papkalar bilan). */
@@ -421,4 +422,77 @@ test('tuzatish skripti serverni qayta ishga tushiradi', () => {
   assert.match(text, /Start-ScheduledTask -TaskName "LabCore"/, 'vazifa ishga tushirilmaydi');
   assert.match(text, /api\/health/, 'natija tekshirilmaydi');
   assert.match(text, /DASTURGA SHU MANZILNI YOZING/, 'manzil aytilmaydi');
+});
+
+/**
+ * Tiklash yiqilsa server O'CHIQ QOLMASLIGI kerak.
+ *
+ * Haqiqiy sinovda aynan shu chiqdi: buzuq zaxira bilan tiklash yiqildi,
+ * eski baza to'g'ri qaytarildi — lekin vazifa to'xtatilgan holida qoldi.
+ * Baza joyida, ma'lumot joyida, laboratoriya esa ishlamaydi va sababi
+ * hech kimga ko'rinmaydi. Har bir xato yo'lidan keyin server qaytariladi.
+ */
+test('tiklash yiqilsa server qayta ishga tushiriladi', () => {
+  const text = fs.readFileSync(
+    path.join(config.root, 'deploy', 'windows', 'tiklash.ps1'), 'utf8');
+
+  assert.match(text, /function Serverni-Qaytar/, 'serverni qaytaradigan funksiya yo‘q');
+
+  // Har bir "exit 1" dan oldin server qaytarilgan bo'lishi kerak —
+  // bazaga tegilgandan keyingi yo'llarda.
+  const bazagaTegdi = text.indexOf('ALTER DATABASE');
+  const keyin = text.slice(bazagaTegdi);
+  const chiqishlar = (keyin.match(/exit 1/g) || []).length;
+  const qaytarishlar = (keyin.match(/Serverni-Qaytar/g) || []).length;
+  assert.ok(qaytarishlar >= chiqishlar,
+    `bazaga tegilgandan keyin ${chiqishlar} ta chiqish bor, lekin faqat ` +
+    `${qaytarishlar} ta joyda server qaytarilyapti`);
+});
+
+/**
+ * Zaxira skripti ilgari ekranga "pg_restore --clean --if-exists" deb
+ * maslahat berardi. U ishlab turgan bazadagi jadvallarni o'chirib ustiga
+ * yozadi — o'rtada yiqilsa laboratoriya butun tarixini yo'qotadi.
+ * Egasi ekrandagi maslahatga ishonadi, shuning uchun u xavfsiz bo'lishi shart.
+ */
+test('zaxira skripti xavfli tiklash usulini maslahat bermaydi', () => {
+  const text = fs.readFileSync(
+    path.join(config.root, 'deploy', 'windows', 'backup.ps1'), 'utf8');
+
+  const xavfli = text.split('\n')
+    .filter((l) => /Write-Host/.test(l) && /--clean|--if-exists/.test(l));
+  assert.deepEqual(xavfli, [],
+    `foydalanuvchiga xavfli tiklash maslahat berilyapti:\n  ${xavfli.join('\n  ')}`);
+
+  assert.match(text, /TIKLASH\.bat/, 'xavfsiz yo‘l ko‘rsatilmagan');
+});
+
+/**
+ * ENG KUCHLI TEKSHIRUV: skriptlarni HAQIQIY PowerShell tahlilchisi bilan
+ * o'qiymiz. Qolgan testlar skript ichidagi matnni qidiradi — ular sintaksis
+ * xatosini ko'rmaydi. Bu esa aynan Windows'dagi tahlilchining o'zi.
+ *
+ * PowerShell topilmasa test o'tkazib yuboriladi (Linux'da odatda yo'q).
+ * Ishlab chiqish muhitida u bor va har bir o'zgarish tekshiriladi.
+ */
+test('PowerShell skriptlari haqiqiy tahlilchidan o‘tadi', (t) => {
+  const pwsh = ['/opt/pwsh/pwsh', '/usr/bin/pwsh', '/usr/local/bin/pwsh']
+    .find((p) => fs.existsSync(p));
+  if (!pwsh) return t.skip('pwsh topilmadi — sintaksis tekshiruvi o‘tkazib yuborildi');
+
+  const dir = path.join(config.root, 'deploy', 'windows');
+  const kod = `
+    $xato = 0
+    foreach ($f in (Get-ChildItem '${dir}' -Recurse -Filter *.ps1)) {
+      $e = $null
+      [System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$null, [ref]$e) | Out-Null
+      if ($e -and $e.Count -gt 0) {
+        $xato += $e.Count
+        foreach ($x in $e) { Write-Output ("{0}:{1}: {2}" -f $f.Name, $x.Extent.StartLineNumber, $x.Message) }
+      }
+    }
+    exit $xato`;
+  const r = spawnSync(pwsh, ['-NoProfile', '-Command', kod], { encoding: 'utf8' });
+  assert.equal(r.status, 0,
+    `PowerShell sintaksis xatosi:\n${r.stdout}${r.stderr}`);
 });

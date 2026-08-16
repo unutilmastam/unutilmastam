@@ -188,6 +188,23 @@ function PgExec($db, $sql) {
   return $LASTEXITCODE
 }
 
+<#
+  Tiklash yiqilganda serverni QAYTA YOQISH shart.
+  Bo'lmasa laboratoriya to'xtab qoladi: baza joyida, ma'lumot joyida,
+  lekin server o'chiq turadi va hech kim nima uchun ekanini bilmaydi.
+  Shuning uchun har bir xato yo'lidan keyin shu chaqiriladi.
+#>
+function Serverni-Qaytar {
+  if ($Sinov) { return }
+  $t = Get-ScheduledTask -TaskName "LabCore" -ErrorAction SilentlyContinue
+  if ($t) {
+    Start-ScheduledTask -TaskName "LabCore" -ErrorAction SilentlyContinue
+    Note "Server qayta ishga tushirildi - laboratoriya ishlashda davom etadi."
+  } else {
+    Note "DIQQAT: serverni qo'lda ishga tushiring (TUZAT.bat)."
+  }
+}
+
 if (-not $Sinov) {
   Head "5. Serverni to'xtatamiz"
   # Baza bilan ishlayotgan jarayon bo'lsa nom o'zgartirib bo'lmaydi.
@@ -201,7 +218,8 @@ if (-not $Sinov) {
   Head "6. Eski bazani saqlab qo'yamiz"
   if ((PgExec "postgres" "ALTER DATABASE `"$dbName`" RENAME TO `"$eskiNom`";") -ne 0) {
     Bad "Eski bazani nom o'zgartirib bo'lmadi - tiklash to'xtatildi."
-    Note "Hech narsa o'zgarmadi. Serverni qayta yoqing: TUZAT.bat"
+    Note "Hech narsa o'zgarmadi."
+    Serverni-Qaytar
     Wait-Enter; exit 1
   }
   Ok "Eski baza saqlandi: $eskiNom"
@@ -214,6 +232,7 @@ if ((PgExec "postgres" "CREATE DATABASE `"$target`" OWNER `"$dbUser`";") -ne 0) 
     Note "Eski bazani qaytaramiz..."
     PgExec "postgres" "ALTER DATABASE `"$eskiNom`" RENAME TO `"$dbName`";" | Out-Null
     Note "Eski baza o'z joyiga qaytdi. Hech narsa yo'qolmadi."
+    Serverni-Qaytar
   }
   Wait-Enter; exit 1
 }
@@ -232,6 +251,7 @@ if ($rc -ne 0) {
     PgExec "postgres" "DROP DATABASE IF EXISTS `"$target`";" | Out-Null
     PgExec "postgres" "ALTER DATABASE `"$eskiNom`" RENAME TO `"$dbName`";" | Out-Null
     Note "Eski baza o'z joyiga qaytdi. Hech narsa yo'qolmadi."
+    Serverni-Qaytar
   }
   Wait-Enter; exit 1
 }
