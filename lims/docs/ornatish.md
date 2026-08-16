@@ -345,5 +345,54 @@ tugayotgan reaktivlar ro'yxatiga qarang.
 **Har oy:** xodimlar ro'yxatini ko'rib chiqing (ishdan bo'shaganlar
 o'chirilganmi), audit jurnalini ko'zdan kechiring.
 
-**Yiliga bir marta:** zaxiradan **haqiqiy tiklashni** sinab ko'ring.
-Tekshirilmagan zaxira — zaxira emas.
+**Yiliga bir marta:** zaxiradan **haqiqiy tiklashni** sinab ko'ring:
+
+```
+ZAXIRANI-SINASH.bat
+```
+
+U zaxirani alohida bazaga tiklab, hammasi joyidaligini ko'rsatadi.
+Ishlab turgan bazaga tegmaydi. Tekshirilmagan zaxira — zaxira emas.
+
+---
+
+## 9. Yangi diskka yoki yangi kompyuterga ko'chish
+
+Qattiq disklar 5–10 yilda eskiradi. Ma'lumotni yangi diskka ko'chirish —
+odatiy ish, bemor tarixining bironta raqami ham o'zgarmaydi.
+
+**Diskdagi fayllarni to'g'ridan-to'g'ri nusxalamang.** PostgreSQL ishlab
+turganda uning papkasini ko'chirish bazani buzadi. To'g'ri yo'l — zaxira
+va tiklash: bunda har bir qator qaytadan yoziladi, natijada nusxa
+manbaga **bayt-baytigacha** teng chiqadi.
+
+**Tartib:**
+
+1. **Eski kompyuterda** oxirgi zaxirani oling:
+   ```
+   powershell -ExecutionPolicy Bypass -File deploy\windows\backup.ps1
+   ```
+2. `backups` papkasidagi eng oxirgi nusxani fleshkaga ko'chiring.
+3. **Yangi diskka/kompyuterga** LabCore'ni odatdagidek o'rnating
+   (`ORNATISH.bat`).
+4. Zaxira papkasini yangi kompyuterga qo'ying va ishga tushiring:
+   ```
+   TIKLASH.bat
+   ```
+5. Xodimlar eski parollari bilan kiradi, karta raqamlari o'z joyida
+   davom etadi.
+
+**Bitta muhim fayl: `.env`.** Uni ham eski kompyuterdan ko'chiring —
+ichidagi `JWT_SECRET` dan **kamera parollarini shifrlash kaliti** hosil
+bo'ladi. `JWT_SECRET` yangi bo'lsa hamma narsa ishlaydi, lekin saqlangan
+kamera parollari o'qilmay qoladi va ularni qayta kiritish kerak bo'ladi.
+Boshqa hech narsa bunga bog'liq emas.
+
+**Nima saqlanadi:** bemorlar va karta raqamlari, tashriflar, buyurtmalar
+va ularning raqamlari, natijalar, shifokor xulosalari, to'lovlar, xodimlar
+va parollari, ombor, navbat, **butun audit jurnali** (o'zgartirishdan
+himoyasi bilan birga) va bemor fayllari.
+
+`TIKLASH.bat` eski bazani **o'chirmaydi** — nomini o'zgartirib saqlab
+qo'yadi (`labcore_eski_...`). Tiklash biror sababdan yiqilsa, eski baza
+o'z joyiga qaytariladi va hech narsa yo'qolmaydi.

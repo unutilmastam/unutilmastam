@@ -323,6 +323,63 @@ test('ishga tushirgich .bat lar sodda', () => {
   }
 });
 
+/**
+ * Zaxira nusxa faqat undan TIKLAB bo'lganda zaxira hisoblanadi.
+ * Hujjat yiliga bir marta tiklashni sinashni talab qiladi — demak buni
+ * qiladigan vosita bo'lishi shart.
+ */
+test('zaxiradan tiklash skripti bor', () => {
+  const file = path.join(config.root, 'deploy', 'windows', 'tiklash.ps1');
+  assert.ok(fs.existsSync(file), 'tiklash.ps1 yo‘q — zaxirani tiklash imkoni yo‘q');
+  const text = fs.readFileSync(file, 'utf8');
+
+  assert.match(text, /pg_restore/, 'pg_restore ishlatilmagan');
+  assert.match(text, /CHECKSUMS\.sha256/, 'zaxira buzilmagani tekshirilmaydi');
+  assert.match(text, /-Sinov/, 'zaxirani xavfsiz sinash rejimi yo‘q');
+  assert.match(text, /127\.0\.0\.1/, 'localhost IPv6 muammosi hisobga olinmagan');
+});
+
+/**
+ * ENG MUHIM QOIDA. Tiklash — eski ma'lumot ustiga yozish demak. Agar skript
+ * avval eski bazani o'chirib, keyin tiklashda yiqilsa, laboratoriya butun
+ * tarixini yo'qotadi. Shuning uchun eski baza O'CHIRILMAYDI — nomi
+ * o'zgartirib saqlab qo'yiladi va xato bo'lsa o'z joyiga qaytariladi.
+ */
+test('tiklash eski bazani o‘chirmaydi, saqlab qo‘yadi', () => {
+  const text = fs.readFileSync(
+    path.join(config.root, 'deploy', 'windows', 'tiklash.ps1'), 'utf8');
+
+  assert.match(text, /ALTER DATABASE .*RENAME TO/,
+    'eski baza nom o‘zgartirib saqlanmaydi');
+
+  // BAJARILADIGAN DROP DATABASE faqat o'zimiz yaratgan nishonga nisbatan
+  // bo'lishi mumkin. Izohlar va ekranga chiqariladigan maslahat satrlari
+  // (Write-Host) hisobga olinmaydi — ular hech narsa o'chirmaydi.
+  const dropLines = text.split('\n')
+    .map((l, i) => [i + 1, l])
+    .filter(([, l]) => /DROP DATABASE/.test(l))
+    .filter(([, l]) => !l.trim().startsWith('#') && !/Write-Host|Note\s/.test(l));
+  for (const [no, l] of dropLines) {
+    assert.match(l, /\$target/,
+      `${no}-satr ishlab turgan bazani o‘chirib yuborishi mumkin: ${l.trim()}`);
+  }
+  assert.ok(dropLines.length > 0,
+    'nazorat: bajariladigan DROP umuman topilmadi — test o‘z ishini qilmayapti');
+
+  // Xato bo'lsa eski baza qaytarilishi kerak
+  assert.match(text, /RENAME TO .*dbName/,
+    'tiklash yiqilsa eski baza o‘z joyiga qaytarilmaydi');
+});
+
+/** Tiklangandan keyin ma'lumot va audit himoyasi tekshirilishi shart. */
+test('tiklashdan keyin natija tekshiriladi', () => {
+  const text = fs.readFileSync(
+    path.join(config.root, 'deploy', 'windows', 'tiklash.ps1'), 'utf8');
+  assert.match(text, /pg_trigger/, 'audit himoyasi tiklangani tekshirilmaydi');
+  assert.match(text, /count\(\*\) FROM \$t/, 'tiklangan qatorlar sanalmaydi');
+  assert.match(text, /api\/health/, 'server qaytib ishlagani tekshirilmaydi');
+});
+
 /** Skript erta chiqsa ham oyna kutib turadi. */
 test('tekshiruv va tuzatish oynasi o‘zi yopilmaydi', () => {
   for (const f of [
