@@ -3,6 +3,34 @@
 Bu shoxobcha faqat tayyor to'plamni saqlash uchun. Kod
 `claude/lab-management-system-ipsi88` shoxobchasida.
 
+## 🎬 MIJOZGA KO'RSATISH UCHUN
+
+[**LabCore-TANISHTIRUV.html**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-TANISHTIRUV.html) — 9.6 MB
+
+Yuklab olib **ikki marta bosing** — brauzerda ochiladi. **Oltita video** va
+**30 ta ekran rasmi** faylning ichida keladi: internet kerak emas, fleshkada
+olib borsangiz ham ishlaydi.
+
+| Video | Uzunligi | Nima ko'rsatiladi |
+|---|---|---|
+| Kundalik ish | 59 son. | PIN bilan kirish → bemor → natija kiritish → tasdiqlash |
+| Shifokor xulosasi | 23 son. | Tasdiqlangan natijalar, tashxis va tavsiya |
+| Kassa va qarzdorlar | 22 son. | To'lov, kunlik yakun, qarzdorlar ro'yxati |
+| Rahbar nazorati | 48 son. | Audit jurnali, ish nazorati, statistika, davomat |
+| Sozlash va boshqaruv | 41 son. | Xodimlar, katalog, ombor, analizatorlar, kameralar |
+| Telefondagi panel | 19 son. | Rahbar paneli telefon ekranida |
+
+Videolarni alohida yuborish kerak bo'lsa (Telegram, taqdimot):
+
+[**LabCore-TANISHTIRUV.zip**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-TANISHTIRUV.zip) — 14 MB
+— ichida 6 ta MP4 va 30 ta PNG alohida fayl sifatida.
+
+> Videolardagi hamma narsa **ishlab turgan dasturdan** olingan — chizma ham,
+> montaj ham yo'q. Namuna sifatida "Shifo Lab diagnostika markazi" nomli
+> laboratoriya va o'ylab topilgan bemor ma'lumotlari ishlatilgan.
+
+---
+
 ## ⬇ TO'LIQ DASTUR — birinchi marta o'rnatish uchun
 
 [**LabCore-toliq.zip**](https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-toliq.zip) — **81 MB, 4-nashr**
@@ -239,9 +267,18 @@ LabCore-DASTUR.exe     6c407448f4d0a708dddfd46120923fdb51ae3cc79ecea5f2ad0f29b8a
 LabCore-TUZATISH.zip   2df91b05056d32f44e2a549a17b01c2a25d2ecbe7e6abcaad19b68b6dfe94c1d
 LabCore-YANGILASH.zip  8b4c0650eeb3364cc6d18837db1e6001a75fa95477a6fea90b511b68859cded5
 LabCore-HAMMASI.html   e1b6bbdc1873e8b42949c8788fb9229668e2cd26e6ccd37aa59e74d6270d15a6
+LabCore-TANISHTIRUV.html  9d0e553b403b2f6154de3effb324013130456eb3b5284b50e4d8b92edae030dc
+LabCore-TANISHTIRUV.zip   b3cb926d121b0ec3559d50f553c8a05003fd741a81bad3c26b1db70e4e585a44
 ```
 
 ## Tuzatishlar tarixi
+
+**2026-08-18.** Mijozga ko'rsatish uchun `LabCore-TANISHTIRUV.html` qo'shildi:
+oltita video (3.5 daqiqa) va 30 ta ekran rasmi bitta faylda. Videolar
+Playwright bilan **ishlab turgan dasturni boshqarib** yozib olingan — har bir
+bosish, har bir raqam haqiqiy. Demo ma'lumot (12 bemor, 12 buyurtma, 42 natija,
+3 analizator, 3 kamera) haqiqiy API orqali kiritilgan, shuning uchun audit
+jurnali ham o'z-o'zidan to'lgan.
 
 **2026-08-06 (to'liq arxiv qayta yig'ildi).** `LabCore-toliq.zip` boshidan
 qayta yasaldi: server kodi, interfeys, baza sxemasi, testlar va ish
