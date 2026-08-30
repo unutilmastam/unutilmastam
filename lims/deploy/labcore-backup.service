@@ -1,0 +1,8 @@
+[Unit]
+Description=LabCore kunlik zaxira nusxa
+
+[Service]
+Type=oneshot
+User=labcore
+WorkingDirectory=/opt/labcore
+ExecStart=/opt/labcore/scripts/backup.sh

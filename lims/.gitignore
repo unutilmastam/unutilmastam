@@ -1,0 +1,10 @@
+node_modules/
+data/
+data-demo/
+backups/
+.env
+*.log
+
+# Windows dasturi
+desktop/node_modules/
+desktop/dist/

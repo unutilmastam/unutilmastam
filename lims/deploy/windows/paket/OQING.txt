@@ -1,0 +1,148 @@
+================================================================
+   LabCore — laboratoriya boshqaruv tizimi
+   3-nashr · internetsiz o'rnatiladi
+================================================================
+
+  INTERNETSIZ O'RNATISH — nimalarni fleshkaga yig'ish kerak
+
+  Kompyuteringizda internet bo'lmasa, telefonda yoki internet bor
+  boshqa kompyuterda UCHTA faylni yuklab oling va fleshkaga soling:
+
+     1) LabCore-toliq.zip          (shu arxivning o'zi, 77 MB)
+        https://github.com/unutilmastam/unutilmastam/raw/yuklab-olish/LabCore-toliq.zip
+
+     2) Node.js LTS                (~30 MB)
+        https://nodejs.org/dist/v22.20.0/node-v22.20.0-x64.msi
+
+     3) PostgreSQL                 (~350 MB)
+        https://www.postgresql.org/download/windows/
+        "Download the installer" -> Windows x86-64
+
+  Boshqa hech narsa kerak emas. Kutubxonalar shu arxiv ichida keladi —
+  o'rnatish paytida internet SO'RALMAYDI.
+
+  DIQQAT: internetdan "chocolatey" o'rnatadigan buyruqlarni ishlatmang
+  (choco install ...). Ular internet talab qiladi va bizga kerak emas.
+
+
+----------------------------------------------------------------
+  1-QADAM. Node.js
+----------------------------------------------------------------
+
+  node-v22.20.0-x64.msi -> ikki marta bosing -> Next - Next - Install.
+  Hech narsani o'zgartirmang.
+
+
+----------------------------------------------------------------
+  2-QADAM. PostgreSQL
+----------------------------------------------------------------
+
+  Yuklab olingan faylni ishga tushiring -> Next.
+
+  * "postgres" foydalanuvchisiga PAROL so'raydi.
+    SHU PAROLNI YOZIB QO'YING — 3-qadamda kerak bo'ladi.
+  * Port: 5432 (o'zgartirmang).
+  * Oxirida "Stack Builder" oynasi ochiladi ->
+    CANCEL (ruscha "Otmena") bosing.
+    U internetdan qo'shimcha dastur yuklaydi, LabCore uchun kerak emas.
+
+  Ikkalasidan keyin kompyuterni QAYTA YOQING.
+
+
+----------------------------------------------------------------
+  3-QADAM. LabCore
+----------------------------------------------------------------
+
+  Arxivni C:\ diskiga chiqaring (o'ng tugma -> Extract All).
+
+  "ORNATISH.bat" -> O'NG TUGMA -> "Run as administrator"
+
+  Skript PostgreSQL parolini so'raydi, qolganini o'zi qiladi.
+  5-10 daqiqa kutasiz. Oxirida ekranda chiqadi:
+
+        Server manzili : https://192.168.1.XX:4000
+        login: admin       parol: Admin12345
+
+  SERVER MANZILINI YOZIB OLING — xodim kompyuterlariga va
+  telefonga aynan shu manzil kiritiladi.
+
+  Ish stolida ikkita belgicha paydo bo'ladi:
+     LabCore                      - tizimning o'zi
+     LabCore - telefonga ulash    - QR kod sahifasi
+
+  Kompyuter yoqilganda LabCore endi o'zi ochiladi.
+
+
+----------------------------------------------------------------
+  4-QADAM. Xodim kompyuterlari
+----------------------------------------------------------------
+
+  "LabCore-DASTUR.exe" ni har bir xodim kompyuteriga ko'chiring
+  (fleshka yoki tarmoq orqali) va ishga tushiring. O'rnatish shart emas.
+
+  Birinchi ochilganda server manzilini so'raydi -> 3-qadamda
+  yozib olgan manzilni kiriting -> "Ulanishni tekshirish" ->
+  laboratoriya nomi chiqsa -> "Saqlash va davom etish".
+
+  Avtozapusk (kompyuter yoqilganda o'zi ochilishi) uchun shu
+  kompyuterda bir marta, PowerShell'ni administrator sifatida ochib:
+
+     powershell -ExecutionPolicy Bypass -File avtozapusk.ps1
+     powershell -ExecutionPolicy Bypass -File avtozapusk.ps1 -Off     (o'chirish)
+     powershell -ExecutionPolicy Bypass -File avtozapusk.ps1 -Status  (holati)
+
+  Skript shu yerda: server\deploy\windows\avtozapusk.ps1
+
+
+----------------------------------------------------------------
+  BIRINCHI ISHLAR (tizimga kirgandan keyin)
+----------------------------------------------------------------
+
+  1. Sozlamalar -> parolni almashtiring (Admin12345 hammaga ma'lum)
+  2. Xodimlar -> har bir xodimga alohida hisob oching
+       (umumiy hisob ishlatmang - audit jurnalining ma'nosi shunda)
+  3. Xodimlar -> "Rasm"        - xodim rasmini qo'ying
+  4. Xodimlar -> "PIN qo'yish" - qisqa kod bilan kirish uchun
+  5. Analiz katalogi -> o'z analizlaringiz va narxlaringizni kiriting
+
+
+----------------------------------------------------------------
+  BU NASHRDA YANGI
+----------------------------------------------------------------
+
+  * XODIM RASMI - kirish oynasida, "hozir kim ishlayapti"
+    ro'yxatida va davomatda ko'rinadi
+  * PIN KOD BILAN KIRISH - xodim rasmini bosib, 4-8 raqamli
+    shaxsiy kodini teradi (uzun parol terish shart emas)
+  * AVTOZAPUSK - kompyuter yoqilganda LabCore o'zi ochiladi
+
+  Eslatma: LabCore-DASTUR.exe fayli 2-nashrdan qolgan. Yangi
+  bo'limlarning hammasi unda ham ko'rinadi (u serverdagi
+  interfeysni ochadi); faqat dastur menyusidagi avtozapusk
+  belgisi yo'q - buning o'rniga avtozapusk.ps1 ishlatiladi.
+
+
+----------------------------------------------------------------
+  MUAMMO CHIQSA
+----------------------------------------------------------------
+
+  "Unable to resolve remote name" / "Nevozmojno razreshit imya"
+      -> internetga chiqmoqchi bo'lgan buyruq ishlatilyapti.
+         Yuqoridagi 3 qadamdan boshqa hech narsa kerak emas.
+
+  "Node.js topilmadi"
+      -> 1-qadam bajarilmagan yoki kompyuter qayta yoqilmagan.
+
+  "PostgreSQL topilmadi"
+      -> 2-qadam bajarilmagan yoki kompyuter qayta yoqilmagan.
+
+  "Unexpected token" (qizil xatolar)
+      -> eski nashr. Yuqoridagi havoladan qayta yuklab oling.
+
+  Server ishlayaptimi? -> HOLAT.bat
+
+
+  Batafsil hujjatlar:
+     server\docs\ornatish.md    - to'liq o'rnatish qo'llanmasi
+     server\docs\qollanma.html  - rasmli qo'llanma (brauzerda oching)
+     server\docs\uskuna-ulash.md, kamera-ulash.md

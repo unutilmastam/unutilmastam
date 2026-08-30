@@ -1,0 +1,22 @@
+{
+  "name": "LabCore — laboratoriya nazorati",
+  "short_name": "LabCore",
+  "description": "Laboratoriya boshqaruv tizimi: bemorlar, analizlar, xodimlar nazorati",
+  "lang": "uz",
+  "start_url": "./index.html#/mobile",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a5d57",
+  "theme_color": "#0d7d74",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Rahbar paneli", "url": "./index.html#/mobile" },
+    { "name": "Bemorlar", "url": "./index.html#/patients" },
+    { "name": "Ish nazorati", "url": "./index.html#/monitoring" }
+  ]
+}

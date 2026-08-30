@@ -1,0 +1,394 @@
+/**
+ * LabCore — Windows ish stansiyasi dasturi.
+ *
+ * Bu dastur laboratoriya serveridagi interfeysni ochadi va brauzerda
+ * bo'lmaydigan uchta narsani beradi:
+ *
+ *   1. Kompyuterning HAQIQIY nomi (os.hostname) har bir so'rovga
+ *      X-Computer-Name sarlavhasi bilan qo'shiladi — audit jurnalida
+ *      "LAB-PC-02" aniq ko'rinadi, taxminiy nom emas.
+ *   2. Server manzili bir marta sozlanadi va saqlanadi; xodim har safar
+ *      manzil terib o'tirmaydi.
+ *   3. Chop etish, shtrix-kod skaneri va to'liq ekran rejimi tizim
+ *      darajasida ishlaydi; F5/Ctrl+P kabi tugmalar sozlangan.
+ *   4. Kompyuter yoqilganda dastur o'zi ochiladi (avtozapusk) — laborant
+ *      ertalab hech narsa qidirmaydi, ekranda LabCore turadi.
+ */
+
+const { app, BrowserWindow, session, dialog, Menu, shell } = require('electron');
+const os = require('node:os');
+const fs = require('node:fs');
+const https = require('node:https');
+const http = require('node:http');
+const path = require('node:path');
+
+const CONFIG_FILE = path.join(app.getPath('userData'), 'labcore.json');
+const COMPUTER_NAME = (process.env.LABCORE_STATION || os.hostname() || 'WINDOWS-PC')
+  .toUpperCase()
+  .slice(0, 100);
+
+function readConfig() {
+  try {
+    return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+function writeConfig(patch) {
+  const next = { ...readConfig(), ...patch };
+  fs.mkdirSync(path.dirname(CONFIG_FILE), { recursive: true });
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(next, null, 2));
+  return next;
+}
+
+// ---------------------------------------------------------------------------
+// Avtozapusk — kompyuter yoqilganda dastur o'zi ochilsin
+// ---------------------------------------------------------------------------
+
+/**
+ * Windows'da bu ro'yxatga qo'shish HKCU\...\Run kalitiga yoziladi, ya'ni
+ * administrator huquqi kerak emas va faqat shu foydalanuvchiga tegishli.
+ * Linux/Mac'da Electron o'zining tegishli mexanizmini ishlatadi.
+ */
+function isAutoStart() {
+  try {
+    return app.getLoginItemSettings({ path: process.execPath }).openAtLogin === true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Sozlashdan keyin natija QAYTA O'QIB tekshiriladi. Ba'zi tizimlarda
+ * (masalan qulflangan siyosatli kompyuterlarda) yozuv jimgina o'tmasligi
+ * mumkin — u holda xodim "yoqdim" deb o'ylab qolmasligi kerak.
+ */
+function setAutoStart(enabled) {
+  let err = null;
+  try {
+    app.setLoginItemSettings({
+      openAtLogin: !!enabled,
+      path: process.execPath,
+      args: ['--labcore-autostart'],
+    });
+  } catch (e) {
+    err = e;
+  }
+
+  const actual = isAutoStart();
+  writeConfig({ autoStart: actual });
+
+  if (actual !== !!enabled) {
+    dialog.showMessageBox({
+      type: 'warning',
+      title: 'Avtozapusk',
+      message: enabled
+        ? 'Avtomatik ishga tushirishni yoqib bo‘lmadi'
+        : 'Avtomatik ishga tushirishni o‘chirib bo‘lmadi',
+      detail:
+        (err ? err.message + '\n\n' : '') +
+        'Buni qo\'lda qilish mumkin:\n' +
+        '  Windows: Win+R -> shell:startup -> shu papkaga dastur yorlig\'ini qo\'ying\n' +
+        '  yoki deploy\\windows\\avtozapusk.ps1 skriptini ishga tushiring.',
+    });
+    return false;
+  }
+  return true;
+}
+
+let win = null;
+
+function createWindow(serverUrl) {
+  win = new BrowserWindow({
+    width: 1400,
+    height: 900,
+    minWidth: 1024,
+    minHeight: 680,
+    title: 'LabCore',
+    icon: path.join(__dirname, 'icon.png'),
+    backgroundColor: '#f4f6f9',
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      spellcheck: false,
+      // Kompyuter nomi preload'ga shu argument orqali yetkaziladi.
+      additionalArguments: [`--labcore-station=${COMPUTER_NAME}`],
+    },
+  });
+
+  // Har bir so'rovga ish stansiyasi nomini qo'shamiz — audit uchun.
+  // Sahifa o'zi ham x-computer-name yuborishi mumkin; ikkita sarlavha
+  // bo'lib qolmasligi uchun avval har qanday registrdagi nusxani olib tashlaymiz.
+  session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
+    const headers = {};
+    for (const [key, value] of Object.entries(details.requestHeaders)) {
+      if (key.toLowerCase() !== 'x-computer-name') headers[key] = value;
+    }
+    headers['X-Computer-Name'] = COMPUTER_NAME;
+    callback({ requestHeaders: headers });
+  });
+
+  win.once('ready-to-show', () => win.show());
+
+  // Laboratoriya serverining sertifikati o'z-o'zini imzolagan bo'ladi
+  // (ichki tarmoqda boshqa iloji yo'q). Uni ko'r-ko'rona qabul qilmaymiz:
+  // faqat sozlangan server manzili uchun va xodim bir marta tasdiqlagandan
+  // keyin ruxsat beramiz. Barmoq izi saqlanadi — keyin almashsa yana so'raladi.
+  win.webContents.on('certificate-error', (event, url, error, certificate, callback) => {
+    const expected = new URL(serverUrl).host;
+    let host;
+    try { host = new URL(url).host; } catch { host = ''; }
+
+    if (host !== expected) return callback(false);   // boshqa sayt — rad etamiz
+
+    const cfg = readConfig();
+    if (cfg.trustedFingerprint && cfg.trustedFingerprint === certificate.fingerprint) {
+      event.preventDefault();
+      return callback(true);
+    }
+
+    const choice = dialog.showMessageBoxSync(win, {
+      type: 'warning',
+      title: 'Server sertifikati',
+      message: `Server sertifikati rasmiy markaz tomonidan imzolanmagan.`,
+      detail:
+        `Server: ${expected}\n` +
+        `Sertifikat: ${certificate.subjectName || '—'}\n` +
+        `Barmoq izi: ${certificate.fingerprint}\n\n` +
+        'Bu laboratoriyaning ichki serveri bo\'lsa — normal holat.\n' +
+        'Manzil notanish bo\'lsa — "Rad etish" ni bosing.',
+      buttons: ['Ishonaman (eslab qol)', 'Rad etish'],
+      defaultId: 0,
+      cancelId: 1,
+    });
+
+    if (choice === 0) {
+      writeConfig({ trustedFingerprint: certificate.fingerprint });
+      event.preventDefault();
+      callback(true);
+    } else {
+      callback(false);
+    }
+  });
+
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    // Natija blankasi va chek alohida oynada ochiladi (chop etish uchun).
+    if (url.startsWith(serverUrl) || url.startsWith('about:blank')) return { action: 'allow' };
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
+
+  win.loadURL(serverUrl).catch(() => showConnectionError(serverUrl));
+
+  win.webContents.on('did-fail-load', (_e, code, desc, failedUrl) => {
+    if (failedUrl === serverUrl || failedUrl.startsWith(serverUrl)) {
+      showConnectionError(serverUrl, `${desc} (${code})`);
+    }
+  });
+}
+
+function showConnectionError(serverUrl, detail = '') {
+  const choice = dialog.showMessageBoxSync({
+    type: 'error',
+    title: 'Serverga ulanib bo‘lmadi',
+    message: `Laboratoriya serveriga ulanib bo‘lmadi:\n${serverUrl}\n\n${detail}`,
+    detail:
+      'Tekshiring:\n' +
+      '  • server kompyuteri yoqilganmi\n' +
+      '  • tarmoq kabeli / Wi-Fi ulanganmi\n' +
+      '  • server manzili to‘g‘ri kiritilganmi',
+    buttons: ['Qayta urinish', 'Manzilni o‘zgartirish', 'Chiqish'],
+    defaultId: 0,
+    cancelId: 2,
+  });
+
+  if (choice === 0) win?.loadURL(serverUrl).catch(() => showConnectionError(serverUrl));
+  else if (choice === 1) { writeConfig({ serverUrl: null }); app.relaunch(); app.exit(0); }
+  else app.exit(0);
+}
+
+/** Birinchi ishga tushirishda server manzilini so'raymiz. */
+function askServerUrl() {
+  const setupWin = new BrowserWindow({
+    width: 460,
+    height: 470,
+    resizable: false,
+    title: 'LabCore — sozlash',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      additionalArguments: [`--labcore-station=${COMPUTER_NAME}`],
+    },
+  });
+  setupWin.setMenu(null);
+  setupWin.loadFile(path.join(__dirname, 'setup.html'), {
+    query: { station: COMPUTER_NAME },
+  });
+  return setupWin;
+}
+
+function buildMenu(serverUrl) {
+  Menu.setApplicationMenu(Menu.buildFromTemplate([
+    {
+      label: 'Fayl',
+      submenu: [
+        { label: 'Chop etish', accelerator: 'CmdOrCtrl+P', click: () => win?.webContents.print() },
+        { type: 'separator' },
+        { label: 'Chiqish', role: 'quit' },
+      ],
+    },
+    {
+      label: 'Ko‘rinish',
+      submenu: [
+        { label: 'Yangilash', accelerator: 'F5', click: () => win?.reload() },
+        { label: 'To‘liq ekran', accelerator: 'F11', role: 'togglefullscreen' },
+        { type: 'separator' },
+        { label: 'Kattalashtirish', role: 'zoomIn' },
+        { label: 'Kichiklashtirish', role: 'zoomOut' },
+        { label: 'Odatiy o‘lcham', role: 'resetZoom' },
+      ],
+    },
+    {
+      label: 'Sozlamalar',
+      submenu: [
+        {
+          label: 'Kompyuter yoqilganda avtomatik ochilsin',
+          type: 'checkbox',
+          checked: isAutoStart(),
+          click: (item) => {
+            if (setAutoStart(item.checked)) {
+              // Menyuni qayta yig'amiz — belgi haqiqiy holatni ko'rsatsin.
+              buildMenu(serverUrl);
+            } else {
+              item.checked = isAutoStart();
+            }
+          },
+        },
+        {
+          label: 'Server manzilini o‘zgartirish',
+          click: () => { writeConfig({ serverUrl: null }); app.relaunch(); app.exit(0); },
+        },
+      ],
+    },
+    {
+      label: 'Yordam',
+      submenu: [
+        {
+          label: 'Tizim haqida',
+          click: () => dialog.showMessageBox({
+            type: 'info',
+            title: 'LabCore',
+            message: 'LabCore — laboratoriya ish stansiyasi',
+            detail:
+              `Ish stansiyasi: ${COMPUTER_NAME}\n` +
+              `Server: ${serverUrl}\n` +
+              `Versiya: ${app.getVersion()}\n` +
+              `Avtozapusk: ${isAutoStart() ? 'yoqilgan' : 'o‘chirilgan'}\n\n` +
+              'Bu kompyuterdagi har bir amal audit jurnaliga yoziladi.',
+          }),
+        },
+        { label: 'Dasturchi vositalari', accelerator: 'F12', click: () => win?.webContents.toggleDevTools() },
+      ],
+    },
+  ]));
+}
+
+// Avtozapusk va ish stoli yorlig'i birga ishlaganda dastur ikki marta
+// ochilib qolmasin — ikkinchi nusxa birinchisining oynasini ko'taradi.
+if (!app.requestSingleInstanceLock()) {
+  app.exit(0);
+} else {
+  app.on('second-instance', () => {
+    if (!win) return;
+    if (win.isMinimized()) win.restore();
+    win.focus();
+  });
+}
+
+app.whenReady().then(() => {
+  const cfg = readConfig();
+  const { ipcMain } = require('electron');
+  ipcMain.handle('labcore:test-server', (_e, url) => checkServer(url));
+  // Sozlash oynasi uchun: xodim hali tanlamagan bo'lsa undefined qaytadi va
+  // oynada belgi yoqilgan holda turadi (tavsiya etiladigan holat).
+  ipcMain.handle('labcore:get-autostart', () => readConfig().autoStart ?? (isAutoStart() || undefined));
+  ipcMain.handle('labcore:set-autostart', (_e, on) => { setAutoStart(on); return isAutoStart(); });
+
+  if (!cfg.serverUrl) {
+    const setupWin = askServerUrl();
+    ipcMain.handle('labcore:save-server', (_e, url, options = {}) => {
+      writeConfig({ serverUrl: url });
+      // Birinchi sozlashda avtozapusk odatda kerak bo'ladi, lekin qaror
+      // xodimda qoladi: sozlash oynasidagi belgi shu yerga keladi.
+      if (options.autoStart !== undefined) setAutoStart(options.autoStart);
+      setupWin.close();
+      buildMenu(url);
+      createWindow(url);
+      return true;
+    });
+    return;
+  }
+
+  buildMenu(cfg.serverUrl);
+  createWindow(cfg.serverUrl);
+});
+
+/**
+ * Serverni tekshirish. Oddiy fetch ishlatilmaydi: laboratoriya serverining
+ * sertifikati o'z-o'zini imzolagan bo'lib, fetch uni darhol rad etadi va
+ * xodim "server ishlamayapti" deb o'ylab qoladi.
+ */
+function checkServer(url) {
+  return new Promise((resolve) => {
+    let target;
+    try { target = new URL('/api/health', url); } catch { return resolve({ ok: false, error: 'Manzil noto‘g‘ri' }); }
+
+    const client = target.protocol === 'https:' ? https : http;
+    const req = client.request(
+      target,
+      { timeout: 5000, rejectUnauthorized: false },   // sertifikat pastda alohida tekshiriladi
+      (res) => {
+        // Sertifikat holatini SHU YERDA o'qib olamiz: javob tugaganda
+        // res.socket allaqachon null bo'lib qoladi.
+        const selfSigned = target.protocol === 'https:' && res.socket?.authorized === false;
+
+        let data = '';
+        res.on('data', (c) => { data += c; });
+        res.on('end', () => {
+          let body;
+          try {
+            body = JSON.parse(data);
+          } catch {
+            return resolve({ ok: false, error: `Server tushunarsiz javob qaytardi (kod ${res.statusCode})` });
+          }
+          if (body.ok) return resolve({ ok: true, lab: body.lab || null, selfSigned });
+
+          // Server javob berdi, lekin o'zini sog'lom deb hisoblamayapti.
+          // Sababini ko'rsatmasak, xodim "server javob bermadi" degan
+          // mazmunsiz xabarni ko'radi va nima qilishni bilmaydi.
+          resolve({
+            ok: false,
+            error:
+              `Server ishlayapti, lekin bazaga ulana olmayapti (kod ${res.statusCode}).` +
+              (body.error ? `\n${body.error}` : '') +
+              '\nServer kompyuterda TEKSHIR.bat ni ishga tushiring.',
+          });
+        });
+      },
+    );
+    req.on('timeout', () => { req.destroy(); resolve({ ok: false, error: 'Server javob bermadi (5 soniya)' }); });
+    req.on('error', (err) => resolve({ ok: false, error: err.message }));
+    req.end();
+  });
+}
+
+app.on('window-all-closed', () => app.quit());
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    const cfg = readConfig();
+    if (cfg.serverUrl) createWindow(cfg.serverUrl);
+  }
+});
