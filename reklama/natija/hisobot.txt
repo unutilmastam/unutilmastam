@@ -1,0 +1,13 @@
+Ovoz: uz-UZ-SardorNeural  tezlik -4%  ohang -2Hz
+
+  #   boshl.   asl     tezl.   natija  oyna   holat
+  1    0.30s   2.08s  x1.00   2.08s  3.55s  OK
+  2    3.90s   2.25s  x1.00   2.25s  3.75s  OK
+  3    7.70s   2.01s  x1.00   2.01s  4.45s  OK
+  4   12.10s   1.61s  x1.00   1.61s  4.05s  OK
+  5   16.20s   1.84s  x1.00   1.84s  3.85s  OK
+  6   20.10s   3.48s  x1.00   3.48s  4.65s  OK
+  7   24.80s   1.34s  x1.00   1.34s  2.65s  OK
+  8   27.03s   3.46s  x1.22   2.85s  2.70s  OK (boshi +0.42s oldinroq)
+
+Tayyor: /home/runner/work/unutilmastam/unutilmastam/reklama/out/unutilmastam-reklama-30s-ovozli.mp4  (30.00 s)
