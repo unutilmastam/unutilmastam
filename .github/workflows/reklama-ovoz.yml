@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write   # tayyor videoni shu branch'ga qaytarib saqlash uchun
 
 jobs:
   build:
@@ -33,7 +33,10 @@ jobs:
 
       - name: Diktor ovozi + musiqa + video
         working-directory: reklama
-        run: python build.py
+        run: |
+          set -o pipefail
+          mkdir -p out
+          python build.py 2>&1 | tee out/hisobot.txt
 
       - uses: actions/upload-artifact@v4
         with:
@@ -42,3 +45,16 @@ jobs:
             reklama/out/unutilmastam-reklama-30s-ovozli.mp4
             reklama/out/faqat-diktor.mp3
           retention-days: 30
+
+      # Natijani shu branch'ga ham saqlaymiz — artifact yuklab bo'lmaydigan
+      # joylardan ham git orqali olish mumkin bo'lsin.
+      # GITHUB_TOKEN bilan qilingan commit yangi ishga tushirishni boshlamaydi.
+      - name: Natijani branch'ga saqlash
+        run: |
+          mkdir -p reklama/natija
+          cp reklama/out/unutilmastam-reklama-30s-ovozli.mp4 reklama/out/faqat-diktor.mp3 reklama/out/hisobot.txt reklama/natija/
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reklama/natija
+          git commit -m "Reklama: ovozli video tayyor [skip ci]" || echo "o'zgarish yo'q"
+          git push
