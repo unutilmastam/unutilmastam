@@ -1,0 +1,44 @@
+# Unutilmas Ta'm — reklamaga o'zbekcha erkak diktor ovozini qo'shadi.
+# Faqat "reklama-ovoz" branch'iga push bo'lganda (yoki qo'lda) ishlaydi.
+# main branch'ga va saytga HECH QANDAY ta'sir qilmaydi.
+name: Reklama — diktor ovozi
+
+on:
+  push:
+    branches: [reklama-ovoz]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: ffmpeg va edge-tts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          pip install -q "edge-tts>=6.1"
+
+      - name: O'zbekcha ovozlar ro'yxati (tekshiruv)
+        run: edge-tts --list-voices | grep -i "uz-UZ" || true
+
+      - name: Diktor ovozi + musiqa + video
+        working-directory: reklama
+        run: python build.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reklama-ovozli
+          path: |
+            reklama/out/unutilmastam-reklama-30s-ovozli.mp4
+            reklama/out/faqat-diktor.mp3
+          retention-days: 30

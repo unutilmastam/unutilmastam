@@ -1,0 +1,67 @@
+{
+  "title": "Unutilmas Ta'm — 30 soniyalik reklama",
+  "fps": 30,
+  "duration": 30.0,
+  "size": [
+    1080,
+    1920
+  ],
+  "lines": [
+    {
+      "i": 1,
+      "t0": 0.3,
+      "t1": 3.6,
+      "vo": "Har kuni yangi, uydek issiq taomlar.",
+      "sub": "Har kuni yangi, uydek issiq taomlar"
+    },
+    {
+      "i": 2,
+      "t0": 3.9,
+      "t1": 7.4,
+      "vo": "Endi buyurtma berish — bir necha bosish.",
+      "sub": "Endi buyurtma berish — bir necha bosish"
+    },
+    {
+      "i": 3,
+      "t0": 7.7,
+      "t1": 11.9,
+      "vo": "Katalogdan tanlang, savatga soling,",
+      "sub": "Katalogdan tanlang, savatga soling"
+    },
+    {
+      "i": 4,
+      "t0": 12.1,
+      "t1": 15.9,
+      "vo": "manzilni xaritada belgilang.",
+      "sub": "manzilni xaritada belgilang"
+    },
+    {
+      "i": 5,
+      "t0": 16.2,
+      "t1": 19.8,
+      "vo": "Kuryer eshigingizgacha yetkazadi.",
+      "sub": "Kuryer eshigingizgacha yetkazadi"
+    },
+    {
+      "i": 6,
+      "t0": 20.1,
+      "t1": 24.5,
+      "vo": "Magazin egalariga — ulgurji narx, qarz daftari, hisobot.",
+      "sub": "Magazin egalariga — ulgurji narx,\nqarz daftari, hisobot"
+    },
+    {
+      "i": 7,
+      "t0": 24.8,
+      "t1": 27.2,
+      "vo": "Hammasi bitta ilovada.",
+      "sub": "Hammasi bitta ilovada"
+    },
+    {
+      "i": 8,
+      "t0": 27.45,
+      "t1": 29.9,
+      "vo": "Unutilmas Ta'm. Unutilmastam nuqta u zet.",
+      "sub": "unutilmastam.uz"
+    }
+  ]
+}
