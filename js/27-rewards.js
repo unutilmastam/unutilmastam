@@ -191,7 +191,7 @@ function showGiftBox(code, g){
   }
   const conf = [];
   for(let i = 0; i < 40; i++){
-    const c = ['#EA5A1F', '#F7A928', '#3cc46b', '#39d0ff', '#ff5ad2'][i % 5];
+    const c = ['#AC6437', '#C5933D', '#528F53', '#6594B3', '#AF6A84'][i % 5];
     conf.push(`<i style="left:${Math.random()*100}%;background:${c};
       animation-delay:${(Math.random()*0.5).toFixed(2)}s;
       transform:rotate(${Math.floor(Math.random()*360)}deg)"></i>`);

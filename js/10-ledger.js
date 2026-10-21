@@ -131,13 +131,13 @@ function openLedgerDetail(ledgerId){
 function debtRowHtml(l){
   const today = todayISO();
   const overdue = l.due && l.due < today;
-  return `<div class="card debtRow" style="${overdue?'background:#FFF6F5;':''}">
+  return `<div class="card debtRow" style="${overdue?'background:#FCF8F8;':''}">
     <div class="row">
       <div class="title">${l.partyName}</div>
       <span class="badge red" style="${overdue?'animation:pulseSoft 2.2s ease-in-out infinite;':''}">${fmt(l.debt)} so'm</span>
     </div>
     ${itemChipsHtml(l.items)}
-    <div class="meta" style="margin-top:8px;">Muddat: ${l.due||'—'} ${overdue?' · <b style="color:#EF4B62;">Muddati o\'tgan!</b>':''}</div>
+    <div class="meta" style="margin-top:8px;">Muddat: ${l.due||'—'} ${overdue?' · <b style="color:#C9454E;">Muddati o\'tgan!</b>':''}</div>
   </div>`;
 }
 

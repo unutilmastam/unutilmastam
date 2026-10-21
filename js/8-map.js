@@ -45,7 +45,7 @@ function renderCustomerHeatmap(){
   heatmapInstance.__markers = cellList.map(c=>{
     const intensity = c.count/maxCount;
     const radius = 14 + intensity*24;
-    const color = intensity>.66 ? '#F03E3E' : intensity>.33 ? '#F7A928' : '#2FA968';
+    const color = intensity>.66 ? '#C83C45' : intensity>.33 ? '#C5933D' : '#447A47';
     return L.marker([c.lat,c.lng], {icon: L.divIcon({className:'', html:`<div style="width:${radius}px;height:${radius}px;border-radius:50%;background:${color};opacity:.55;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;">${c.count}</div>`})}).addTo(heatmapInstance);
   });
   setTimeout(()=>{ try{ heatmapInstance.invalidateSize(); }catch(e){} }, 200);
@@ -67,7 +67,7 @@ function pinDivIcon(color){
 }
 
 function userPinDivIcon(){
-  const svg = `<svg width="30" height="38" viewBox="0 0 30 38"><path d="M15 1C7.3 1 1 7.2 1 14.8 1 25 15 37 15 37s14-12 14-22.2C29 7.2 22.7 1 15 1z" fill="#7C4DD8" stroke="#fff" stroke-width="2"/><circle cx="15" cy="12" r="3.4" fill="none" stroke="#fff" stroke-width="2"/><path d="M8.5 22c1.2-3.4 3.7-5 6.5-5s5.3 1.6 6.5 5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>`;
+  const svg = `<svg width="30" height="38" viewBox="0 0 30 38"><path d="M15 1C7.3 1 1 7.2 1 14.8 1 25 15 37 15 37s14-12 14-22.2C29 7.2 22.7 1 15 1z" fill="#925E78" stroke="#fff" stroke-width="2"/><circle cx="15" cy="12" r="3.4" fill="none" stroke="#fff" stroke-width="2"/><path d="M8.5 22c1.2-3.4 3.7-5 6.5-5s5.3 1.6 6.5 5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>`;
   return L.divIcon({html:svg, className:'pinIcon', iconSize:[30,38], iconAnchor:[15,36], popupAnchor:[0,-32]});
 }
 
@@ -82,7 +82,7 @@ function recenterMap(isFull){
       if(btn) btn.classList.remove('locating');
       const {latitude, longitude} = pos.coords;
       map.setView([latitude, longitude], 15, {animate:true});
-      const dotIcon = L.divIcon({html:'<div style="width:16px;height:16px;border-radius:50%;background:#2F8FE0;border:3px solid #fff;box-shadow:0 0 0 5px rgba(47,143,224,.28);"></div>', className:'', iconSize:[16,16], iconAnchor:[8,8]});
+      const dotIcon = L.divIcon({html:'<div style="width:16px;height:16px;border-radius:50%;background:#547EA0;border:3px solid #fff;box-shadow:0 0 0 5px rgba(84,126,160,.28);"></div>', className:'', iconSize:[16,16], iconAnchor:[8,8]});
       if(isFull){
         if(myLocMarkerFull) map.removeLayer(myLocMarkerFull);
         myLocMarkerFull = L.marker([latitude,longitude], {icon:dotIcon, zIndexOffset:3000}).addTo(map);

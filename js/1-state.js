@@ -433,18 +433,18 @@ let sdPickerOpen = false;
 
 /* ---- Premium item chips & money pills ---- */
 const CHIP_TINTS=[
-  ['#FBE9DD','#B8430F'],
-  ['#E7F6EE','#1E7A4B'],
-  ['#E8F1FE','#0A5FCC'],
-  ['#F3EDFE','#6D3FC8'],
-  ['#FCF3DE','#9C640F'],
-  ['#E6F7F6','#0E7C74'],
-  ['#FDEBEC','#C22B2B']
+  ['#F4EBE4','#834B29'],
+  ['#EBF2EB','#2F5731'],
+  ['#EFF3F7','#406381'],
+  ['#F8F3F5','#80576B'],
+  ['#F5EFE5','#725728'],
+  ['#EBF0F2','#294553'],
+  ['#F9EFF0','#913B41']
 ];
 
 let debtsAdminFilter = 'all';
 
-const QARZ_COLORS = ['#EA5A1F','#0A7AFF','#2FA968','#F7A928','#6D3FC8','#EF4B62','#0E7C74','#B8430F'];
+const QARZ_COLORS = ['#AC6437','#4F7BA0','#447A47','#C5933D','#80576B','#C9454E','#294553','#834B29'];
 
 /* ---- Admin: qarzdorga (buyurtmachiga) qarzi haqida xabar yuborish ---- */
 let debtMsgLedgerId = null;

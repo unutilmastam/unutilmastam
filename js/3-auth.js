@@ -798,9 +798,9 @@ function renderDebtsAdmin(){
     const totalSum = allDebts.reduce((s,l)=>s+l.debt,0);
     const overdueCount = allDebts.filter(l=>l.due && l.due<todayISO()).length;
     statBox.innerHTML = `
-      <div class="qarzStatPill" style="background:linear-gradient(135deg,#EA5A1F,#B8430F);"><div class="v">${allDebts.length}</div><div class="k">Qarzdorlar soni</div></div>
-      <div class="qarzStatPill" style="background:linear-gradient(135deg,#0A7AFF,#0A5FCC);"><div class="v">${fmt(totalSum)}</div><div class="k">Jami qarz, so'm</div></div>
-      <div class="qarzStatPill" style="background:linear-gradient(135deg,#EF4B62,#C22B2B);"><div class="v">${overdueCount}</div><div class="k">Muddati o'tgan</div></div>
+      <div class="qarzStatPill" style="background:linear-gradient(135deg,#AC6437,#834B29);"><div class="v">${allDebts.length}</div><div class="k">Qarzdorlar soni</div></div>
+      <div class="qarzStatPill" style="background:linear-gradient(135deg,#4F7BA0,#406381);"><div class="v">${fmt(totalSum)}</div><div class="k">Jami qarz, so'm</div></div>
+      <div class="qarzStatPill" style="background:linear-gradient(135deg,#C9454E,#913B41);"><div class="v">${overdueCount}</div><div class="k">Muddati o'tgan</div></div>
     `;
   }
   let rows = [...allDebts].sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999'));
@@ -815,7 +815,7 @@ function renderDebtsAdmin(){
         <div class="nm">${l.partyName}</div>
         <div class="sub">${l.ownerName?l.ownerName+' · ':''}${overdue?'Muddati o\'tgan!':(l.due?('Muddat: '+l.due):'Muddat belgilanmagan')}</div>
       </div>
-      <div class="amt" style="color:${overdue?'var(--danger)':'var(--terracotta-deep, #B8430F)'};">${fmt(l.debt)}<small>so'm qarz</small></div>
+      <div class="amt" style="color:${overdue?'var(--danger)':'var(--terracotta-deep, #834B29)'};">${fmt(l.debt)}<small>so'm qarz</small></div>
     </div>
   `;
   }).join('') || emptyHtml('check', debtsAdminFilter==='soon' ? 'Muddati yaqinlashgan qarz yo\'q' : 'Hech kim qarzdor emas');

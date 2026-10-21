@@ -42,8 +42,8 @@ function syncReceiptsFromLedger(){
 let prnMap = null, prnMarkers = {}, prnMarkerKey = '';
 
 function prnStoreColor(id){
-  if(typeof pickedStoreId !== 'undefined' && pickedStoreId === id) return '#1f9a4c';
-  return typeof storeStatusColor === 'function' ? storeStatusColor(id) : '#2F8FE0';
+  if(typeof pickedStoreId !== 'undefined' && pickedStoreId === id) return '#366C37';
+  return typeof storeStatusColor === 'function' ? storeStatusColor(id) : '#547EA0';
 }
 
 function initPrintMap(){

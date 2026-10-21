@@ -244,12 +244,12 @@ function openUsersModal(){
     const stActions = st==='pending' ? `
         <div class="storeApproveRow">
           <button class="primaryBtn" style="flex:1;padding:9px;font-size:12.5px;" onclick="approveStoreUser('${u.id}')">✓ Tasdiqlash</button>
-          <button class="ghostBtn" style="flex:1;padding:9px;font-size:12.5px;color:#EF4B62;" onclick="rejectStoreUser('${u.id}')">✕ Rad etish</button>
+          <button class="ghostBtn" style="flex:1;padding:9px;font-size:12.5px;color:#C9454E;" onclick="rejectStoreUser('${u.id}')">✕ Rad etish</button>
         </div>` : (st==='rejected' ? `
         <div class="storeApproveRow">
           <button class="ghostBtn" style="width:100%;padding:9px;font-size:12.5px;" onclick="resetStoreUser('${u.id}')">Qayta ko'rib chiqish</button>
         </div>` : '');
-    return `<div class="card" style="${u.blocked?'opacity:.6;border-color:var(--danger);':''}${st==='pending'?'border-color:#F0A24B;background:#FFFDF8;':''}">
+    return `<div class="card" style="${u.blocked?'opacity:.6;border-color:var(--danger);':''}${st==='pending'?'border-color:#C68049;background:#FFFDF8;':''}">
       <div class="row">
         <div style="display:flex;align-items:center;gap:10px;min-width:0;">
           <div class="avatarSm">${avatar}</div>
@@ -257,11 +257,11 @@ function openUsersModal(){
             <div class="title">${u.name} ${stBadge} ${u.verified?`<span class="verifiedTick" title="Tasdiqlangan">${ic('shieldCheck',13)}</span>`:''} ${u.blocked?'<span class="badge red" style="font-size:10px;padding:1px 6px;">Bloklangan</span>':''}</div>
             <div class="meta">${subMeta}</div>
             <div class="meta smallMuted">${u.personalId?('ID: '+u.personalId+' · '):''}IP: ${u.ipAddress||'aniqlanmagan'}</div>
-            ${typeof u.homeLat==='number'?`<div class="meta" style="color:#7C4DD8;font-weight:700;display:flex;align-items:center;gap:4px;">${ic('pin',11)} Ro'yxatda joylashuv belgilagan</div>`:''}
+            ${typeof u.homeLat==='number'?`<div class="meta" style="color:#925E78;font-weight:700;display:flex;align-items:center;gap:4px;">${ic('pin',11)} Ro'yxatda joylashuv belgilagan</div>`:''}
           </div>
         </div>
         <div style="display:flex;gap:4px;flex-shrink:0;">
-          ${typeof u.homeLat==='number'?`<button class="tinyIconBtn" style="background:#F0E9FC;" title="Xaritada ko'rish" onclick="showUserOnMap('${u.id}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7C4DD8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></button>`:''}
+          ${typeof u.homeLat==='number'?`<button class="tinyIconBtn" style="background:#F6EFF2;" title="Xaritada ko'rish" onclick="showUserOnMap('${u.id}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#925E78" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></button>`:''}
           <button class="tinyIconBtn" title="${u.blocked?'Blokdan chiqarish':'Bloklash'}" onclick="toggleBlockUser('${u.id}')">${ic(u.blocked?'shieldCheck':'block',15)}</button>
           <button class="tinyIconBtn danger" onclick="deleteUser('${u.id}')">${ic('trash',15)}</button>
         </div>
@@ -742,18 +742,18 @@ function renderLiveTracking(){
 
   if(hasCourier){
     if(!liveTrackCourierMarker){
-      liveTrackCourierMarker = L.marker([o.courierLat,o.courierLng], {icon: L.divIcon({className:'', html:'<div style="width:18px;height:18px;border-radius:50%;background:#2FA968;border:3px solid #fff;box-shadow:0 0 0 4px rgba(47,169,104,.3);"></div>'})}).addTo(liveTrackMap);
+      liveTrackCourierMarker = L.marker([o.courierLat,o.courierLng], {icon: L.divIcon({className:'', html:'<div style="width:18px;height:18px;border-radius:50%;background:#447A47;border:3px solid #fff;box-shadow:0 0 0 4px rgba(68,122,71,.3);"></div>'})}).addTo(liveTrackMap);
     } else {
       liveTrackCourierMarker.setLatLng([o.courierLat,o.courierLng]);
     }
   }
   if(hasDest && !liveTrackDestMarker){
-    liveTrackDestMarker = L.marker([o.lat,o.lng], {icon: L.divIcon({className:'', html:'<div style="width:16px;height:16px;border-radius:50% 50% 50% 0;background:#EA5A1F;border:3px solid #fff;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.3);"></div>'})}).addTo(liveTrackMap);
+    liveTrackDestMarker = L.marker([o.lat,o.lng], {icon: L.divIcon({className:'', html:'<div style="width:16px;height:16px;border-radius:50% 50% 50% 0;background:#AC6437;border:3px solid #fff;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.3);"></div>'})}).addTo(liveTrackMap);
   }
   if(hasCourier && hasDest){
     const coords = [[o.courierLat,o.courierLng],[o.lat,o.lng]];
     if(!liveTrackLine){
-      liveTrackLine = L.polyline(coords, {color:'#1C1712', weight:4, opacity:0.75, dashArray:'6,8'}).addTo(liveTrackMap);
+      liveTrackLine = L.polyline(coords, {color:'#161311', weight:4, opacity:0.75, dashArray:'6,8'}).addTo(liveTrackMap);
     } else {
       liveTrackLine.setLatLngs(coords);
     }

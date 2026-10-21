@@ -319,9 +319,9 @@ async function deleteStore(){
 }
 
 function storeStatusColor(storeId){
-  if(computeStoreDebt(storeId)>0) return '#EF4B62';
-  if(storeHasPendingOrder(storeId)) return '#FFB238';
-  return '#2F8FE0';
+  if(computeStoreDebt(storeId)>0) return '#C9454E';
+  if(storeHasPendingOrder(storeId)) return '#CB9D4D';
+  return '#547EA0';
 }
 
 function storeStatusBadgeHtml(storeId){
@@ -402,7 +402,7 @@ function renderStoreDetailShell(s, isNew){
           <option value="">— Yangi do'kon (ro'yxatdan o'tmagan) —</option>
           ${state.users.filter(u=>u.userType==='store' && !state.stores.some(s2=>s2.ownerUserId===u.id)).map(u=>`<option value="${u.id}">${u.name} — ${u.storeName||'nomsiz'}${typeof u.homeLat==='number'?' 📍':''}</option>`).join('')}
         </select>
-        <div id="sdOwnerLocNote" class="smallMuted" style="margin-top:6px;display:none;color:#7C4DD8;font-weight:700;"></div>
+        <div id="sdOwnerLocNote" class="smallMuted" style="margin-top:6px;display:none;color:#925E78;font-weight:700;"></div>
       </div>`:''}
       <div class="field"><label>Do'kon nomi</label><input id="sdStoreName" value="${isNew?'':(s.name||'')}" placeholder="Do'kon nomi" autocomplete="off"></div>
       <div class="field"><label>Do'kon egasining ism familyasi</label><input id="sdOwnerName" value="${isNew?'':(s.ownerName||'')}" placeholder="Ism va familiya" autocomplete="off"></div>

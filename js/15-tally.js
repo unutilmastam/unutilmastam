@@ -80,7 +80,7 @@ function tallyCardControls(p){
     </div>`;
   }
   return `<div class="cardActions2">
-      <button class="buyBtn2" onclick="event.stopPropagation();openProductDetail('${p.id}')" ${p.stock<=0?'disabled':''}>⚡ Sotib olish</button>
+      <button class="buyBtn2" onclick="event.stopPropagation();openProductDetail('${p.id}')" ${p.stock<=0?'disabled':''}>Sotib olish</button>
       <button class="quickAddBtn2" onclick="event.stopPropagation();cardPlus('${p.id}', event)">${ic('plus',16)}</button>
     </div>`;
 }
@@ -249,7 +249,7 @@ function renderSellView(mode){
       : (isBack
         ? `<button class="primaryBtn dangerBtn" style="width:100%;margin-top:12px;" onclick="tallyDoReturn()">Qaytarilgan deb belgilash</button>`
         : `<button class="primaryBtn" style="width:100%;margin-top:12px;" onclick="tallyDoSell()">Sotish</button>`)}
-    <button class="ghostBtn" style="width:100%;margin-top:9px;color:#EF4B62;" onclick="clearTally()">Tozalash</button>`;
+    <button class="ghostBtn" style="width:100%;margin-top:9px;color:#C9454E;" onclick="clearTally()">Tozalash</button>`;
 }
 
 function renderRestockView(){
@@ -873,8 +873,8 @@ function renderPreorderNote(p){
 
     /* Telegram sarlavha rangini brendga moslash */
     try{
-      if(tg.setHeaderColor) tg.setHeaderColor('#EA4E2A');
-      if(tg.setBackgroundColor) tg.setBackgroundColor('#F5F1EA');
+      if(tg.setHeaderColor) tg.setHeaderColor('#B7363F');
+      if(tg.setBackgroundColor) tg.setBackgroundColor('#F3F0EC');
     }catch(e){}
 
     /* Telegram foydalanuvchisini eslab qolamiz — kelajakda avtomatik
@@ -919,7 +919,7 @@ function renderPreorderNote(p){
     const btn = document.getElementById('secretAdminBtn');
     if(!btn) return;
 
-    /* qizil (#D0263C) -> ko'k (#0A5FCC) oralig'ida silliq o'tish */
+    /* qizil (#9A3A40) -> ko'k (#406381) oralig'ida silliq o'tish */
     function colorAt(p){
       const a = [208, 38, 60], b = [10, 95, 204];
       const c = a.map((v, i) => Math.round(v + (b[i] - v) * p));

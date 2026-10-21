@@ -24,7 +24,7 @@
   'use strict';
   const reduced = window.matchMedia &&
                   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const COLORS = ['#FFC145','#FF7A2F','#FF5D8F','#7C5CFF','#22C4E8','#2FD39A'];
+  const COLORS = ['#CEA256','#CA7339','#AF6A80','#7693BC','#4F81A0','#4D9655'];
 
   /* 17-motion.js allaqachon to'lqin beradigan tugmalar — ikki marta bermaymiz */
   const OLD_RIPPLE = '.primaryBtn, .ghostBtn, .dlBtn2, .buyBtn2, .orderBtn2, .tcOk, .tcNo, .sideMenuItem, .tallyTabs button';

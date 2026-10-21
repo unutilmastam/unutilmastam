@@ -201,7 +201,7 @@ function updateChatBlockUI(){
   const isAdmin = currentUser && currentUser.role==='admin';
   if(!btn) return;
   btn.classList.toggle('hidden', !isAdmin || !u);
-  if(u){ btn.title = u.blocked ? "Blokdan chiqarish" : "Bloklash"; btn.style.background = u.blocked ? 'rgba(46,160,90,.15)' : 'rgba(230,70,70,.12)'; }
+  if(u){ btn.title = u.blocked ? "Blokdan chiqarish" : "Bloklash"; btn.style.background = u.blocked ? 'rgba(66,116,66,.15)' : 'rgba(192,66,74,.12)'; }
 }
 
 function myCallId(){ return currentUser ? (currentUser.role==='admin' ? 'admin' : currentUser.id) : null; }

@@ -9,27 +9,28 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700;1,800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<meta name="theme-color" content="#F5F1EA">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#191411">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Unutilmas Ta'm">
-<link rel="manifest" href="/manifest.webmanifest?v=145">
+<link rel="manifest" href="/manifest.webmanifest?v=150">
 <!-- iPhone "Ekranga qo'shish" ikonkasi. MUHIM: iOS faqat mutlaq yo'lni (/) ishonchli o'qiydi
      va faylni qattiq keshlaydi — shuning uchun ?v= versiya qo'shildi. Ikonka yangilanganda
      versiya raqamini oshiring (v=80, v=81 ...), shunda iPhone eski rasmni ko'rsatmaydi. -->
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=145">
-<link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon.png?v=145">
-<link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon.png?v=145">
-<link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon.png?v=145">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=145">
-<link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png?v=145">
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=145">
-<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png?v=145">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=145">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=145">
-<link rel="shortcut icon" type="image/png" href="/favicon-32.png?v=145">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=150">
+<link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon.png?v=150">
+<link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon.png?v=150">
+<link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon.png?v=150">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=150">
+<link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png?v=150">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=150">
+<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png?v=150">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=150">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=150">
+<link rel="shortcut icon" type="image/png" href="/favicon-32.png?v=150">
 <script src="https://api-maps.yandex.ru/2.1/?apikey=6f9911e6-17d0-4de5-a252-8771f99dcc03&lang=ru_RU"></script>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -38,20 +39,21 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
-<link rel="stylesheet" href="css/base.css?v=145">
-<link rel="stylesheet" href="css/components.css?v=145">
-<link rel="stylesheet" href="css/layout.css?v=145">
-<link rel="stylesheet" href="css/screens.css?v=145">
-<link rel="stylesheet" href="css/polish.css?v=145">
-<link rel="stylesheet" href="css/glassnav.css?v=145">
-<link rel="stylesheet" href="css/glow.css?v=145">
+<link rel="stylesheet" href="css/base.css?v=150">
+<link rel="stylesheet" href="css/components.css?v=150">
+<link rel="stylesheet" href="css/layout.css?v=150">
+<link rel="stylesheet" href="css/screens.css?v=150">
+<link rel="stylesheet" href="css/polish.css?v=150">
+<link rel="stylesheet" href="css/glassnav.css?v=150">
+<link rel="stylesheet" href="css/glow.css?v=150">
+<link rel="stylesheet" href="css/kitchen.css?v=150">
 </head>
 <body>
 
 <div id="splashScreen">
-  <img class="splashLogoFull" src="assets/logo.png?v=145" alt="Unutilmas Ta'm">
+  <img class="splashLogoFull" src="assets/logo.png?v=150" alt="Unutilmas Ta'm">
 
-  <div style="position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:rgba(255,255,255,.55);font-size:11px;font-weight:700;letter-spacing:.08em;">v14.5</div>
+  <div style="position:absolute;bottom:calc(24px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:rgba(255,255,255,.55);font-size:11px;font-weight:700;letter-spacing:.08em;">v15.0</div>
 </div>
 
 <!-- ============ CHAP TOMONDAN CHIQUVCHI MENYU (til + sozlamalar) ============ -->
@@ -252,7 +254,7 @@
     <div class="receiptHead2">
       <span class="receiptWatermark">YETKAZILDI ✓</span>
       <div class="receiptLogo2"><img src="" id="receiptLogoImg" alt=""></div>
-      <img class="printLogo" src="assets/logo-print.png?v=145" alt="Unutilmas Ta'm">
+      <img class="printLogo" src="assets/logo-print.png?v=150" alt="Unutilmas Ta'm">
       <h1>Unutilmas Ta'm</h1>
       <p>Чек заказа</p>
     </div>
@@ -539,7 +541,7 @@
 
     <div id="pfPhonesBox"></div>
 
-    <button class="ghostBtn" style="width:100%;margin-top:14px;color:#EF4B62;font-weight:800;"
+    <button class="ghostBtn" style="width:100%;margin-top:14px;color:#C9454E;font-weight:800;"
             onclick="confirmLogout()">Chiqish</button>
   </div>
 </div>
@@ -576,7 +578,7 @@
     <div class="receiptHead2">
       <span class="receiptWatermark">HISOB-KITOB</span>
       <div class="receiptLogo2"><img src="" id="crLogoImg" alt=""></div>
-      <img class="printLogo" src="assets/logo-print.png?v=145" alt="Unutilmas Ta'm">
+      <img class="printLogo" src="assets/logo-print.png?v=150" alt="Unutilmas Ta'm">
       <h1>Unutilmas Ta'm</h1>
       <p>Расчётный чек</p>
     </div>
@@ -654,7 +656,7 @@
 
 <div id="ptrBox">
   <div id="ptrCircle">
-    <svg id="ptrArrow" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#EA5A1F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <svg id="ptrArrow" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#AC6437" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>
     </svg>
   </div>
@@ -663,7 +665,7 @@
 <div id="appShell">
   <header class="topbar">
     <div class="brandRow" onclick="showView('catalog')" style="cursor:pointer;">
-      <div class="brandIc"><img src="assets/logo.png?v=145" style="width:42px;height:42px;object-fit:contain;" alt="logo"></div>
+      <div class="brandIc"><img src="assets/logo.png?v=150" style="width:42px;height:42px;object-fit:contain;" alt="logo"></div>
       <div>
         <div class="brand">Unutilmas Ta'm</div>
         <div class="who" id="whoLabel"></div>
@@ -819,9 +821,9 @@
       <div class="mapShell">
         <div id="mapWrap"></div>
         <div class="mapLegend">
-          <span><i class="dotlegend" style="background:#EF4B62"></i>Qarzdor</span>
-          <span><i class="dotlegend" style="background:#FFB238"></i>Buyurtma</span>
-          <span><i class="dotlegend" style="background:#2F8FE0"></i>Toza</span>
+          <span><i class="dotlegend" style="background:#C9454E"></i>Qarzdor</span>
+          <span><i class="dotlegend" style="background:#CB9D4D"></i>Buyurtma</span>
+          <span><i class="dotlegend" style="background:#547EA0"></i>Toza</span>
         </div>
         <div class="mapZoomStack">
           <button onclick="mapZoom('mini',1)" aria-label="Yaqinlashtirish"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -1044,18 +1046,18 @@
       <p class="smallMuted" style="margin:2px 0 12px;"><b id="prTarget"></b> raqamini tasdiqlang.</p>
 
       <div id="prTgWrap" class="hidden">
-        <a class="primaryBtn" id="prTgBtn" target="_blank" rel="noopener" style="background:linear-gradient(180deg,#37AEE2,#1E96C8);box-shadow:0 1px 2px rgba(20,110,160,.35),0 10px 24px rgba(42,171,238,.32),0 1px 0 rgba(255,255,255,.25) inset;text-decoration:none;">
+        <a class="primaryBtn" id="prTgBtn" target="_blank" rel="noopener" style="background:linear-gradient(180deg,#5786A6,#476D88);box-shadow:0 1px 2px rgba(55,85,107,.35),0 10px 24px rgba(83,133,169,.32),0 1px 0 rgba(255,255,255,.25) inset;text-decoration:none;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M21.9 4.4 18.8 19c-.2 1-.8 1.2-1.7.8l-4.7-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.4-4.8L18.2 6c.4-.3-.1-.5-.6-.2L6.8 12.6l-4.6-1.4c-1-.3-1-1 .2-1.5L20.6 3c.8-.3 1.5.2 1.3 1.4z"/></svg>
           Telegram orqali kod olish
         </a>
         <div class="vcSteps">
-          <div class="vcStep"><div class="vcStepIc" style="background:var(--blue-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0A5FCC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg></div><div class="vcStepTx"><b>Boshlash</b> tugmasini bosing</div></div>
-          <div class="vcStep"><div class="vcStepIc" style="background:var(--success-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1E7A4B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2.5"/><line x1="12" y1="18" x2="12" y2="18"/></svg></div><div class="vcStepTx"><b>Raqamni yuborish</b> tugmasi bilan raqamingizni ulashing</div></div>
-          <div class="vcStep"><div class="vcStepIc" style="background:var(--amber-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9C640F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg></div><div class="vcStepTx">Bot yuborgan <b>6 xonali kodni</b> shu yerga kiriting</div></div>
+          <div class="vcStep"><div class="vcStepIc" style="background:var(--blue-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#406381" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg></div><div class="vcStepTx"><b>Boshlash</b> tugmasini bosing</div></div>
+          <div class="vcStep"><div class="vcStepIc" style="background:var(--success-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2F5731" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2.5"/><line x1="12" y1="18" x2="12" y2="18"/></svg></div><div class="vcStepTx"><b>Raqamni yuborish</b> tugmasi bilan raqamingizni ulashing</div></div>
+          <div class="vcStep"><div class="vcStepIc" style="background:var(--amber-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#725728" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg></div><div class="vcStepTx">Bot yuborgan <b>6 xonali kodni</b> shu yerga kiriting</div></div>
         </div>
       </div>
 
-      <div id="prDemoWrap" class="notifyBanner hidden" style="background:var(--amber-soft);color:#9C640F;">
+      <div id="prDemoWrap" class="notifyBanner hidden" style="background:var(--amber-soft);color:#725728;">
         <div>DEMO rejim: bot ulanmagan, kod shu yerda ko'rsatiladi: <b id="prDemoCode" style="font-size:15px;"></b></div>
       </div>
 
@@ -1087,10 +1089,10 @@
 
   <div class="adminLoginHero">
     <div class="adminLockIc">
-      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#F5F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#F3F0EC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3.5" y="10.5" width="17" height="11" rx="3"/>
         <path d="M7.5 10.5V7a4.5 4.5 0 0 1 9 0v3.5"/>
-        <circle cx="12" cy="16" r="1.4" fill="#F5F1EA" stroke="none"/>
+        <circle cx="12" cy="16" r="1.4" fill="#F3F0EC" stroke="none"/>
       </svg>
     </div>
     <h3>Administrator kirishi</h3>
@@ -1141,18 +1143,18 @@
   <p class="smallMuted" style="margin-top:-6px;"><b id="vcTarget"></b> uchun tasdiqlash kodi kerak.</p>
 
   <div id="vcTgWrap" class="hidden">
-    <a class="primaryBtn" id="vcTgBtn" target="_blank" rel="noopener" style="background:linear-gradient(180deg,#37AEE2,#1E96C8);box-shadow:0 1px 2px rgba(20,110,160,.35),0 10px 24px rgba(42,171,238,.32),0 1px 0 rgba(255,255,255,.25) inset;text-decoration:none;">
+    <a class="primaryBtn" id="vcTgBtn" target="_blank" rel="noopener" style="background:linear-gradient(180deg,#5786A6,#476D88);box-shadow:0 1px 2px rgba(55,85,107,.35),0 10px 24px rgba(83,133,169,.32),0 1px 0 rgba(255,255,255,.25) inset;text-decoration:none;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M21.9 4.4 18.8 19c-.2 1-.8 1.2-1.7.8l-4.7-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.4-4.8L18.2 6c.4-.3-.1-.5-.6-.2L6.8 12.6l-4.6-1.4c-1-.3-1-1 .2-1.5L20.6 3c.8-.3 1.5.2 1.3 1.4z"/></svg>
       Telegram orqali kod olish
     </a>
     <div class="vcSteps">
-      <div class="vcStep"><div class="vcStepIc" style="background:var(--blue-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0A5FCC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg></div><div class="vcStepTx"><b>Boshlash</b> tugmasini bosing</div></div>
-      <div class="vcStep"><div class="vcStepIc" style="background:var(--success-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1E7A4B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2.5"/><line x1="12" y1="18" x2="12" y2="18"/></svg></div><div class="vcStepTx"><b>Raqamni yuborish</b> tugmasi bilan raqamingizni ulashing</div></div>
-      <div class="vcStep"><div class="vcStepIc" style="background:var(--amber-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9C640F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg></div><div class="vcStepTx">Bot yuborgan <b>6 xonali kodni</b> shu yerga kiriting</div></div>
+      <div class="vcStep"><div class="vcStepIc" style="background:var(--blue-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#406381" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg></div><div class="vcStepTx"><b>Boshlash</b> tugmasini bosing</div></div>
+      <div class="vcStep"><div class="vcStepIc" style="background:var(--success-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2F5731" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2.5"/><line x1="12" y1="18" x2="12" y2="18"/></svg></div><div class="vcStepTx"><b>Raqamni yuborish</b> tugmasi bilan raqamingizni ulashing</div></div>
+      <div class="vcStep"><div class="vcStepIc" style="background:var(--amber-soft);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#725728" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg></div><div class="vcStepTx">Bot yuborgan <b>6 xonali kodni</b> shu yerga kiriting</div></div>
     </div>
   </div>
 
-  <div id="vcDemoWrap" class="notifyBanner" style="background:var(--amber-soft);color:#9C640F;">
+  <div id="vcDemoWrap" class="notifyBanner" style="background:var(--amber-soft);color:#725728;">
     <div>DEMO rejim: Telegram bot hali ulanmagan (TG_VERIFY sozlamasi bo'sh), shuning uchun kod sinov uchun shu yerda ko'rsatiladi: <b id="vcDemoCode" style="font-size:15px;"></b></div>
   </div>
 
@@ -1188,10 +1190,10 @@
   </a>
   <p class="smallMuted" style="text-align:center;margin:8px 0 14px;"><span id="installUrlTx"></span></p>
   <div class="igCarousel" id="igCarousel" onscroll="igOnScroll()">
-    <div class="igSlide"><img src="assets/slide-1.jpg?v=145" alt="1-qadam"></div>
-    <div class="igSlide"><img src="assets/slide-2.jpg?v=145" alt="2-qadam"></div>
-    <div class="igSlide"><img src="assets/slide-3.jpg?v=145" alt="3-qadam"></div>
-    <div class="igSlide"><img src="assets/slide-4.jpg?v=145" alt="4-qadam"></div>
+    <div class="igSlide"><img src="assets/slide-1.jpg?v=150" alt="1-qadam"></div>
+    <div class="igSlide"><img src="assets/slide-2.jpg?v=150" alt="2-qadam"></div>
+    <div class="igSlide"><img src="assets/slide-3.jpg?v=150" alt="3-qadam"></div>
+    <div class="igSlide"><img src="assets/slide-4.jpg?v=150" alt="4-qadam"></div>
   </div>
   <div class="igDots" id="igDots"><span class="igDot active"></span><span class="igDot"></span><span class="igDot"></span><span class="igDot"></span></div>
   <p class="smallMuted" style="text-align:center;margin-top:4px;">Qadamlarni ko'rish uchun rasmlarni chapga suring 👉</p>
@@ -1207,16 +1209,16 @@
     <h3 style="margin:12px 0 3px;">Android'ga yuklab olish</h3>
     <p class="smallMuted" style="margin:0;">Ilova .apk fayl sifatida telefoningizga yuklanadi</p>
   </div>
-  <a class="primaryBtn" id="androidDownloadBtn" style="text-decoration:none;margin-top:16px;background:linear-gradient(160deg,#3DDC84 0%,#0F9D58 100%);">
+  <a class="primaryBtn" id="androidDownloadBtn" style="text-decoration:none;margin-top:16px;background:linear-gradient(160deg,#52A655 0%,#326535 100%);">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     Apk faylni yuklab olish
   </a>
   <p class="smallMuted" style="text-align:center;margin:8px 0 4px;"><span id="androidUrlTx"></span></p>
   <div style="background:var(--amber-soft);border-radius:16px;padding:13px 14px;margin-top:10px;">
-    <div style="font-size:12.5px;font-weight:800;color:#9C640F;margin-bottom:8px;">O'rnatishda yordam:</div>
-    <div class="vcStep" style="margin-bottom:7px;"><div class="vcStepIc" style="background:#fff;"><b style="color:#0A5FCC;font-size:12px;">1</b></div><div class="vcStepTx">Yuklab olingan faylni <b>Fayllar</b> ilovasidan oching</div></div>
-    <div class="vcStep" style="margin-bottom:7px;"><div class="vcStepIc" style="background:#fff;"><b style="color:#1E7A4B;font-size:12px;">2</b></div><div class="vcStepTx">"Noma'lum manbalardan o'rnatish" so'ralsa — <b>ruxsat bering</b></div></div>
-    <div class="vcStep"><div class="vcStepIc" style="background:#fff;"><b style="color:#9C640F;font-size:12px;">3</b></div><div class="vcStepTx"><b>O'rnatish</b> tugmasini bosing</div></div>
+    <div style="font-size:12.5px;font-weight:800;color:#725728;margin-bottom:8px;">O'rnatishda yordam:</div>
+    <div class="vcStep" style="margin-bottom:7px;"><div class="vcStepIc" style="background:#fff;"><b style="color:#406381;font-size:12px;">1</b></div><div class="vcStepTx">Yuklab olingan faylni <b>Fayllar</b> ilovasidan oching</div></div>
+    <div class="vcStep" style="margin-bottom:7px;"><div class="vcStepIc" style="background:#fff;"><b style="color:#2F5731;font-size:12px;">2</b></div><div class="vcStepTx">"Noma'lum manbalardan o'rnatish" so'ralsa — <b>ruxsat bering</b></div></div>
+    <div class="vcStep"><div class="vcStepIc" style="background:#fff;"><b style="color:#725728;font-size:12px;">3</b></div><div class="vcStepTx"><b>O'rnatish</b> tugmasini bosing</div></div>
   </div>
 </div></div>
 
@@ -1770,37 +1772,37 @@
 
 
 
-<script src="js/shim-map.js?v=145"></script>
-<script src="js/0-core.js?v=145"></script>
-<script src="js/1-state.js?v=145"></script>
-<script src="js/2-sync.js?v=145"></script>
-<script src="js/3-auth.js?v=145"></script>
-<script src="js/4-catalog.js?v=145"></script>
-<script src="js/5-basket.js?v=145"></script>
-<script src="js/6-orders.js?v=145"></script>
-<script src="js/7-stores.js?v=145"></script>
-<script src="js/8-map.js?v=145"></script>
-<script src="js/9-courier.js?v=145"></script>
-<script src="js/10-ledger.js?v=145"></script>
-<script src="js/11-receipt.js?v=145"></script>
-<script src="js/12-notify.js?v=145"></script>
-<script src="js/13-admin.js?v=145"></script>
+<script src="js/shim-map.js?v=150"></script>
+<script src="js/0-core.js?v=150"></script>
+<script src="js/1-state.js?v=150"></script>
+<script src="js/2-sync.js?v=150"></script>
+<script src="js/3-auth.js?v=150"></script>
+<script src="js/4-catalog.js?v=150"></script>
+<script src="js/5-basket.js?v=150"></script>
+<script src="js/6-orders.js?v=150"></script>
+<script src="js/7-stores.js?v=150"></script>
+<script src="js/8-map.js?v=150"></script>
+<script src="js/9-courier.js?v=150"></script>
+<script src="js/10-ledger.js?v=150"></script>
+<script src="js/11-receipt.js?v=150"></script>
+<script src="js/12-notify.js?v=150"></script>
+<script src="js/13-admin.js?v=150"></script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="js/15-tally.js?v=145"></script>
-<script src="js/16-rasterprint.js?v=145"></script>
-<script src="js/17-motion.js?v=145"></script>
-<script src="js/18-storepick.js?v=145"></script>
-<script src="js/19-admintools.js?v=145"></script>
-<script src="js/21-restorefx.js?v=145"></script>
-<script src="js/22-storeledger.js?v=145"></script>
-<script src="js/23-debtguard.js?v=145"></script>
-<script src="js/20-i18n-ru.js?v=145"></script>
-<script src="js/24-fbauth.js?v=145"></script>
-<script src="js/25-finance.js?v=145"></script>
-<script src="js/26-reorder.js?v=145"></script>
-<script src="js/27-rewards.js?v=145"></script>
-<script src="js/28-fx.js?v=145"></script>
-<script src="js/30-storelink.js?v=145"></script>
-<script src="js/14-boot.js?v=145"></script>
+<script src="js/15-tally.js?v=150"></script>
+<script src="js/16-rasterprint.js?v=150"></script>
+<script src="js/17-motion.js?v=150"></script>
+<script src="js/18-storepick.js?v=150"></script>
+<script src="js/19-admintools.js?v=150"></script>
+<script src="js/21-restorefx.js?v=150"></script>
+<script src="js/22-storeledger.js?v=150"></script>
+<script src="js/23-debtguard.js?v=150"></script>
+<script src="js/20-i18n-ru.js?v=150"></script>
+<script src="js/24-fbauth.js?v=150"></script>
+<script src="js/25-finance.js?v=150"></script>
+<script src="js/26-reorder.js?v=150"></script>
+<script src="js/27-rewards.js?v=150"></script>
+<script src="js/28-fx.js?v=150"></script>
+<script src="js/30-storelink.js?v=150"></script>
+<script src="js/14-boot.js?v=150"></script>
 </body>
 </html>

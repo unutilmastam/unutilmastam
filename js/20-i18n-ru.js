@@ -93,7 +93,7 @@ Object.assign(TR_RU, {
     "Зарегистрируйтесь, чтобы следить за заказами и долгами.",
 
   /* ── Katalog va mahsulot ── */
-  "Savatga qo'shish": "В корзину", "⚡ Sotib olish": "⚡ Купить",
+  "Savatga qo'shish": "В корзину", "⚡ Sotib olish": "Купить", "Sotib olish": "Купить",
   "Buyurtma berish": "Оформить заказ", "Hoziroq buyurtma berish": "Заказать сейчас",
   "Buyurtma asosida tayyorlanadi": "Готовится под заказ",
   "Mahsulot": "Товар", "Mahsulot nomi": "Название товара", "Yangi mahsulot": "Новый товар",

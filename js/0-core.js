@@ -66,7 +66,7 @@ function mountIcons(){
     'ic-trash-prod':['trash',14],'ic-trash-store':['trash',14],'ic-trash-ledger':['trash',14],
     'ic-pd-minus':['minus',15],'ic-pd-plus':['plus',15],'ic-pd-cart':['cart',16],'ic-pd-buy':['check',16],'ic-eo-trash':['trash',15],'ic-chat-send':['chev',18,'transform:rotate(-90deg);stroke:#fff'],
     'ic-chat-attach':['paperclip',18,'stroke:var(--forest-dark)'],'ic-chat-mic':['mic',18,'stroke:var(--forest-dark)'],
-    'ic-chat-block':['block',16,'stroke:var(--danger)'],'ic-chat-editing':['edit',12,'stroke:#9C640F'],
+    'ic-chat-block':['block',16,'stroke:var(--danger)'],'ic-chat-editing':['edit',12,'stroke:#725728'],
     'ic-chat-call':['phone',16,'stroke:var(--forest-dark)'],
     'ic-call-mute':['mic',22,'stroke:#fff'],'ic-call-speaker':['speaker',22,'stroke:#fff'],
     'ic-call-decline':['phone',26,'stroke:#fff;transform:rotate(135deg)'],'ic-call-accept':['phone',26,'stroke:#fff'],
@@ -200,11 +200,11 @@ function renderFooter(){
   document.getElementById('sellerInfoCard').innerHTML = `
     <div class="eyebrow">Sotuvchi ma'lumotlari</div>
     <h3>Unutilmas Ta'm</h3>
-    ${si.address?`<div class="metaRow">${ic('pin',13)}<span class="meta" style="color:#E6C9BE;">${si.address}</span></div>`:''}
-    ${si.phone?`<div class="metaRow">${ic('phone',13)}<span class="meta" style="color:#E6C9BE;">${si.phone}</span></div>`:''}
+    ${si.address?`<div class="metaRow">${ic('pin',13)}<span class="meta" style="color:#C9B0A0;">${si.address}</span></div>`:''}
+    ${si.phone?`<div class="metaRow">${ic('phone',13)}<span class="meta" style="color:#C9B0A0;">${si.phone}</span></div>`:''}
     ${si.about?`<p class="meta" style="margin-top:6px;">${si.about}</p>`:''}
     <div class="socialRow" id="socialRow" style="justify-content:flex-start;margin:10px 0 0;">${linksHtml}${si.devBtnHide?'':`<button class="devBtn" onclick="window.open('https://itcode.uz','_blank')" title="${si.devBtnText||'Dastur yaratish'}">
-      <span class="devBtnIc"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4FD8F0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+      <span class="devBtnIc"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6A99B5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
       <span class="devBtnTx">${si.devBtnText||'Dastur yaratish'}</span>
     </button>`}</div>
     <div class="installFabStack">

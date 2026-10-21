@@ -18,18 +18,18 @@ h1,h2,h3,.brand{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','P
 /* ═════════ INTERNET YO'Q — ogohlantirish tasmasi ═════════ */
 #offlineBar{
   position:fixed;left:0;right:0;bottom:0;z-index:9997;
-  background:linear-gradient(180deg,#3B3128,#241C14);
-  color:#FFE9D6;font-size:12.5px;font-weight:700;
+  background:linear-gradient(180deg,#302A26,#1C1814);
+  color:#F3E9E2;font-size:12.5px;font-weight:700;
   padding:9px 16px calc(9px + env(safe-area-inset-bottom));
   display:flex;align-items:center;justify-content:center;gap:8px;
   transform:translateY(110%);transition:transform .38s var(--spring-pop);
-  box-shadow:0 -4px 18px rgba(28,23,18,.28);
+  box-shadow:0 -4px 18px rgba(22,19,17,.28);
 }
 #offlineBar.show{transform:translateY(0);}
-#offlineBar .dot{width:7px;height:7px;border-radius:50%;background:#F0A24B;flex-shrink:0;animation:offPulse 1.6s ease-in-out infinite;}
+#offlineBar .dot{width:7px;height:7px;border-radius:50%;background:#C68049;flex-shrink:0;animation:offPulse 1.6s ease-in-out infinite;}
 @keyframes offPulse{0%,100%{opacity:1;}50%{opacity:.35;}}
-#offlineBar.online{background:linear-gradient(180deg,#2F6B3A,#1F4A28);color:#DFF5E4;}
-#offlineBar.online .dot{background:#7BD98F;animation:none;}
+#offlineBar.online{background:linear-gradient(180deg,#385137,#263825);color:#E5F0E5;}
+#offlineBar.online .dot{background:#7BB378;animation:none;}
 
 /* ═════════ TEPADAN PASTGA TORTIB YANGILASH (Pull to refresh) ═════════
    iPhone'da "Ekranga qo'shish" orqali ochilgan ilovada brauzerning o'z
@@ -43,7 +43,7 @@ h1,h2,h3,.brand{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','P
 #ptrCircle{
   width:38px;height:38px;border-radius:50%;
   background:rgba(255,255,255,.96);
-  box-shadow:0 4px 16px rgba(28,23,18,.20);
+  box-shadow:0 4px 16px rgba(22,19,17,.20);
   display:flex;align-items:center;justify-content:center;
   margin-bottom:9px;
   transform:scale(.5);opacity:0;
@@ -64,7 +64,7 @@ input,select,textarea{font-family:inherit;color:var(--ink);}
 button{-webkit-tap-highlight-color:transparent;}
 *:focus-visible{outline:2.5px solid var(--leaf);outline-offset:2px;border-radius:4px;}
 ::-webkit-scrollbar{width:6px;height:6px;}
-::-webkit-scrollbar-thumb{background:rgba(28,23,18,.16);border-radius:4px;}
+::-webkit-scrollbar-thumb{background:rgba(22,19,17,.16);border-radius:4px;}
 ::selection{background:var(--leaf-soft);}
 svg.icon{display:block;flex-shrink:0;}
 .hidden{display:none !important;}

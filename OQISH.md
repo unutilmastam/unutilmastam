@@ -1,3 +1,22 @@
+# Unutilmas Ta'm v15.0 — yangi "Oshxona" dizayni
+
+Ilovaning butun ko'rinishi qayta ishlandi; mantiq va ma'lumotlarga tegilmadi.
+
+- **Ranglar:** zig'ir fon, chinni oq kartochkalar, espresso (to'q qahva) panel va
+  menyular, mis rangli asosiy tugmalar, latun bezak chiziqlari. Qizil/yashil/ko'k
+  holat ranglari saqlangan, faqat yumshoqroq (oxblood, zaytun, shifer) tusda.
+- **Shriftlar:** sarlavhalar va mahsulot nomlari — Cormorant Garamond (restoran
+  menyusidek serif), qolgan matn — Manrope.
+- **Mahsulot kartochkasi:** rasm kartochkaning butun kengligida, nom serif, narx mis rangda.
+- **Moslashuv:** telefon — 2 ustun, planshet — 3, kompyuter — 4, katta ekran — 5.
+- **Qorong'i rejim:** "kechki oshxona" — ko'mir fon, latun va mis urg'u.
+
+O'zgargan fayllar: yangi `css/kitchen.css` (oxirida ulanadi), barcha CSS/JS dagi
+rang kodlari yangi palitraga o'tkazildi, `index.html` (shriftlar, versiya),
+`sw.js` (kesh `utam-v15-0`), `manifest.webmanifest` (panel rangi).
+
+---
+
 # Unutilmas Ta'm v14.5 — magazin egalari xaritaga chiqmayotgan edi
 
 140 ta sinov, **0 ta xato**. **Dizaynga umuman tegilmadi.**

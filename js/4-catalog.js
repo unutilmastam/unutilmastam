@@ -164,7 +164,7 @@ function renderProducts(){
   const orphans = state.products.filter(p=>!p.category || !knownIds.includes(p.category));
   if(orphans.length){
     html += `<div class="catSection">
-      <div class="catTitle" style="color:#C0392B;">⚠️ Turkumsiz <span class="catCount">${orphans.length}</span></div>
+      <div class="catTitle" style="color:#8F3B40;">⚠️ Turkumsiz <span class="catCount">${orphans.length}</span></div>
       <p class="smallMuted" style="margin:-4px 0 10px;">Bu mahsulotlarga turkum belgilanmagan. Tahrirlab turkum tanlang yoki o'chiring.</p>
       <div class="prodGrid${ro ? ' reordering' : ''}">${srt(orphans).map(function(p,i){ return adminProdCardHtml(p, i, orphans.length); }).join('')}</div>
     </div>`;
@@ -237,7 +237,7 @@ function showProductQr(productId){
   document.getElementById('qrModalTitle').textContent = p.name + ' — QR kod';
   const box = document.getElementById('qrModalBox');
   box.innerHTML = '';
-  new QRCode(box, {text: 'UTAM:'+p.id, width:200, height:200, colorDark:'#2E2118', colorLight:'#ffffff'});
+  new QRCode(box, {text: 'UTAM:'+p.id, width:200, height:200, colorDark:'#241D18', colorLight:'#ffffff'});
   openModal('modalShowQr');
 }
 

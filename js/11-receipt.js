@@ -141,7 +141,7 @@ function openReceiptModal(orderId){
     new QRCode(qrBox, {
       text: location.origin + location.pathname + '?chek=' + o.id,
       width: 170, height: 170,
-      colorDark: '#1C1712', colorLight: '#ffffff',
+      colorDark: '#161311', colorLight: '#ffffff',
       correctLevel: (window.QRCode && QRCode.CorrectLevel) ? QRCode.CorrectLevel.M : undefined
     });
   }catch(e){ console.warn('QR kod generatsiyasida xato:', e); }

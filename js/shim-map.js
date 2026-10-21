@@ -12,7 +12,7 @@ window.L = (function(){
     } else { setTimeout(waitYm, 250); }
   })();
 
-  const DEFAULT_PIN = '<svg width="30" height="38" viewBox="0 0 30 38"><path d="M15 1C7.3 1 1 7.2 1 14.8 1 25 15 37 15 37s14-12 14-22.2C29 7.2 22.7 1 15 1z" fill="#EA5A1F" stroke="#fff" stroke-width="2"/><circle cx="15" cy="13" r="4.5" fill="#fff"/></svg>';
+  const DEFAULT_PIN = '<svg width="30" height="38" viewBox="0 0 30 38"><path d="M15 1C7.3 1 1 7.2 1 14.8 1 25 15 37 15 37s14-12 14-22.2C29 7.2 22.7 1 15 1z" fill="#AC6437" stroke="#fff" stroke-width="2"/><circle cx="15" cy="13" r="4.5" fill="#fff"/></svg>';
 
   function norm(ll){
     if(Array.isArray(ll)) return [Number(ll[0]), Number(ll[1])];
@@ -242,7 +242,7 @@ window.L = (function(){
     mapW._run(m=>{
       if(!this.pl){
         this.pl = new ymaps.Polyline(this.coords, {}, {
-          strokeColor: this.opts.color || '#1C1712',
+          strokeColor: this.opts.color || '#161311',
           strokeWidth: this.opts.weight || 4,
           strokeOpacity: this.opts.opacity!=null ? this.opts.opacity : 0.85,
           strokeStyle: this.opts.dashArray ? 'shortdash' : 'solid'

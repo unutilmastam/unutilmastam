@@ -206,7 +206,7 @@ function orderCardHtml(o){
           ${o.orderType==='dokon' && o.paymentStatus!=='tolandi' ? `<button class="ghostBtn" onclick="event.stopPropagation();openOrderPayment('${o.id}')">${ic('card',13)}To'lovni belgilash</button>`:''}
           ${o.lat ? `<button class="ghostBtn" onclick="event.stopPropagation();showOrderOnMap('${o.id}')">${ic('pin',13)}Xaritada ko'rish</button>`:''}
           ${o.lat ? `<button class="ghostBtn" onclick="event.stopPropagation();openYandexNavigator(${o.lat}, ${o.lng}, '${escName(orderPinLabel(o))}')">${ic('pin',13)}Navigator</button>`:''}
-          <button class="ghostBtn" style="color:#EF4B62;" onclick="event.stopPropagation();deleteOrder('${o.id}')">${ic('trash',13)}O'chirish</button>
+          <button class="ghostBtn" style="color:#C9454E;" onclick="event.stopPropagation();deleteOrder('${o.id}')">${ic('trash',13)}O'chirish</button>
         </div>
       </div>
     </div>
@@ -583,7 +583,7 @@ function orderCardHtmlSimple(o){
     ${canEdit
       ? `<div style="display:flex;gap:6px;margin-top:9px;">
            <button class="ghostBtn" style="flex:1;" onclick="openEditOrder('${o.id}')">${ic('edit',13)}Tahrirlash</button>
-           <button class="ghostBtn" style="flex:1;color:#EF4B62;" onclick="customerCancelOrder('${o.id}')">${ic('trash',13)}Bekor qilish</button>
+           <button class="ghostBtn" style="flex:1;color:#C9454E;" onclick="customerCancelOrder('${o.id}')">${ic('trash',13)}Bekor qilish</button>
          </div>`
       : `<div class="smallMuted" style="margin-top:8px;">${ic('check',12)} Admin tomonidan qabul qilingan — endi o'zgartirib bo'lmaydi</div>`}
     ${o.status==='yetkazildi' ? ratingBlockHtml(o) : ''}
