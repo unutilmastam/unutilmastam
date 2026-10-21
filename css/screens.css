@@ -1,0 +1,1903 @@
+/* Unutilmas Ta'm — screens.css */
+.storePendingScreen{
+  position:fixed;inset:0;z-index:9990;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px 20px calc(24px + env(safe-area-inset-bottom));
+  background:radial-gradient(circle at 50% 0%,#FF8A3C 0%,#EA4E2A 55%,#C43C14 100%);
+  overflow-y:auto;
+}
+.storePendingScreen.hidden{display:none;}
+.spCard{
+  width:100%;max-width:400px;background:#fff;border-radius:26px;
+  padding:30px 24px 24px;text-align:center;
+  box-shadow:0 18px 50px rgba(28,23,18,.30);
+  animation:spIn .45s var(--spring-pop);
+}
+@keyframes spIn{from{opacity:0;transform:translateY(22px) scale(.96);}to{opacity:1;transform:none;}}
+.spIcon{width:74px;height:74px;margin:0 auto 16px;border-radius:24px;background:var(--leaf-soft);display:flex;align-items:center;justify-content:center;}
+.spCard h2{font-size:20px;margin:0 0 12px;color:var(--ink);}
+.spCard p{font-size:14px;line-height:1.6;color:var(--muted);margin:0;}
+.spCard p b{color:var(--ink);}
+.spStatusRow{display:inline-flex;align-items:center;gap:8px;margin-top:18px;padding:8px 15px;border-radius:999px;background:#FFF4E6;color:#9A5B12;font-size:12.5px;font-weight:800;}
+.spStatusRow.rejected{background:#FDECEE;color:#B32338;}
+.spDot{width:8px;height:8px;border-radius:50%;background:#F0A24B;animation:offPulse 1.6s ease-in-out infinite;}
+.spStatusRow.rejected .spDot{background:#EF4B62;animation:none;}
+/* ═══ TANISHISH REJIMI (tasdiqlanmagan magazin egasi) ═══ */
+.previewBar{
+  position:fixed;left:0;right:0;bottom:0;z-index:60;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:11px 16px calc(11px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,#3B3128,#241C14);color:#FFE9D6;
+  font-size:12.5px;font-weight:700;box-shadow:0 -4px 18px rgba(28,23,18,.28);
+}
+.previewBar.hidden{display:none;}
+.previewBar .pvTxt{min-width:0;line-height:1.35;}
+.previewBar .pvBtn{
+  flex-shrink:0;padding:7px 15px;border:none;border-radius:999px;
+  background:var(--btn-grad);color:#fff;font-size:12.5px;font-weight:800;
+}
+/* Tanishish rejimida narx va savat bilan bog'liq hamma narsa yashiriladi */
+body.previewMode .priceRow2,
+body.previewMode .cardActions2,
+body.previewMode .discBadge,
+body.previewMode #pdPrice,
+body.previewMode .pdQtyRow,
+body.previewMode #pdTotalRow,
+body.previewMode #pdAddBtn,
+body.previewMode .priceModeBanner,
+body.previewMode #nav-savat,
+body.previewMode .navBasketBadge{ display:none !important; }
+body.previewMode .prodCard{ cursor:default; }
+body.previewMode main{ padding-bottom:64px; }
+.pendingDot{
+  position:absolute;top:-7px;right:-7px;z-index:5;
+  min-width:23px;height:23px;padding:0 6px;border-radius:999px;
+  background:#EF4B62;color:#fff;border:2.5px solid #fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:900;line-height:1;
+  box-shadow:0 3px 9px rgba(239,75,98,.42);
+  animation:pendingPop .4s var(--spring-pop);
+}
+.pendingDot.hidden{display:none;}
+@keyframes pendingPop{from{transform:scale(0);}to{transform:scale(1);}}
+.previewNote{
+  margin:10px 0 2px;padding:10px 13px;border-radius:13px;
+  background:var(--leaf-soft);color:var(--forest-dark);
+  font-size:12.5px;font-weight:700;line-height:1.45;text-align:center;
+}
+.storeApproveRow{display:flex;gap:8px;margin-top:10px;}
+.badge.amber{background:#FFF4E6;color:#9A5B12;}
+.spNote{margin-top:14px;font-size:12px;line-height:1.55;color:var(--muted);}
+.priceModeBanner{
+  display:flex;align-items:center;gap:8px;
+  margin:2px 0 12px;padding:9px 13px;border-radius:13px;
+  background:var(--leaf-soft);color:var(--forest-dark);
+  font-size:12.5px;font-weight:700;line-height:1.4;
+}
+.priceModeBanner .pmbDot{
+  width:7px;height:7px;border-radius:50%;background:var(--forest);flex-shrink:0;
+}
+.wholesaleTag{
+  display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;
+  background:var(--leaf-soft);color:var(--forest-dark);
+  font-size:9.5px;font-weight:800;letter-spacing:.03em;vertical-align:middle;
+}
+.fieldHint{margin-top:5px;font-size:11.5px;color:var(--muted);line-height:1.45;}
+.rItemRow .riAmount{font-weight:600;font-size:11.5px;color:var(--muted);white-space:nowrap;}
+.rItemRow > div:first-child{min-width:0;padding-right:10px;}
+.rSumRow{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;color:#5C5248;}
+.rSumRow.discount{color:var(--success);}
+.rTotalRow{display:flex;justify-content:space-between;align-items:center;padding:14px 0 4px;}
+.rTotalLbl{font-size:13.5px;font-weight:700;color:var(--ink);}
+.rTotalAmt{font-size:22px;font-weight:800;color:var(--forest-dark);font-family:'Plus Jakarta Sans',sans-serif;}
+.rPayBadge{display:inline-flex;align-items:center;gap:5px;background:var(--success-soft);color:var(--success);font-size:11px;font-weight:800;padding:4px 10px;border-radius:99px;margin-top:6px;}
+.rCourierBox{display:flex;align-items:center;gap:10px;background:var(--fill);border-radius:12px;padding:10px 12px;margin:16px 0;}
+.rCourierAvatar{width:34px;height:34px;border-radius:50%;background:var(--amber);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;overflow:hidden;}
+.rCourierAvatar img{width:100%;height:100%;object-fit:cover;}
+.rCourierInfo b{display:block;font-size:12.5px;font-weight:700;color:var(--ink);}
+.rCourierInfo span{font-size:10.5px;color:var(--muted);font-weight:600;}
+.rQrArea{display:flex;flex-direction:column;align-items:center;gap:12px;background:var(--fill);border-radius:16px;padding:20px 16px 18px;margin:18px 0 10px;}
+.rQrArea #rQrCode{width:190px;height:190px;flex-shrink:0;background:#fff;padding:10px;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.07);display:flex;align-items:center;justify-content:center;}
+.rQrArea #rQrCode img,.rQrArea #rQrCode canvas{width:100%!important;height:100%!important;display:block;}
+.rQrText{text-align:center;}
+.rQrText b{display:block;font-size:13.5px;font-weight:800;color:var(--ink);margin-bottom:4px;}
+.rQrText span{font-size:11px;color:var(--muted);line-height:1.5;display:block;}
+.rCutLine{height:14px;background:radial-gradient(circle at 10px 0, transparent 8px, #fff 9px) 0 0, var(--bg);background-size:20px 14px;background-repeat:repeat-x;}
+.rFooter{text-align:center;padding:18px 24px 26px;background:#fff;}
+.rThanks{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:14px;color:var(--ink);margin-bottom:4px;}
+.rFooterSub{font-size:11px;color:var(--muted);}
+.rDownloadRow{display:flex;flex-wrap:wrap;gap:8px;padding:16px 24px 22px;background:#fff;border-radius:0 0 24px 24px;}
+.dlBtn2{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:11px;font-size:12px;font-weight:700;border:1.5px solid var(--line);color:var(--ink);background:#fff;}
+.dlBtn2.primary{background:var(--ink);color:#fff;border:none;}
+@keyframes navBump{0%{transform:scale(1);}45%{transform:scale(1.28);}100%{transform:scale(1);}}
+.promoRow{display:flex;gap:8px;margin:12px 0 0;}
+.promoRow input{flex:1;background:var(--fill);border:1.5px solid var(--line);border-radius:14px;padding:11px 14px;font-size:13.5px;font-weight:700;color:var(--ink);}
+.promoAppliedTag{display:flex;align-items:center;justify-content:space-between;background:var(--success-soft);border-radius:14px;padding:10px 14px;margin-top:10px;}
+.promoAppliedTag span{font-size:12.5px;font-weight:700;color:var(--success);}
+.promoAppliedTag button{width:22px;height:22px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;}
+.pointsRow{background:var(--amber-soft);border-radius:14px;padding:11px 14px;margin-top:10px;}
+.courierRow{display:flex;align-items:center;gap:7px;margin-top:8px;background:var(--fill);border-radius:12px;padding:8px 10px;}
+.courierRow input{background:#fff;border:1px solid var(--line);border-radius:9px;padding:6px 9px;font-size:12px;}
+.ratingBlock{margin-top:10px;background:var(--amber-soft);border-radius:14px;padding:11px 14px;}
+.starRow{display:flex;gap:4px;}
+.starBtn{width:34px;height:34px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;transition:transform .3s var(--spring-pop);}
+.starBtn svg{stroke:var(--amber);fill:none;}
+.starBtn:active{transform:scale(.85);}
+.starBtn:active svg{fill:var(--amber);}
+@media (hover:hover){.starBtn:hover svg{fill:var(--amber);}}
+.chartBars{display:flex;align-items:flex-end;justify-content:space-between;gap:6px;height:120px;}
+.chartBarCol{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;gap:6px;}
+.chartBarWrap{width:100%;height:90px;display:flex;align-items:flex-end;}
+.chartBar{width:100%;background:linear-gradient(180deg,var(--forest),var(--forest-dark));border-radius:6px 6px 2px 2px;transition:height .5s var(--spring);min-height:3px;}
+.chartBarLbl{font-size:9.5px;font-weight:700;color:var(--muted);}
+.courierModeBg{position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;}
+.courierModeCard{width:100%;max-width:400px;}
+.courierToggleRow{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:16px 18px;box-shadow:var(--shadow-sm);}
+.onboardingBg{position:fixed;inset:0;z-index:600;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;}
+.onboardingCard{width:100%;max-width:400px;}
+.onboardingSlide{text-align:center;display:none;}
+.onboardingSlide.active{display:block;animation:chipIn .4s var(--spring-pop);}
+.onboardingIconWrap{width:100px;height:100px;border-radius:28px;background:var(--hero-grad);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;box-shadow:0 16px 36px rgba(234,78,42,.3);}
+.onboardingIconWrap svg{stroke:#fff;width:44px;height:44px;}
+.onboardingSlide h2{font-size:21px;margin:0 0 10px;}
+.onboardingSlide p{color:var(--muted);font-size:14.5px;line-height:1.6;margin:0;}
+.onboardingDots{display:flex;justify-content:center;gap:7px;margin-top:22px;}
+.onboardingDot{width:8px;height:8px;border-radius:50%;background:var(--fill-strong);transition:all .3s;}
+.onboardingDot.active{width:22px;background:var(--forest);}
+.returnReasonBanner{background:var(--danger-soft);color:var(--danger);border-radius:12px;padding:10px 13px;margin-bottom:10px;font-size:12.5px;font-weight:600;line-height:1.5;}
+.courierPhotoUpload{width:84px;height:84px;border-radius:50%;background:var(--fill);border:2px dashed var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;}
+.courierPhotoUpload img{width:100%;height:100%;object-fit:cover;}
+.courierPhotoUpload svg{stroke:var(--muted);}
+.courierInfoCard{display:flex;align-items:center;gap:12px;background:var(--leaf-soft);border-radius:16px;padding:12px 14px;margin:10px 0;}
+.courierInfoPhoto{width:52px;height:52px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--fill-strong);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:var(--forest-dark);}
+.qrThumb{width:100%;display:flex;justify-content:center;margin:6px 0;}
+.qrThumb canvas,.qrThumb img{border:1px solid var(--line-soft);border-radius:12px;}
+.imgUploadBox{border:1.5px dashed rgba(28,23,18,.18);border-radius:16px;padding:18px;text-align:center;cursor:pointer;background:var(--fill);transition:border-color .2s,background .2s;}
+.hotToggleRow{display:flex;align-items:center;gap:10px;background:var(--amber-soft);border-radius:12px;padding:11px 14px;margin:0 0 14px;cursor:pointer;}
+.hotToggleRow input{width:18px;height:18px;flex-shrink:0;}
+.hotToggleRow span{font-size:13px;font-weight:700;}
+.field2Col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media (hover:hover){.imgUploadBox:hover{border-color:var(--leaf);background:var(--leaf-soft);}}
+.imgUploadBox svg{stroke:var(--muted);margin-bottom:6px;}
+.imgPreview{width:100%;height:130px;border-radius:14px;overflow:hidden;margin-top:8px;box-shadow:var(--shadow-sm);}
+.imgPreview img{width:100%;height:100%;object-fit:cover;}
+
+.prodThumbSm{width:44px;height:44px;border-radius:13px;background:linear-gradient(145deg,var(--leaf-soft),#FFD9B8);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;box-shadow:0 0 0 1px rgba(255,255,255,.7) inset;}
+.prodThumbSm img{width:100%;height:100%;object-fit:cover;}
+.prodThumbSm svg{stroke:var(--forest);width:19px;height:19px;}
+
+/* product detail modal */
+.pdImg{width:100%;height:210px;border-radius:20px;overflow:hidden;background:linear-gradient(145deg,var(--leaf-soft),#FFD9B8);display:flex;align-items:center;justify-content:center;margin-bottom:15px;box-shadow:var(--shadow-sm);}
+.pdImg img{width:100%;height:100%;object-fit:contain;background:#fff;cursor:zoom-in;}
+.pdImg{height:auto !important;min-height:230px;max-height:340px;display:flex;align-items:center;justify-content:center;}
+/* Galereya nuqtalari */
+.pdGalDots{display:flex;gap:6px;justify-content:center;margin-top:9px;}
+.pdGalDots i{width:7px;height:7px;border-radius:50%;background:var(--line-soft);transition:all .25s;}
+.pdGalDots i.on{background:var(--forest);width:19px;border-radius:99px;}
+.pdGalStrip{display:flex;gap:7px;margin-top:10px;overflow-x:auto;padding-bottom:3px;}
+.pdGalStrip img{width:52px;height:52px;border-radius:11px;object-fit:cover;flex-shrink:0;
+  border:2px solid transparent;background:#fff;}
+.pdGalStrip img.on{border-color:var(--forest);}
+/* To'liq ekran rasm */
+#imgViewer{position:fixed;inset:0;z-index:10000;background:rgba(12,10,8,.94);
+  display:flex;align-items:center;justify-content:center;padding:16px;}
+#imgViewer.hidden{display:none;}
+#imgViewer img{max-width:100%;max-height:88vh;object-fit:contain;border-radius:12px;}
+#imgViewer .ivClose{position:absolute;top:calc(14px + env(safe-area-inset-top));right:16px;
+  width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,.18);
+  color:#fff;font-size:22px;line-height:1;}
+#imgViewer .ivNav{position:absolute;bottom:calc(20px + env(safe-area-inset-bottom));
+  left:0;right:0;display:flex;gap:8px;justify-content:center;}
+#imgViewer .ivNav button{width:36px;height:36px;border-radius:50%;border:none;
+  background:rgba(255,255,255,.18);color:#fff;font-size:19px;}
+.pdImg svg{stroke:var(--forest);width:50px;height:50px;}
+.pdQtyRow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0;flex-wrap:wrap;}
+.pdQtyBox{display:flex;align-items:center;gap:2px;background:var(--fill);border-radius:18px;padding:5px;box-shadow:inset 0 1px 3px rgba(28,23,18,.06);}
+.pdQtyBox button{width:38px;height:38px;border-radius:14px;border:none;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(28,23,18,.12);transition:transform .3s var(--spring-pop),box-shadow .2s;flex-shrink:0;}
+.pdQtyBox button:active{transform:scale(.86);box-shadow:0 1px 2px rgba(28,23,18,.1);}
+.pdQtyBox button svg{stroke:var(--forest);width:16px;height:16px;}
+.pdQtyBox span,.pdQtyBox input{font-weight:800;font-size:17px;width:38px;min-width:38px;max-width:38px;text-align:center;font-variant-numeric:tabular-nums;border:none;background:transparent;font-family:inherit;color:var(--ink);padding:0;-moz-appearance:textfield;}
+.pdQtyBox input::-webkit-outer-spin-button,.pdQtyBox input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.pdQtyBox input:focus{outline:none;}
+.pdTotalRow{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,var(--leaf-soft),#EFF7EE);border:1px solid rgba(46,124,74,.14);border-radius:16px;padding:12px 16px;margin:2px 0 14px;}
+.pdTotalRow span{font-size:11.5px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--forest-dark);opacity:.75;}
+.pdTotalRow b{font-size:19px;font-weight:900;color:var(--forest-dark);font-variant-numeric:tabular-nums;letter-spacing:-.01em;}
+
+
+/* ---------- segmented controls (iOS style) ---------- */
+.scanModeBtns,.orderTypeToggle,.periodTabs,.authTabs,.tabRowSlim{
+  display:flex;gap:3px;background:var(--fill);border-radius:14px;padding:3px;margin-bottom:14px;
+}
+.scanModeBtns button,.orderTypeToggle button,.periodTabs button,.authTabs .authTabBtn,.tabRowSlim button{
+  flex:1;padding:10px 8px;border-radius:11px;border:none;background:transparent;font-weight:700;font-size:12.5px;color:#5C5348;
+  display:flex;align-items:center;justify-content:center;gap:6px;line-height:1.2;text-align:center;
+  transition:background .22s,color .22s,box-shadow .22s;
+}
+.scanModeBtns button svg,.orderTypeToggle button svg{stroke:#5C5348;transition:stroke .22s;}
+.scanModeBtns button.active,.orderTypeToggle button.active,.periodTabs button.active,.authTabs .authTabBtn.active,.tabRowSlim button.active{
+  background:#fff;color:var(--ink);border:none;
+  box-shadow:0 1px 3px rgba(28,23,18,.12),0 3px 8px rgba(28,23,18,.08);
+}
+.scanModeBtns button.active svg,.orderTypeToggle button.active svg{stroke:var(--forest);}
+.tabRowSlim{margin-bottom:10px;}
+.tabRowSlim button{padding:7px 6px;font-size:11px;border-radius:10px;}
+.authTabs{margin-bottom:16px;}
+
+/* ═════════ Katta animatsiyali "Ro'yxatdan o'tish" tugmasi ═════════ */
+.registerHeroBtn{
+  position:relative; width:100%; overflow:hidden;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  padding:18px 20px; margin:4px 0 16px; border:none; border-radius:18px;
+  background:linear-gradient(120deg,#FF8A3C,#EA5A1F 45%,#D8430F);
+  background-size:200% 200%;
+  color:#fff; font-size:16px; font-weight:800; letter-spacing:.01em;
+  box-shadow:0 10px 26px rgba(234,90,42,.4),0 2px 6px rgba(234,90,42,.3);
+  animation:heroGradientShift 4s ease-in-out infinite, heroFloat 2.6s ease-in-out infinite;
+  transition:transform .25s var(--spring-pop);
+}
+.registerHeroBtn:active{transform:scale(.96);}
+@keyframes heroGradientShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes heroFloat{0%,100%{box-shadow:0 10px 26px rgba(234,90,42,.4),0 2px 6px rgba(234,90,42,.3);}50%{box-shadow:0 14px 34px rgba(234,90,42,.55),0 2px 10px rgba(234,90,42,.4);}}
+.registerHeroShine{
+  position:absolute; top:0; left:-60%; width:40%; height:100%;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,.55),transparent);
+  transform:skewX(-20deg);
+  animation:heroShineSweep 2.8s ease-in-out infinite;
+}
+@keyframes heroShineSweep{0%{left:-60%;}45%{left:130%;}100%{left:130%;}}
+.registerHeroIc{font-size:18px;animation:heroSparkle 1.6s ease-in-out infinite;}
+@keyframes heroSparkle{0%,100%{transform:scale(1) rotate(0deg);}50%{transform:scale(1.25) rotate(12deg);}}
+.registerHeroArrow{display:flex;margin-left:2px;transition:transform .25s;}
+@media (hover:hover){.registerHeroBtn:hover .registerHeroArrow{transform:translateX(4px);}}
+
+.authOrDivider{display:flex;align-items:center;gap:10px;margin:0 0 16px;}
+.authOrDivider::before,.authOrDivider::after{content:'';flex:1;height:1px;background:var(--line);}
+.authOrDivider span{font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap;}
+
+/* ═════════ Ro'yxatdan o'tish turi tanlash kartochkalari ═════════ */
+.regChoiceCard{
+  position:relative; width:100%; overflow:hidden;
+  display:flex; align-items:center; gap:14px; text-align:left;
+  padding:16px 16px; margin-bottom:12px; border-radius:18px;
+  border:1.5px solid var(--line); background:var(--card);
+  cursor:pointer; transition:transform .3s var(--spring-pop),border-color .25s,box-shadow .25s;
+}
+.regChoiceCard:active{transform:scale(.97);}
+@media (hover:hover){.regChoiceCard:hover{border-color:var(--forest);box-shadow:0 10px 26px rgba(234,90,42,.14);}}
+.regChoiceShine{
+  position:absolute; top:0; left:-70%; width:35%; height:100%;
+  background:linear-gradient(120deg,transparent,rgba(234,90,42,.12),transparent);
+  transform:skewX(-20deg); animation:heroShineSweep 3.2s ease-in-out infinite;
+}
+.regChoiceCard.store .regChoiceShine{animation-delay:.6s;}
+.regChoiceIcon{
+  flex-shrink:0; width:52px;height:52px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--leaf-soft);
+  animation:heroFloat 3s ease-in-out infinite;
+}
+.regChoiceCard.store .regChoiceIcon{background:var(--blue-soft);}
+.regChoiceText{flex:1;min-width:0;}
+.regChoiceTitle{font-weight:800;font-size:15px;margin-bottom:2px;}
+.regChoiceDesc{font-size:11.5px;color:var(--muted);line-height:1.4;}
+.regChoiceArrow{flex-shrink:0;display:flex;transition:transform .25s;}
+@media (hover:hover){.regChoiceCard:hover .regChoiceArrow{transform:translateX(4px);}}
+.authPane{display:none;}
+.authPane.active{display:block;}
+
+/* scanner */
+.videoWrap{position:relative;border-radius:20px;overflow:hidden;background:#141210;box-shadow:var(--shadow-md);}
+#video{width:100%;display:block;max-height:280px;object-fit:cover;}
+.scanFrame{position:absolute;inset:20%;border:2.5px solid rgba(255,255,255,.75);border-radius:20px;pointer-events:none;box-shadow:0 0 0 999px rgba(0,0,0,.28);}
+.scanBtnRow{display:flex;gap:8px;margin-top:12px;}
+.scanBtnRow .primaryBtn,.scanBtnRow .ghostBtn{margin:0;flex:1;}
+.scanResult{background:var(--success-soft);border:none;border-radius:15px;padding:12px 14px;margin-top:10px;font-size:13.5px;font-weight:600;color:#1E7A4B;display:flex;gap:9px;align-items:center;animation:pop .3s ease;box-shadow:var(--shadow-sm);}
+.scanResult svg{stroke:var(--success);flex-shrink:0;}
+.scanResult.err{background:var(--danger-soft);color:var(--danger);}
+.scanResult.err svg{stroke:var(--danger);}
+.sessionStat{display:flex;gap:10px;margin-top:14px;}
+.sessionStat .box{flex:1;background:var(--card);border:1px solid var(--line-soft);border-radius:16px;padding:13px;text-align:center;box-shadow:var(--shadow-sm);}
+.sessionStat .box .n{font-weight:800;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
+.sessionStat .box .l{font-size:10.5px;color:var(--muted);font-weight:600;margin-top:2px;}
+.sessionList{margin-top:14px;}
+.sessionRow{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line-soft);font-size:13.5px;}
+
+/* map */
+#mapWrap{overflow:hidden;}
+.mapNameLabel{background:rgba(28,23,18,.9);color:#fff;border:none;font-weight:700;font-size:11px;padding:3.5px 9px;border-radius:9px;box-shadow:0 3px 10px rgba(0,0,0,.25);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
+.mapNameLabel::before{border-top-color:rgba(28,23,18,.9);}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:600;}
+.legend span{display:inline-flex;align-items:center;gap:6px;}
+.dotlegend{width:9px;height:9px;border-radius:50%;display:inline-block;}
+.pinIcon{filter:drop-shadow(0 3px 6px rgba(0,0,0,.35));}
+
+/* debts */
+.debtRow{border-left:3px solid var(--danger);}
+.debtRow.paid{border-left-color:var(--success);}
+
+/* catalog / basket */
+.heroBanner{
+  background:var(--hero-grad);color:#fff;border-radius:24px;height:140px;margin-bottom:18px;
+  position:relative;overflow:hidden;box-shadow:var(--shadow-md);
+}
+.heroBgTrack{position:absolute;inset:0;display:flex;width:max-content;animation:heroScroll 36s linear infinite;}
+@media (hover:hover){.heroBanner:hover .heroBgTrack{animation-play-state:paused;}}
+.heroBgItem{width:180px;height:140px;flex-shrink:0;position:relative;overflow:hidden;}
+.heroBgItem img{width:100%;height:100%;object-fit:cover;display:block;}
+.heroBgFallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.04));}
+.heroBgFallback svg{stroke:#fff;width:32px;height:32px;opacity:.85;}
+.heroOverlay{position:absolute;inset:0;background:linear-gradient(0deg,rgba(24,10,5,.82) 0%,rgba(24,10,5,.38) 55%,rgba(24,10,5,.08) 100%);z-index:1;}
+.heroTextOverlay{position:absolute;left:0;right:0;bottom:0;padding:14px 18px;z-index:2;}
+.heroTextOverlay .eyebrow{color:var(--gold);text-shadow:0 1px 4px rgba(0,0,0,.3);font-size:10px;}
+.heroTextOverlay h1{font-size:17px;margin:3px 0 0;letter-spacing:-.02em;text-shadow:0 2px 8px rgba(0,0,0,.4);line-height:1.25;font-weight:800;}
+@keyframes heroScroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.catCard{display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;}
+.catThumb{width:58px;height:58px;border-radius:16px;overflow:hidden;flex-shrink:0;background:var(--leaf-soft);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px var(--line-soft);}
+.catThumb img{width:100%;height:100%;object-fit:cover;}
+.catThumb svg{stroke:var(--forest);width:22px;height:22px;}
+.qtyBox{display:flex;align-items:center;gap:5px;background:var(--fill);border-radius:12px;padding:3px;}
+.qtyBox button{width:30px;height:30px;border-radius:9px;border:none;background:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(28,23,18,.1);transition:transform .35s var(--spring-pop);}
+.qtyBox button:active{transform:scale(.88);}
+.qtyBox button svg{stroke:var(--forest-dark);width:14px;height:14px;}
+.floatBasket{
+  position:fixed;bottom:calc(94px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);
+  background:var(--btn-grad);color:#fff;
+  padding:13px 22px;border-radius:999px;font-weight:700;font-size:14px;z-index:45;border:none;
+  box-shadow:0 2px 4px rgba(184,67,15,.3),0 16px 36px rgba(234,90,31,.42),0 1px 0 rgba(255,255,255,.28) inset;
+  display:flex;align-items:center;gap:8px;transition:transform .35s var(--spring-pop);
+}
+.floatBasket:active{transform:translateX(-50%) scale(.95);}
+.floatBasket.bump{animation:pop .35s ease;}
+.floatBasket svg{stroke:#fff;}
+textarea.note{width:100%;border:1.5px solid transparent;border-radius:14px;padding:12px 13px;font-size:14px;min-height:64px;background:var(--fill);transition:border-color .2s,background .2s,box-shadow .2s;}
+textarea.note:focus{outline:none;border-color:var(--leaf);background:#fff;box-shadow:0 0 0 4px rgba(234,90,31,.14);}
+.smallMuted{font-size:12px;color:var(--muted);}
+.debtRowCompact{padding:10px 13px;cursor:pointer;margin-bottom:8px;}
+.debtRowCompact .row{align-items:center;gap:8px;}
+.debtRowHead{display:flex;align-items:center;gap:8px;min-width:0;flex:1;}
+.debtRowName{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.debtChev{transition:transform .3s var(--spring);color:var(--muted);flex-shrink:0;display:flex;}
+.debtChev.open{transform:rotate(90deg);}
+.debtDetailBody{margin-top:0;max-height:0;overflow:hidden;transition:max-height .3s var(--spring);}
+.debtDetailBody.open{margin-top:9px;max-height:650px;}
+.debtDetailInner{padding-top:9px;border-top:1px dashed var(--line);}
+/* ---- Qarz daftari: colorful compact list ---- */
+.qarzStatRow{display:flex;gap:9px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;}
+.qarzStatPill{flex:1;min-width:104px;border-radius:16px;padding:12px 14px;color:#fff;box-shadow:var(--shadow-sm);}
+.qarzStatPill .v{font-size:17px;font-weight:800;font-family:inherit;}
+.qarzStatPill .k{font-size:10.5px;opacity:.9;font-weight:600;margin-top:2px;}
+.qarzAvatar{width:36px;height:36px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13.5px;}
+.qarzRow{padding:11px 12px;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.qarzRow .mid{flex:1;min-width:0;}
+.qarzRow .nm{font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.qarzRow .sub{font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.qarzRow .amt{font-family:inherit;font-weight:800;font-size:13px;flex-shrink:0;text-align:right;}
+.qarzRow .amt small{display:block;font-size:9.5px;font-weight:600;color:var(--muted);}
+/* ---- Chat (mijoz ↔ admin) ---- */
+.chatThread{max-height:min(50vh,420px);overflow-y:auto;display:flex;flex-direction:column;gap:9px;padding:6px 2px;}
+.chatBubble{max-width:80%;padding:9px 13px;border-radius:15px;font-size:13.5px;line-height:1.42;word-break:break-word;}
+.chatBubble.mine{align-self:flex-end;background:var(--forest);color:#fff;border-bottom-right-radius:4px;}
+.chatBubble.theirs{align-self:flex-start;background:var(--fill);color:var(--ink);border-bottom-left-radius:4px;}
+.chatBubble .t{display:block;font-size:9.5px;opacity:.65;margin-top:4px;}
+.chatRow{display:flex;align-items:flex-end;gap:8px;margin-top:12px;}
+.chatRow textarea{flex:1;resize:none;min-height:46px;max-height:120px;padding:12px 16px;border-radius:20px;border:1.5px solid var(--line);background:var(--fill);font-size:14px;line-height:1.35;font-family:inherit;color:var(--ink);overflow-y:auto;}
+.chatRow textarea:focus{outline:none;border-color:var(--forest);background:#fff;}
+.chatSendBtn{flex-shrink:0;width:44px;height:44px;border-radius:50%;background:var(--forest);color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.chatIconBtn{flex-shrink:0;width:40px;height:40px;border-radius:50%;background:var(--fill);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .25s var(--spring-pop),background .2s;}
+.chatIconBtn:active{transform:scale(.88);}
+.chatIconBtn.recording{background:var(--danger);}
+.chatIconBtn.recording svg{stroke:#fff;}
+.chatBlockBtn{width:32px;height:32px;border-radius:50%;background:rgba(230,70,70,.12);border:none;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.chatCallBtn{width:32px;height:32px;border-radius:50%;background:var(--leaf-soft);border:none;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.chatCallBtn:active{transform:scale(.88);}
+
+/* ---- Ovozli qo'ng'iroq ekranlari ---- */
+.callScreenBg{position:fixed;inset:0;z-index:400;background:linear-gradient(160deg,#1D3A2A,#0F241A);display:flex;flex-direction:column;align-items:center;justify-content:space-between;opacity:0;pointer-events:none;transition:opacity .3s;padding:calc(60px + env(safe-area-inset-top)) 24px calc(40px + env(safe-area-inset-bottom));}
+.callScreenBg.open{opacity:1;pointer-events:auto;}
+.callAvatar{width:110px;height:110px;border-radius:50%;background:linear-gradient(150deg,#3A6B4D,#264D37);display:flex;align-items:center;justify-content:center;color:#fff;font-size:38px;font-weight:800;box-shadow:0 20px 50px rgba(0,0,0,.35);}
+.callAvatar.pulsing{animation:callPulse 1.6s ease-out infinite;}
+@keyframes callPulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.25),0 20px 50px rgba(0,0,0,.35);}100%{box-shadow:0 0 0 26px rgba(255,255,255,0),0 20px 50px rgba(0,0,0,.35);}}
+.callName{color:#fff;font-size:22px;font-weight:800;margin-top:20px;text-align:center;}
+.callStatus{color:rgba(255,255,255,.65);font-size:14px;font-weight:600;margin-top:6px;}
+.callTimer{color:rgba(255,255,255,.85);font-size:15px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums;}
+.callBtnRow{display:flex;align-items:center;justify-content:center;gap:28px;}
+.callActionBtn{width:64px;height:64px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 22px rgba(0,0,0,.3);transition:transform .3s var(--spring-pop);}
+.callActionBtn:active{transform:scale(.88);}
+.callActionBtn.decline{background:var(--danger);}
+.callActionBtn.accept{background:#2EA05A;}
+.callActionBtn.end{background:var(--danger);}
+.callActionBtn.mute{background:rgba(255,255,255,.15);width:52px;height:52px;}
+.callActionBtn.mute.active{background:#fff;}
+.callActionBtn.mute.active svg{stroke:#1D3A2A;}
+.callActionBtn svg{stroke:#fff;width:26px;height:26px;}
+.callSecondaryRow{display:flex;align-items:center;justify-content:center;gap:22px;margin-bottom:18px;}
+.chatEditBanner{display:flex;align-items:center;justify-content:space-between;background:var(--amber-soft);border-radius:12px;padding:8px 12px;margin-bottom:8px;font-size:12px;font-weight:700;color:#9C640F;}
+.chatEditBanner button{color:var(--forest-dark);font-weight:800;font-size:12px;}
+.chatRecordingBar{display:flex;align-items:center;gap:8px;background:rgba(230,70,70,.08);border-radius:14px;padding:10px 14px;margin-top:8px;font-size:13px;font-weight:700;color:var(--danger);}
+.chatRecordingBar b{font-variant-numeric:tabular-nums;margin-left:auto;}
+.chatRecordingBar button{color:var(--muted);font-size:14px;padding:0 4px;}
+.chatRecDot{width:9px;height:9px;border-radius:50%;background:var(--danger);animation:pulseRing 1.2s ease-out infinite;flex-shrink:0;}
+.chatBubble img{max-width:150px;max-height:190px;width:auto;height:auto;border-radius:12px;display:block;margin-bottom:3px;cursor:pointer;object-fit:cover;}
+.chatBubble audio{width:210px;height:36px;margin-bottom:2px;}
+.chatBubble .editedTag{font-size:9px;opacity:.6;margin-left:4px;font-style:italic;}
+.chatBubble.mine{cursor:pointer;}
+.chatTypingIndicator{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:var(--muted);padding:2px 4px 6px;}
+.typingDot{width:5px;height:5px;border-radius:50%;background:var(--muted);animation:typingBounce 1.1s infinite;}
+.typingDot:nth-child(2){animation-delay:.15s;}
+.typingDot:nth-child(3){animation-delay:.3s;}
+@keyframes typingBounce{0%,60%,100%{transform:translateY(0);opacity:.5;}30%{transform:translateY(-3px);opacity:1;}}
+
+.msgDelBtn{position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:var(--danger);border:2px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.2);z-index:2;}
+.msgDelBtn svg{stroke:#fff;}
+.chatBubble{position:relative;}
+
+/* rasmni to'liq ekranda ko'rish (lightbox) */
+.imgViewerBg{position:fixed;inset:0;z-index:300;background:rgba(10,8,6,.94);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+.imgViewerBg.open{opacity:1;pointer-events:auto;}
+.imgViewerBg img{max-width:92vw;max-height:80vh;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.imgViewerClose{position:absolute;top:calc(18px + env(safe-area-inset-top));right:18px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.15);border:none;display:flex;align-items:center;justify-content:center;}
+.imgViewerClose svg{stroke:#fff;}
+.chatListItem{display:flex;align-items:center;gap:10px;padding:12px;cursor:pointer;margin-bottom:8px;}
+.chatNewBtn{width:34px;height:34px;border-radius:50%;background:var(--forest);color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow-sm);flex-shrink:0;transition:transform .3s var(--spring-pop);}
+.chatNewBtn:active{transform:scale(.88);}
+.contactRow{display:flex;align-items:center;gap:11px;padding:12px;cursor:pointer;border-radius:14px;transition:background .2s;}
+.contactRow:active{background:var(--fill);}
+.chatListItem .nm{font-weight:700;font-size:13.5px;}
+.chatListItem .prev{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;max-width:220px;}
+.chatUnreadDot{width:9px;height:9px;border-radius:50%;background:var(--danger);flex-shrink:0;}
+
+/* footer: social + seller info */
+.footerWrap{margin-top:30px;}
+.socialRow{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;}
+.socialBtn{width:40px;height:40px;border-radius:14px;background:var(--card);border:1px solid var(--line-soft);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);transition:transform .35s var(--spring-pop),box-shadow .25s;}
+@media (hover:hover){.socialBtn:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}}
+.socialBtn:active{transform:scale(.9);}
+.socialBtn svg{stroke:var(--forest);width:17px;height:17px;}
+.sellerCard{background:linear-gradient(150deg,#2E2119 0%,#1D1510 100%);color:#fff;border-radius:20px;padding:16px 17px;box-shadow:var(--shadow-md);}
+.sellerCard .eyebrow{color:var(--gold);font-size:10px;}
+.sellerCard h3{color:#fff;margin:4px 0 7px;font-size:15px;letter-spacing:-.02em;}
+.sellerCard .meta{color:#CBB9A8;font-size:12px;line-height:1.55;}
+.sellerCard .meta svg{stroke:var(--gold);width:13px;height:13px;}
+.metaRow{display:flex;align-items:flex-start;gap:6px;margin-bottom:4px;}
+
+
+/* ---------- item chips : eye-catching product×qty×price ---------- */
+.itemChips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px;}
+.itemChip{display:inline-flex;align-items:center;gap:7px;padding:5px 8px 5px 5px;border-radius:999px;font-size:11.5px;font-weight:700;line-height:1;letter-spacing:-.01em;animation:chipIn .5s var(--spring-pop) backwards;box-shadow:0 1px 2px rgba(28,23,18,.04);}
+.icThumb{width:22px;height:22px;border-radius:7px;object-fit:cover;flex-shrink:0;box-shadow:0 0 0 1.5px rgba(255,255,255,.7);background:#fff;}
+.icThumbBlank{display:flex;align-items:center;justify-content:center;opacity:.5;}
+.icThumbBlank svg{width:11px;height:11px;}
+.itemChip .icGram{opacity:.6;font-weight:600;font-size:10px;}
+.itemChip .icQty{background:rgba(255,255,255,.9);border-radius:999px;padding:3.5px 8px;font-size:10.5px;font-weight:800;font-variant-numeric:tabular-nums;box-shadow:0 1px 3px rgba(28,23,18,.1);}
+.itemChip .icPrice{font-size:10.5px;font-weight:800;font-variant-numeric:tabular-nums;opacity:.9;}
+.itemChips .itemChip:nth-child(1){animation-delay:.02s;}
+.itemChips .itemChip:nth-child(2){animation-delay:.06s;}
+.itemChips .itemChip:nth-child(3){animation-delay:.10s;}
+.itemChips .itemChip:nth-child(4){animation-delay:.14s;}
+.itemChips .itemChip:nth-child(5){animation-delay:.18s;}
+.itemChips .itemChip:nth-child(n+6){animation-delay:.22s;}
+@keyframes chipIn{from{opacity:0;transform:scale(.6) translateY(4px);}to{opacity:1;transform:none;}}
+
+/* ---------- money pills : Jami / To'landi / Qarz ---------- */
+.moneyPills{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;}
+.moneyPill{border-radius:13px;padding:9px 8px;text-align:center;animation:chipIn .5s var(--spring-pop) backwards;}
+.moneyPills .moneyPill:nth-child(2){animation-delay:.05s;}
+.moneyPills .moneyPill:nth-child(3){animation-delay:.1s;}
+.moneyPill .v{font-size:13.5px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.1;}
+.moneyPill .k{font-size:9px;font-weight:700;opacity:.72;margin-top:3px;text-transform:uppercase;letter-spacing:.07em;}
+.moneyPill.neutral{background:var(--fill);color:var(--ink);}
+.moneyPill.green{background:var(--success-soft);color:#1E7A4B;}
+.moneyPill.red{background:var(--danger-soft);color:#C22B2B;}
+.moneyPill.amber{background:var(--amber-soft);color:#9C640F;}
+.moneyPill.blue{background:var(--blue-soft);color:#0A5FCC;}
+.moneyPill.alert{animation:pulseSoft 2.2s ease-in-out infinite;}
+@keyframes pulseSoft{0%,100%{box-shadow:0 0 0 0 rgba(240,62,62,0);}50%{box-shadow:0 0 0 5px rgba(240,62,62,.12);}}
+
+/* basket / summary row qty pill */
+.icQtyMini{background:var(--leaf-soft);color:var(--forest-dark);border-radius:999px;padding:2.5px 8px;font-size:10.5px;font-weight:800;font-variant-numeric:tabular-nums;}
+.sessionRow{align-items:center;}
+.sessionRow b{font-variant-numeric:tabular-nums;letter-spacing:-.01em;}
+
+/* ---------- staggered card entrance ---------- */
+.view.active .card,.view.active .statCard,.view.active .prodCard{animation:cardIn .55s var(--spring) backwards;}
+.view.active .card:nth-child(1),.view.active .statCard:nth-child(1),.view.active .prodCard:nth-child(1){animation-delay:.02s;}
+.view.active .card:nth-child(2),.view.active .statCard:nth-child(2),.view.active .prodCard:nth-child(2){animation-delay:.06s;}
+.view.active .card:nth-child(3),.view.active .statCard:nth-child(3),.view.active .prodCard:nth-child(3){animation-delay:.10s;}
+.view.active .card:nth-child(4),.view.active .statCard:nth-child(4),.view.active .prodCard:nth-child(4){animation-delay:.14s;}
+.view.active .card:nth-child(5),.view.active .statCard:nth-child(5),.view.active .prodCard:nth-child(5){animation-delay:.18s;}
+.view.active .card:nth-child(6),.view.active .statCard:nth-child(6),.view.active .prodCard:nth-child(6){animation-delay:.22s;}
+.view.active .card:nth-child(n+7),.view.active .statCard:nth-child(n+7),.view.active .prodCard:nth-child(n+7){animation-delay:.26s;}
+@keyframes cardIn{from{opacity:0;transform:translateY(14px) scale(.98);}to{opacity:1;transform:none;}}
+
+/* ---------- adaptive : compact on small, wide on tablets ---------- */
+@media (min-width:720px){
+  main{padding:26px 22px 24px;}
+  .statGrid{grid-template-columns:repeat(3,1fr);}
+  .prodGrid{grid-template-columns:repeat(5,1fr);gap:12px;}
+  .heroBanner{height:170px;}
+  .heroBgItem{height:170px;}
+}
+@media (max-width:360px){
+  .itemChip{font-size:10.5px;padding:5px 7px 5px 9px;}
+  .moneyPill .v{font-size:12px;}
+  .statCard .num{font-size:22px;}
+  .card{padding:13px;}
+}
+
+
+
+
+/* ---------- Premium xarita qobig'i ---------- */
+.mapShell{position:relative;border-radius:24px;overflow:hidden;box-shadow:var(--shadow-md),0 0 0 1px var(--line-soft);isolation:isolate;}
+#mapWrap,#fullMapWrap,#homeLocMapWrap{position:relative;z-index:0;}
+#mapWrap{height:320px;border:none !important;border-radius:0 !important;margin-bottom:0 !important;box-shadow:none !important;}
+#fullMapWrap{height:calc(100vh - 230px);min-height:420px;border:none !important;border-radius:0 !important;box-shadow:none !important;}
+#homeLocMapWrap{height:340px;}
+.mapShell + #storeList, #mapWrap + *{margin-top:0;}
+div#mapWrap ~ #storeList{margin-top:14px;}
+
+/* yuklanish skeleti — xarita chizilguncha ko'rinadi */
+#mapWrap::before,#fullMapWrap::before,#homeLocMapWrap::before{
+  content:'';position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(120deg,#EFEAE2 30%,#F7F3EC 50%,#EFEAE2 70%);
+  background-size:220% 100%;animation:mapSkeleton 1.6s ease-in-out infinite;
+}
+#mapWrap::after,#fullMapWrap::after,#homeLocMapWrap::after{
+  content:'';position:absolute;left:50%;top:50%;width:34px;height:42px;z-index:-1;
+  transform:translate(-50%,-60%);
+  background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="42" viewBox="0 0 24 30"><path d="M12 29S2 17.8 2 11a10 10 0 0 1 20 0c0 6.8-10 18-10 18Z" fill="%23D8CFC2"/><circle cx="12" cy="11" r="4" fill="%23F5F1EA"/></svg>') no-repeat center/contain;
+  animation:fabFloat 2.4s ease-in-out infinite;
+}
+@keyframes mapSkeleton{0%{background-position:120% 0;}100%{background-position:-120% 0;}}
+
+/* legend — xarita ustidagi shisha chip */
+.mapLegend{
+  position:absolute;top:12px;left:12px;z-index:500;
+  display:flex;gap:5px;flex-wrap:wrap;max-width:calc(100% - 70px);
+}
+.mapLegend span{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.85);
+  -webkit-backdrop-filter:blur(12px) saturate(160%);backdrop-filter:blur(12px) saturate(160%);
+  border:1px solid rgba(255,255,255,.7);
+  padding:6px 11px;border-radius:999px;
+  font-size:11px;font-weight:700;color:var(--ink);
+  box-shadow:0 2px 8px rgba(28,23,18,.12);
+  animation:chipIn .5s var(--spring-pop) backwards;
+}
+.mapLegend span:nth-child(2){animation-delay:.06s;}
+.mapLegend span:nth-child(3){animation-delay:.12s;}
+.mapLegend .dotlegend{width:8px;height:8px;box-shadow:0 0 0 2.5px rgba(255,255,255,.9);}
+
+/* zoom tugmalari — shisha ustunча */
+.mapZoomStack{
+  position:absolute;top:12px;right:12px;z-index:500;
+  display:flex;flex-direction:column;border-radius:15px;overflow:hidden;
+  background:rgba(255,255,255,.85);
+  -webkit-backdrop-filter:blur(12px) saturate(160%);backdrop-filter:blur(12px) saturate(160%);
+  border:1px solid rgba(255,255,255,.7);
+  box-shadow:0 4px 14px rgba(28,23,18,.16);
+}
+.mapZoomStack button{
+  width:42px;height:42px;border:none;background:transparent;color:var(--ink);
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s,transform .3s var(--spring-pop);
+}
+.mapZoomStack button:first-child{border-bottom:1px solid rgba(28,23,18,.09);}
+.mapZoomStack button:active{background:rgba(28,23,18,.06);transform:scale(.9);}
+
+/* ═════════ XARITA KO'RINISHI: SXEMA / SPUTNIK / GIBRID ═════════
+   Yandex Navigatordagi kabi — qatlamlar tugmasi bosilganda pastga ochiladi */
+.mapTypeCtrl{position:absolute;top:106px;right:12px;z-index:501;display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+.mapTypeBtn{
+  width:42px;height:42px;border-radius:15px;border:1px solid rgba(255,255,255,.7);
+  background:rgba(255,255,255,.85);
+  -webkit-backdrop-filter:blur(12px) saturate(160%);backdrop-filter:blur(12px) saturate(160%);
+  box-shadow:0 4px 14px rgba(28,23,18,.16);
+  display:flex;align-items:center;justify-content:center;color:var(--ink);
+  transition:transform .3s var(--spring-pop),background .2s;
+}
+.mapTypeBtn:active{transform:scale(.9);}
+.mapTypeBtn.on{background:var(--btn-grad);border-color:transparent;color:#fff;box-shadow:0 5px 16px rgba(234,90,31,.42);}
+.mapTypeBtn svg{stroke:currentColor;}
+.mapTypePanel{
+  display:none;flex-direction:column;gap:5px;padding:6px;border-radius:17px;
+  background:rgba(255,255,255,.9);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);backdrop-filter:blur(16px) saturate(180%);
+  border:1px solid rgba(255,255,255,.75);
+  box-shadow:0 8px 26px rgba(28,23,18,.22);
+  transform-origin:top right;
+}
+.mapTypePanel.open{display:flex;animation:mapTypeIn .28s var(--spring-pop);}
+@keyframes mapTypeIn{from{opacity:0;transform:scale(.86) translateY(-6px);}to{opacity:1;transform:none;}}
+.mapTypeOpt{
+  display:flex;align-items:center;gap:9px;padding:7px 11px 7px 7px;border:none;border-radius:12px;
+  background:transparent;font-size:12.5px;font-weight:700;color:var(--ink);white-space:nowrap;
+  transition:background .2s,transform .3s var(--spring-pop);
+}
+.mapTypeOpt:active{transform:scale(.96);}
+.mapTypeOpt.active{background:var(--leaf-soft);color:var(--forest-dark);}
+.mapTypeSwatch{width:28px;height:28px;border-radius:9px;flex-shrink:0;box-shadow:0 0 0 1px rgba(28,23,18,.10) inset;}
+/* har bir ko'rinish uchun mos miniatyura */
+.swSxema{background:
+  linear-gradient(90deg,transparent 46%,#F3B23F 46%,#F3B23F 54%,transparent 54%),
+  linear-gradient(0deg,transparent 62%,#FFFFFF 62%,#FFFFFF 70%,transparent 70%),
+  #E9F0E2;}
+.swSputnik{background:
+  radial-gradient(circle at 30% 32%,#4C6B3C 0%,#3B5730 38%,transparent 39%),
+  radial-gradient(circle at 72% 70%,#2F4A6B 0%,#24384F 42%,transparent 43%),
+  #5A4B33;}
+.swGibrit{background:
+  linear-gradient(90deg,transparent 46%,#FFD466 46%,#FFD466 54%,transparent 54%),
+  radial-gradient(circle at 28% 30%,#4C6B3C 0%,#3B5730 40%,transparent 41%),
+  #4A3F2C;}
+@media (max-width:420px){
+  .mapTypeCtrl{top:100px;}
+  .mapTypeBtn{width:38px;height:38px;border-radius:13px;}
+  .mapTypeOpt{font-size:12px;padding:6px 10px 6px 6px;}
+  .mapTypeSwatch{width:25px;height:25px;}
+}
+
+/* mavjud tugmalarni shisha uslubga tenglashtirish */
+.mapExpandBtn,.mapRecenterBtn{
+  background:rgba(255,255,255,.85) !important;
+  -webkit-backdrop-filter:blur(12px) saturate(160%) !important;backdrop-filter:blur(12px) saturate(160%) !important;
+  border:1px solid rgba(255,255,255,.7) !important;
+  box-shadow:0 4px 14px rgba(28,23,18,.16) !important;
+}
+
+/* Yandex copyright bloklarini yumshatish */
+.mapShell [class*="copyrights-pane"]{opacity:.55;filter:grayscale(.3);}
+.mapShell [class*="gototech"],.mapShell [class*="gotoymaps"]{opacity:.55;}
+
+/* adaptiv */
+@media (min-width:720px){
+  #mapWrap{height:420px;}
+  #homeLocMapWrap{height:420px;}
+  .mapShell{border-radius:28px;}
+  .mapLegend span{font-size:12px;padding:7px 13px;}
+}
+@media (max-width:360px){
+  #mapWrap{height:270px;}
+  .mapLegend span{font-size:10px;padding:5px 9px;}
+  .mapZoomStack button{width:38px;height:38px;}
+}
+
+/* ---------- iPhone o'rnatish tugmasi (sotuvchi kartasida) ---------- */
+.sellerCard{position:relative;}
+.installFabStack{position:absolute;top:14px;right:14px;display:flex;flex-direction:row;gap:7px;align-items:center;z-index:2;}
+.installFab{
+  position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  width:38px;height:38px;border-radius:12px;border:none;
+  background:linear-gradient(160deg,#3D3D42 0%,#141417 100%);
+  box-shadow:0 6px 14px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.18) inset;
+  animation:fabFloat 3.2s ease-in-out infinite;
+  transition:transform .35s var(--spring-pop);
+}
+.installFab:active{transform:scale(.9);}
+.installFabTx{display:none;}
+.installFabRing{position:absolute;inset:0;border-radius:12px;animation:pulseRing 2.4s ease-out infinite;pointer-events:none;}
+.installFabAndroid{background:linear-gradient(160deg,#3DDC84 0%,#0F9D58 100%);animation-delay:.4s;}
+.installFabRingGreen{box-shadow:none;}
+@keyframes fabFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+
+/* Android o'rnatish modal */
+.installAppIconAndroid{background:linear-gradient(160deg,#3DDC84 0%,#0F9D58 100%);box-shadow:0 14px 30px rgba(15,157,88,.4),0 1px 0 rgba(255,255,255,.35) inset;}
+
+/* o'rnatish modal hero */
+.installHero{text-align:center;padding-top:4px;}
+.installAppIcon{
+  width:72px;height:72px;border-radius:22px;margin:0 auto;
+  background:var(--hero-grad);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 14px 30px rgba(234,78,42,.4),0 1px 0 rgba(255,255,255,.35) inset;
+  animation:splashPop .7s var(--spring-pop);
+}
+
+
+/* o'rnatish qo'llanmasi karuseli */
+.igCarousel{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;border-radius:20px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.igCarousel::-webkit-scrollbar{display:none;}
+.igSlide{flex:0 0 100%;scroll-snap-align:center;}
+.igSlide img{width:100%;display:block;border-radius:20px;box-shadow:var(--shadow-sm);}
+.igDots{display:flex;gap:6px;justify-content:center;margin-top:12px;}
+.igDot{width:7px;height:7px;border-radius:50%;background:rgba(28,23,18,.18);transition:all .3s var(--spring);}
+.igDot.active{width:20px;border-radius:4px;background:var(--forest);}
+
+
+/* ---------- "Dastur yaratish" animatsiyali tugma ---------- */
+.devBtn{
+  position:relative;display:inline-flex;align-items:center;gap:8px;
+  height:40px;padding:0 15px 0 11px;border-radius:14px;border:none;cursor:pointer;
+  background:linear-gradient(120deg,#0B1224,#141B33,#0B1224);
+  background-size:220% 220%;
+  animation:devGradShift 5s ease-in-out infinite, chipIn .5s var(--spring-pop) backwards;
+  box-shadow:0 4px 14px rgba(6,12,30,.5),0 0 0 1px rgba(79,216,240,.35),0 0 18px rgba(79,216,240,.22);
+  overflow:hidden;transition:transform .35s var(--spring-pop);
+}
+.devBtn:active{transform:scale(.93);}
+.devBtn::after{
+  content:'';position:absolute;top:0;bottom:0;width:46px;left:-60px;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);
+  transform:skewX(-18deg);animation:devShine 3.4s ease-in-out infinite;
+}
+.devBtnIc{display:flex;animation:devIcPulse 2.2s ease-in-out infinite;}
+.devBtnTx{font-size:11.5px;font-weight:800;letter-spacing:.03em;
+  background:linear-gradient(90deg,#4FD8F0,#B08CF0,#F5B850,#4FD8F0);
+  background-size:280% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:devTxFlow 4s linear infinite;white-space:nowrap;}
+@keyframes devGradShift{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+@keyframes devShine{0%,55%{left:-60px;}85%,100%{left:120%;}}
+@keyframes devIcPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 3px rgba(79,216,240,.6));}50%{transform:scale(1.14);filter:drop-shadow(0 0 8px rgba(79,216,240,.95));}}
+@keyframes devTxFlow{0%{background-position:0% 0;}100%{background-position:280% 0;}}
+
+/* Telegram tasdiqlash qadamlari */
+.vcSteps{display:flex;flex-direction:column;gap:8px;margin:14px 0 16px;}
+.vcStep{display:flex;align-items:center;gap:10px;animation:chipIn .5s var(--spring-pop) backwards;}
+.vcSteps .vcStep:nth-child(2){animation-delay:.07s;}
+.vcSteps .vcStep:nth-child(3){animation-delay:.14s;}
+.vcStepIc{width:32px;height:32px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.vcStepTx{font-size:12.5px;color:#5C5348;line-height:1.45;}
+.vcStepTx b{color:var(--ink);}
+
+/* analytics */
+.barRow{margin-bottom:13px;}
+.barRow .lbl{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;margin-bottom:6px;}
+.barTrack{background:var(--fill);border-radius:8px;height:10px;overflow:hidden;}
+.barFill{background:linear-gradient(90deg,var(--forest),var(--gold));height:100%;border-radius:8px;transition:width .55s var(--spring);}
+
+/* ═══════════════════════════════════════════════════════════════
+   TEZ HISOB REJIMI (admin)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* + tugmasi va sanoq — faqat rejim yoqilganda ko'rinadi */
+.tallyPlus, .tallyQty{ display:none; }
+body.tallyOn .tallyPlus{ display:flex; }
+body.tallyOn .tallyQty:not(.hidden){ display:flex; }
+
+.tallyCard{ position:relative; }
+.tallyPlus{
+  position:absolute; top:8px; right:8px; z-index:3;
+  width:32px; height:32px; border:none; border-radius:50%;
+  background:var(--btn-grad); color:#fff;
+  font-size:19px; font-weight:800; line-height:1;
+  align-items:center; justify-content:center;
+  box-shadow:0 3px 10px rgba(234,90,31,.38);
+  transition:transform .25s var(--spring-pop);
+}
+.tallyPlus:active{ transform:scale(.86); }
+
+.tallyQty{
+  position:absolute; top:8px; right:46px; z-index:3;
+  min-width:26px; height:26px; padding:0 7px; border-radius:999px;
+  background:var(--forest-dark); color:#fff;
+  font-size:13px; font-weight:800;
+  align-items:center; justify-content:center;
+  box-shadow:0 2px 8px rgba(28,23,18,.28);
+  cursor:pointer;
+}
+@keyframes tallyPop{ 0%{transform:scale(1);} 45%{transform:scale(1.35);} 100%{transform:scale(1);} }
+.tallyQty.pop{ animation:tallyPop .32s var(--spring-pop); }
+.tallyCard.picked{ box-shadow:0 0 0 2px var(--forest) inset; }
+
+/* Tepadagi uzun panel */
+.tallyBar{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; margin:2px 0 13px; padding:13px 16px;
+  border-radius:18px; cursor:pointer;
+  background:linear-gradient(135deg,#2F6B3A,#1F4A28); color:#fff;
+  box-shadow:0 6px 20px rgba(31,74,40,.32);
+  animation:spIn .32s var(--spring-pop);
+}
+.tallyBar.hidden{ display:none; }
+.tallyBar:active{ transform:scale(.985); }
+.tallyBar .tbLeft{ display:flex; align-items:center; gap:12px; min-width:0; }
+.tallyBar .tbIcon{
+  width:36px; height:36px; border-radius:12px; flex-shrink:0;
+  background:rgba(255,255,255,.16);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; font-weight:800;
+}
+.tallyBar .tbSum{ font-size:17px; font-weight:800; letter-spacing:-.01em; }
+.tallyBar .tbMeta{ font-size:11.5px; font-weight:600; opacity:.82; margin-top:1px; }
+.tallyBar .tbArrow{ font-size:24px; opacity:.75; flex-shrink:0; }
+
+/* Katta oyna */
+.tallySummary{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin:4px 0 13px;
+}
+.tallySummary > div{
+  background:var(--leaf-soft); border-radius:14px; padding:10px 8px; text-align:center;
+}
+.tallySummary span{ display:block; font-size:14.5px; font-weight:800; color:var(--forest-dark); }
+.tallySummary label{ display:block; font-size:10.5px; font-weight:700; color:var(--muted); margin-top:2px; }
+
+.tallyList{ max-height:46vh; overflow-y:auto; }
+.tallyRow{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 0; border-bottom:1px solid var(--line-soft);
+}
+.tallyRow:last-child{ border-bottom:none; }
+.tRowMain{ flex:1; min-width:0; }
+.tName{ font-size:13.5px; font-weight:700; color:var(--ink); }
+.tAmount{ font-size:11px; font-weight:600; color:var(--muted); }
+.tCalc{ font-size:11.5px; font-weight:600; color:var(--muted); margin-top:2px; }
+.tSum{ font-size:13.5px; font-weight:800; color:var(--ink); white-space:nowrap; min-width:74px; text-align:right; }
+.tQtyBox{ display:flex; align-items:center; gap:4px; flex-shrink:0; }
+.tQtyBox button{
+  width:26px; height:26px; border:none; border-radius:9px;
+  background:var(--leaf-soft); color:var(--forest-dark); font-size:15px; font-weight:800;
+}
+.tQtyBox button:active{ transform:scale(.9); }
+.tQtyBox input{
+  width:42px; height:26px; text-align:center; border:1px solid var(--line-soft);
+  border-radius:9px; font-size:13px; font-weight:800; background:#fff;
+}
+
+/* Menyudagi kalit */
+.sideMenuToggleItem{ display:flex; align-items:center; gap:11px; }
+.sideMenuToggleItem small{ font-size:10.5px; font-weight:600; opacity:.7; }
+.miniSwitch{
+  width:40px; height:23px; border-radius:999px; background:rgba(255,255,255,.25);
+  flex-shrink:0; position:relative; transition:background .25s;
+}
+.miniSwitch i{
+  position:absolute; top:3px; left:3px; width:17px; height:17px; border-radius:50%;
+  background:#fff; transition:transform .28s var(--spring-pop);
+}
+.miniSwitch.on{ background:#7BD98F; }
+.miniSwitch.on i{ transform:translateX(17px); }
+
+/* Katalog kartochkasidagi sanoq (tez hisob rejimi) */
+.prodCard{ position:relative; }
+.prodCard .tallyQty{ top:9px; left:9px; right:auto; z-index:4; }
+.prodCard.picked{ box-shadow:0 0 0 2px var(--forest) inset; }
+/* rejim yoqilganda "+" tugmasi yashil bo'ladi — farqi bilinsin */
+body.tallyOn .quickAddBtn2{
+  background:linear-gradient(135deg,#2F6B3A,#1F4A28) !important;
+  box-shadow:0 3px 10px rgba(31,74,40,.35) !important;
+}
+
+/* ═══ TEZ HISOB: kartochka tugmalari ═══ */
+.cardActions2.tallyCtrl{ display:flex; align-items:center; gap:6px; }
+.tcMinus,.tcPlus{
+  width:36px; height:36px; flex-shrink:0; border:none; border-radius:12px;
+  font-size:20px; font-weight:800; line-height:1; color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .2s var(--spring-pop);
+}
+.tcMinus{ background:linear-gradient(135deg,#FF6B7A,#EF4B62); box-shadow:0 3px 9px rgba(239,75,98,.35); }
+.tcPlus { background:linear-gradient(135deg,#4A9DFF,#0A5FCC); box-shadow:0 3px 9px rgba(10,95,204,.35); }
+.tcMinus:active,.tcPlus:active{ transform:scale(.88); }
+.tcNum{
+  flex:1; min-width:0; height:36px; text-align:center;
+  border:1.5px solid var(--line-soft); border-radius:12px;
+  font-size:15px; font-weight:800; color:var(--ink); background:#fff;
+}
+
+/* ═══ TEZ HISOB: katta oyna ═══ */
+.tallySheet{
+  max-width:520px; width:100%;
+  max-height:92vh; height:92vh;
+  display:flex; flex-direction:column;
+  border-radius:26px 26px 0 0;
+}
+@media (min-width:560px){ .tallySheet{ height:88vh; border-radius:26px; } }
+.tallySheet #tallyBody{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+
+.tallyTabs{ display:flex; gap:7px; margin-bottom:13px; }
+.tallyTabs button{
+  flex:1; padding:11px 6px; border:none; border-radius:14px;
+  background:var(--line-soft); color:var(--muted);
+  font-size:13px; font-weight:800; transition:all .22s;
+}
+.tallyTabs button.active{
+  background:linear-gradient(135deg,#2F6B3A,#1F4A28); color:#fff;
+  box-shadow:0 4px 12px rgba(31,74,40,.3);
+}
+.tallyTabs button:active{ transform:scale(.96); }
+
+.tallyEmpty{ padding:26px 0; }
+.tallyWarn{
+  margin:10px 0; padding:10px 13px; border-radius:13px;
+  background:#FFF4E6; color:#9A5B12; font-size:12px; font-weight:700; line-height:1.45;
+}
+.tallyRow.overStock{ background:#FFF8F0; }
+.tStock{ margin-left:8px; font-size:10.5px; font-weight:700; color:var(--muted); }
+.tStock.bad{ color:#EF4B62; }
+.lossSum{ color:#EF4B62 !important; }
+.dangerBtn{ background:linear-gradient(135deg,#FF6B7A,#D0263C) !important;
+            box-shadow:0 5px 16px rgba(208,38,60,.35) !important; }
+.tQtyBox .qMinus{ background:#FDECEE; color:#D0263C; }
+.tQtyBox .qPlus { background:#E8F1FF; color:#0A5FCC; }
+
+/* ═══ Omborga qo'shish ro'yxati ═══ */
+.restockList{ max-height:none; }
+.restockRow{
+  display:flex; align-items:center; gap:10px;
+  padding:9px 0; border-bottom:1px solid var(--line-soft);
+}
+.restockRow.picked{ background:var(--leaf-soft); border-radius:12px; padding-left:8px; padding-right:8px; }
+.rsThumb{
+  width:44px; height:44px; flex-shrink:0; border-radius:12px; overflow:hidden;
+  background:var(--line-soft); display:flex; align-items:center; justify-content:center;
+}
+.rsThumb img{ width:100%; height:100%; object-fit:cover; }
+.rsMain{ flex:1; min-width:0; }
+.rsName{ font-size:13.5px; font-weight:700; color:var(--ink); }
+.rsMeta{ font-size:11px; font-weight:600; color:var(--muted); margin-top:2px; }
+.rsStock{ margin-left:6px; color:var(--forest-dark); font-weight:800; }
+
+/* Panel bo'sh bo'lganda biroz xiraroq */
+.tallyBar.empty{ opacity:.88; }
+
+/* Qo'shimcha rasmlar (forma) */
+.extraImgRow{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+.extraImgItem{ position:relative; width:64px; height:64px; }
+.extraImgItem img{ width:100%; height:100%; object-fit:cover; border-radius:12px; }
+.extraImgItem button{
+  position:absolute; top:-6px; right:-6px; width:22px; height:22px; border:none;
+  border-radius:50%; background:#EF4B62; color:#fff; font-size:15px; line-height:1;
+}
+
+/* Analitika: tez hisob bloki */
+.analyticsCard{
+  background:#fff; border-radius:20px; padding:15px 15px 13px; margin-bottom:14px;
+  box-shadow:0 3px 14px rgba(28,23,18,.07);
+}
+.anTitle{ font-size:12px; font-weight:800; color:var(--muted);
+  margin:14px 0 4px; text-transform:uppercase; letter-spacing:.04em; }
+
+/* ═══ BUYURTMA ASOSIDA (mahsulot) ═══ */
+.orderBtn2{
+  flex:1; padding:11px; border:none; border-radius:14px;
+  background:linear-gradient(135deg,#2F6B3A,#1F4A28); color:#fff;
+  font-size:13px; font-weight:800; letter-spacing:-.01em;
+  box-shadow:0 4px 12px rgba(31,74,40,.32);
+  transition:transform .2s var(--spring-pop);
+}
+.orderBtn2:active{ transform:scale(.95); }
+
+.preorderNote{
+  margin:12px 0 4px; padding:13px 15px; border-radius:16px;
+  background:var(--leaf-soft); border-left:4px solid var(--forest);
+}
+.preorderNote .pnTitle{ font-size:13px; font-weight:800; color:var(--forest-dark); margin-bottom:5px; }
+.preorderNote .pnText{ font-size:12px; line-height:1.55; color:var(--muted); }
+.preorderNote .pnMin{ margin-top:8px; font-size:12.5px; font-weight:700; color:var(--ink); }
+.preorderNote .pnMin b{ color:var(--forest-dark); }
+
+.preorderToggleRow{ background:var(--leaf-soft) !important; }
+.preorderBox{
+  margin:2px 0 12px; padding:13px 14px 4px;
+  border-radius:16px; background:var(--leaf-soft);
+}
+.preorderBox.hidden{ display:none; }
+
+/* Telegram Mini App ichida ochilganda */
+body.inTelegram .installHint,
+body.inTelegram #androidInstallBtn{ display:none !important; }
+body.inTelegram{ padding-top:0; }
+
+/* ═══ TEZ HISOB: tasdiqlash oynasi ═══ */
+.tcCard{ max-width:360px; text-align:center; padding:26px 22px 22px; }
+.tcCard h3{ margin:0 0 10px; font-size:18px; }
+.tcText{ font-size:13.5px; line-height:1.6; color:var(--muted); margin:0; }
+.tcText b{ color:var(--ink); }
+.tcSum{
+  margin-top:14px; padding:11px; border-radius:14px;
+  background:var(--leaf-soft); color:var(--forest-dark);
+  font-size:17px; font-weight:800;
+}
+.tcSum.hidden{ display:none; }
+.tcBtns{ display:flex; flex-direction:column; gap:9px; margin-top:18px; }
+.tcOk,.tcNo{
+  width:100%; padding:14px; border:none; border-radius:15px;
+  font-size:14px; font-weight:800; letter-spacing:.02em; color:#fff;
+  transition:transform .18s var(--spring-pop);
+}
+.tcOk{ background:linear-gradient(135deg,#4A9DFF,#0A5FCC); box-shadow:0 5px 16px rgba(10,95,204,.34); }
+.tcOk.tcDanger{ background:linear-gradient(135deg,#FF8A4A,#E8590C); box-shadow:0 5px 16px rgba(232,89,12,.34); }
+.tcNo{ background:linear-gradient(135deg,#FF6B7A,#D0263C); box-shadow:0 5px 16px rgba(208,38,60,.34); }
+.tcOk:active,.tcNo:active{ transform:scale(.96); }
+
+/* Sotilgan/qaytarilgan yozuvi */
+.soldBanner{
+  margin:2px 0 12px; padding:13px 15px; border-radius:16px;
+  background:linear-gradient(135deg,#2F6B3A,#1F4A28); color:#fff;
+}
+.soldBanner .sbTitle{ font-size:14px; font-weight:800; }
+.soldBanner .sbText{ font-size:11.5px; font-weight:600; opacity:.85; margin-top:3px; line-height:1.45; }
+
+/* ═══ Maxfiy admin tugmasi (yon menyu) ═══ */
+.secretAdminBtn{
+  display:block; width:100%; height:46px; margin:4px 0 14px;
+  border:none; border-radius:14px;
+  background:linear-gradient(135deg,#FF6B7A,#D0263C);
+  box-shadow:0 4px 10px rgba(208,38,60,.28);
+  -webkit-tap-highlight-color:transparent;
+  -webkit-user-select:none; user-select:none;
+  cursor:pointer;
+}
+.secretAdminBtn:focus{ outline:none; }
+
+/* Kirish oynasidagi "Ro'yxatdan o'tish" tugmasi */
+.regBtnAlt{
+  width:100%; margin-top:10px; padding:14px;
+  border:1.6px solid var(--forest); border-radius:15px;
+  background:transparent; color:var(--forest-dark);
+  font-size:14px; font-weight:800;
+  transition:transform .18s var(--spring-pop), background .2s;
+}
+.regBtnAlt:active{ transform:scale(.97); background:var(--leaf-soft); }
+.regBtnAlt.hidden{ display:none; }
+
+/* ═══ Admin soati (yon menyu) ═══ */
+.adminClock{
+  margin:4px 0 14px; padding:14px 16px; border-radius:16px;
+  background:linear-gradient(135deg,#2F6B3A,#1F4A28); color:#fff;
+  text-align:center; box-shadow:0 4px 14px rgba(31,74,40,.28);
+}
+.adminClock.hidden{ display:none; }
+.adminClock .acTime{
+  font-size:26px; font-weight:800; letter-spacing:.02em;
+  font-variant-numeric:tabular-nums; line-height:1.1;
+}
+.adminClock .acDate{ font-size:12px; font-weight:600; opacity:.85; margin-top:3px; }
+
+/* ═══ "Sotildi" xabari ═══ */
+#soldToast{
+  position:fixed; inset:0; z-index:10001;
+  display:flex; align-items:center; justify-content:center;
+  padding:24px; background:rgba(12,10,8,.45);
+  -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px);
+}
+#soldToast.hidden{ display:none; }
+#soldToast .stCard{
+  width:100%; max-width:320px; background:#fff; border-radius:24px;
+  padding:28px 22px 20px; text-align:center;
+  box-shadow:0 18px 50px rgba(28,23,18,.3);
+  animation:stPop .42s var(--spring-pop);
+}
+@keyframes stPop{ 0%{opacity:0;transform:scale(.82) translateY(14px);} 100%{opacity:1;transform:none;} }
+#soldToast .stIcon{
+  width:74px; height:74px; margin:0 auto 15px; border-radius:50%;
+  background:linear-gradient(135deg,#2F6B3A,#1F4A28);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 6px 18px rgba(31,74,40,.36);
+}
+#soldToast .stIcon svg{ width:36px; height:36px; }
+#soldToast .stIcon path{
+  stroke:#fff; stroke-width:3.2; fill:none;
+  stroke-linecap:round; stroke-linejoin:round;
+  stroke-dasharray:40; stroke-dashoffset:40;
+  animation:stCheck .5s .18s ease forwards;
+}
+@keyframes stCheck{ to{ stroke-dashoffset:0; } }
+#soldToast .stTitle{ font-size:17px; font-weight:800; color:var(--ink); }
+#soldToast .stText{ font-size:12.5px; font-weight:600; color:var(--muted); margin-top:6px; line-height:1.5; }
+#soldToast .stOk{
+  margin-top:16px; padding:9px 30px; border:none; border-radius:999px;
+  background:var(--line-soft); color:var(--ink); font-size:13px; font-weight:800;
+}
+#soldToast .stOk:active{ transform:scale(.94); }
+#soldToast .stBar{
+  height:3px; margin-top:14px; border-radius:99px; background:var(--line-soft); overflow:hidden;
+}
+#soldToast .stBar i{
+  display:block; height:100%; width:100%; background:var(--forest);
+  transform-origin:left; animation:stCount 3s linear forwards;
+}
+@keyframes stCount{ from{transform:scaleX(1);} to{transform:scaleX(0);} }
+
+/* Profil oynasi */
+.rightBtn.iconOnlyBtn{ padding:8px 10px !important; }
+.pfHead{ display:flex; align-items:center; gap:13px; margin:6px 0 14px; }
+.pfAvatar{
+  width:58px; height:58px; border-radius:50%; flex-shrink:0; overflow:hidden;
+  background:var(--leaf-soft); display:flex; align-items:center; justify-content:center;
+}
+.pfAvatar img{ width:100%; height:100%; object-fit:cover; }
+.pfAvatar svg{ stroke:var(--forest); }
+.pfName{ font-size:17px; font-weight:800; color:var(--ink); }
+.pfRole{ font-size:12px; font-weight:700; color:var(--forest-dark); margin-top:2px; }
+.pfRows{ border-top:1px solid var(--line-soft); }
+.pfRow{
+  display:flex; justify-content:space-between; align-items:center; gap:12px;
+  padding:11px 0; border-bottom:1px solid var(--line-soft); font-size:13px;
+}
+.pfRow span{ color:var(--muted); font-weight:600; }
+.pfRow b{ color:var(--ink); font-weight:800; text-align:right; }
+.secretAdminBtn.hidden{ display:none; }
+
+/* Printerdan chiqarish tugmasi */
+.printBtn{
+  flex:1 0 100%; margin-top:2px;
+  background:linear-gradient(135deg,#4A9DFF,#0A5FCC) !important;
+  color:#fff !important; border:none !important;
+  box-shadow:0 4px 12px rgba(10,95,204,.3);
+}
+.printBtn svg{ stroke:#fff !important; }
+
+/* Telegram tasdiqlangan yozuvi */
+.tgVerifiedHint{
+  margin:0 0 12px; padding:11px 14px; border-radius:14px;
+  background:var(--leaf-soft); border-left:4px solid var(--forest);
+  font-size:12px; font-weight:700; color:var(--forest-dark); line-height:1.45;
+}
+.tgVerifiedHint.hidden{ display:none; }
+
+/* Telegram'dan raqam olish tugmasi */
+.tgPhoneBtn{
+  margin-top:9px; padding:9px 15px; border:none; border-radius:12px;
+  background:linear-gradient(135deg,#4A9DFF,#0A5FCC); color:#fff;
+  font-size:12px; font-weight:800;
+}
+.tgPhoneBtn:active{ transform:scale(.96); }
+
+/* ═══ Chek yuborilmoqda ═══ */
+#printProgress{
+  position:fixed; inset:0; z-index:10002;
+  display:flex; align-items:center; justify-content:center; padding:24px;
+  background:rgba(12,10,8,.42);
+  -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px);
+}
+#printProgress.hidden{ display:none; }
+#printProgress .ppCard{
+  width:100%; max-width:280px; background:#fff; border-radius:20px;
+  padding:22px 20px 18px; text-align:center;
+  box-shadow:0 16px 44px rgba(28,23,18,.3);
+}
+#printProgress .ppTitle{ font-size:15px; font-weight:800; color:var(--ink); }
+#printProgress .ppBar{
+  height:8px; margin:14px 0 8px; border-radius:99px;
+  background:var(--line-soft); overflow:hidden;
+}
+#printProgress .ppBar i{
+  display:block; height:100%; width:0;
+  background:linear-gradient(90deg,#4A9DFF,#0A5FCC);
+  transition:width .15s linear;
+}
+#printProgress .ppPct{ font-size:12.5px; font-weight:700; color:var(--muted); }
+
+/* Chekdagi agent va prays-list qatori */
+.rAgentRow{
+  display:flex; align-items:baseline; gap:7px;
+  font-size:12.5px; line-height:1.5; margin:2px 0 4px; color:var(--ink);
+  white-space:nowrap;
+}
+.rAgentRow b{ overflow:hidden; text-overflow:ellipsis; }
+.rAgentRow .raIc{
+  flex-shrink:0; width:17px; height:17px;
+  display:inline-flex; align-items:center; justify-content:center;
+  align-self:center;
+}
+.rAgentRow .raIc svg{
+  width:17px; height:17px;
+  stroke:var(--forest); stroke-width:1.9;
+  stroke-linecap:round; stroke-linejoin:round; fill:none;
+}
+.rAgentRow b{ font-weight:800; }
+/* Магазин qatori — uzun chiziq bilan */
+.rShopRow{ align-items:flex-end; }
+.rShopLine{
+  flex:0 1 auto; width:150px; max-width:55%;
+  border-bottom:1.6px solid var(--ink);
+  font-weight:800; padding:0 6px 2px; min-height:17px;
+  letter-spacing:.01em; text-align:center;
+}
+
+/* Chop etish uchun rasmga olayotganda: oq fon, qora matn */
+/* Sarlavha chop etishda ham o'z ko'rinishida qoladi —
+   logo va to'q sariq fon saqlanadi (termal printerda qora bo'lib chiqadi,
+   ustidagi oq yozuv o'qiladi). */
+body.printCapture .receiptWatermark{ display:none !important; }
+body.printCapture .rTotalAmt,
+body.printCapture #crTotalAmt,
+body.printCapture #rTotalAmt{ color:#000 !important; }
+body.printCapture .rMetaRow span,
+body.printCapture .rSumRow span,
+body.printCapture .riQty,
+body.printCapture .rSectionLabel{ color:#222 !important; }
+body.printCapture .rThanks{ color:#000 !important; }
+
+/* ═══ ELEKTRON IMZO ═══ */
+.signWrap{
+  position:relative; width:100%; height:130px;
+  border:1.6px dashed var(--line); border-radius:14px;
+  background:#fff; overflow:hidden; touch-action:none;
+}
+.signWrap canvas{ width:100%; height:100%; display:block; touch-action:none; }
+.signHint{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:12.5px; font-weight:600; color:var(--muted); pointer-events:none;
+}
+.signHint.hidden{ display:none; }
+.signClear{
+  position:absolute; top:7px; right:7px;
+  padding:5px 11px; border:none; border-radius:9px;
+  background:var(--line-soft); color:var(--ink);
+  font-size:11px; font-weight:800;
+}
+.signClear:active{ transform:scale(.94); }
+
+/* Chekdagi imzo */
+.rSignImg{
+  height:30px; width:auto; max-width:46%;
+  margin-left:6px; align-self:flex-end;
+  object-fit:contain;
+}
+.rSignImg.hidden{ display:none; }
+
+/* ═══════════════════════════════════════════════════════════════
+   CHOP ETISH UCHUN: shriftlar kattalashtiriladi
+
+   Chek 58mm qog'ozga 384 nuqta kengligida bosiladi. Ekrandagi
+   o'lcham bilan bosilganda harflar juda mayda chiqadi, shuning
+   uchun NUSXADA barcha shriftlar ~1.5 barobar kattalashtiriladi.
+   Ekrandagi chekka bu ta'sir qilmaydi.
+   ═══════════════════════════════════════════════════════════════ */
+.printClone .receiptBody2{ padding:18px 20px 8px; }
+
+.printClone .rAgentRow{
+  font-size:18px; line-height:1.5; margin:4px 0 6px;
+  flex-wrap:nowrap; white-space:nowrap;
+}
+/* "Прайс лист УНУТИЛМАС ТАЪМ" uzun — bir qatorga sig'sin */
+.printClone .rAgentRow:nth-of-type(3) b{ font-size:15.5px; letter-spacing:-.2px; }
+.printClone .rAgentRow b{ overflow:hidden; text-overflow:ellipsis; }
+.printClone .rAgentRow .raIc,
+.printClone .rAgentRow .raIc svg{ width:22px; height:22px; }
+.printClone .rShopLine{ width:190px; min-height:24px; font-size:18px; border-bottom-width:2px; }
+.printClone .rSignImg{ height:42px; max-width:48%; }
+
+.printClone .rMetaRow{ font-size:17px; margin-bottom:7px; }
+.printClone .rMetaRow b{ font-size:17px; }
+
+.printClone .rSectionLabel{ font-size:14px; letter-spacing:.05em; margin:12px 0 6px; }
+
+.printClone .rItemRow{ font-size:19px; padding:11px 0; }
+.printClone .rItemRow .riName{ font-size:19px; }
+.printClone .rItemRow .riAmount{ font-size:16px; }
+.printClone .rItemRow .riQty{ font-size:16px; }
+.printClone .rItemRow .riPrice{ font-size:19px; }
+
+.printClone .rSumRow{ font-size:18px; padding:8px 0; }
+.printClone .pdTotalRow,
+.printClone .rTotalRow{ font-size:20px; }
+.printClone .rTotalAmt,
+.printClone #crTotalAmt,
+.printClone #rTotalAmt{ font-size:30px; }
+
+.printClone .rThanks{ font-size:20px; line-height:1.5; }
+.printClone .receiptHead2 h1{ font-size:24px; }
+.printClone .receiptHead2 p{ font-size:17px; }
+.printClone .receiptLogo2{ width:60px; height:60px; }
+
+/* Chop etishda keraksiz narsalar */
+.printClone .rQrBox,
+.printClone .receiptWatermark{ display:none !important; }
+
+/* ═══ CHOP ETISH SARLAVHASI ═══
+   Ekranda to'q sariq fon, chop etishda esa oq fon + to'q logo.
+   Termal printerda katta qora maydon bo'lmaydi — qog'oz va
+   printer resursi tejaladi, chek toza chiqadi. */
+.printLogo{ display:none; }
+
+.printClone .receiptHead2{
+  background:#fff !important;
+  padding:10px 16px 6px !important;
+}
+.printClone .receiptHead2 h1,
+.printClone .receiptHead2 p,
+.printClone .receiptLogo2,
+.printClone .receiptWatermark{ display:none !important; }
+
+.printClone .printLogo{
+  display:block; width:78%; max-width:280px;
+  margin:0 auto; height:auto;
+}
+
+/* ═══ MAGAZIN TANLASH ═══ */
+.shopPickRow{ display:flex; gap:8px; align-items:stretch; }
+.shopPickRow input{ flex:1; min-width:0; }
+.shopPickBtn{
+  flex-shrink:0; padding:0 15px; border:none; border-radius:13px;
+  background:var(--leaf-soft); color:var(--forest-dark);
+  font-size:12.5px; font-weight:800;
+}
+.shopPickBtn:active{ transform:scale(.95); }
+
+.prnDebtNote{
+  margin-top:9px; padding:10px 13px; border-radius:12px;
+  background:var(--amber-soft); border-left:4px solid var(--amber);
+  font-size:12px; font-weight:700; color:var(--ink); line-height:1.45;
+}
+.prnDebtNote.hidden{ display:none; }
+
+.spList{ max-height:56vh; overflow-y:auto; margin-top:4px; -webkit-overflow-scrolling:touch; }
+.spRow{
+  width:100%; display:flex; align-items:center; gap:12px;
+  padding:12px 13px; margin-bottom:7px;
+  background:var(--card); border:1px solid var(--line-soft);
+  border-radius:15px; text-align:left;
+  transition:transform .16s, border-color .2s;
+}
+.spRow:active{ transform:scale(.98); border-color:var(--forest); }
+.spMain{ flex:1; min-width:0; }
+.spName{ font-size:14px; font-weight:800; color:var(--ink); }
+.spMeta{ font-size:11px; font-weight:600; color:var(--muted); margin-top:2px; }
+.spDebt{ flex-shrink:0; font-size:12.5px; font-weight:800; text-align:right; }
+.spDebt.has{ color:var(--danger); }
+.spDebt.ok{ color:var(--forest); font-size:11px; font-weight:700; }
+
+/* ═══ PROFILDAGI SAVDO ═══ */
+.ssStats{ display:flex; gap:8px; margin:4px 0 12px; }
+.ssStats > div{
+  flex:1; text-align:center; padding:10px 6px;
+  background:var(--bg); border-radius:13px;
+}
+.ssStats span{ display:block; font-size:15px; font-weight:800; color:var(--ink); }
+.ssStats span.lossSum{ color:var(--danger); }
+.ssStats label{ font-size:10px; font-weight:700; color:var(--muted); margin-top:2px; display:block; }
+.ssList{ max-height:260px; overflow-y:auto; }
+.ssRow{
+  display:flex; align-items:center; gap:10px;
+  padding:9px 0; border-bottom:1px solid var(--line-soft);
+}
+.ssRow:last-child{ border-bottom:none; }
+.ssMain{ flex:1; min-width:0; }
+.ssName{ font-size:13px; font-weight:700; color:var(--ink);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ssMeta{ font-size:10.5px; font-weight:600; color:var(--muted); margin-top:1px; }
+.ssSum{ flex-shrink:0; font-size:13px; font-weight:800; color:var(--ink); }
+
+/* ═══ Yozish paytidagi takliflar ═══ */
+.shopSuggest{
+  margin-top:6px; background:var(--card);
+  border:1px solid var(--line); border-radius:13px;
+  box-shadow:0 8px 22px rgba(28,23,18,.12); overflow:hidden;
+}
+.shopSuggest.hidden{ display:none; }
+.ssItem{
+  width:100%; display:flex; justify-content:space-between; align-items:center; gap:10px;
+  padding:11px 13px; border:none; background:none; text-align:left;
+  border-bottom:1px solid var(--line-soft);
+}
+.ssItem:last-child{ border-bottom:none; }
+.ssItem:active{ background:var(--leaf-soft); }
+.ssiName{ font-size:13.5px; font-weight:800; color:var(--ink); }
+.ssiDebt{ font-size:12px; font-weight:800; }
+.ssiDebt.has{ color:var(--danger); }
+.ssEmpty{ padding:11px 13px; font-size:12px; font-weight:600; color:var(--muted); }
+
+/* ═══ To'lov qutisi ═══ */
+.payBox{
+  margin-top:12px; padding:12px 14px; border-radius:15px;
+  background:var(--bg); border:1px solid var(--line-soft);
+}
+.payRow{
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  font-size:13px; padding:4px 0;
+}
+.payRow span, .payRow label{ font-weight:700; color:var(--muted); }
+.payRow b{ font-size:14.5px; font-weight:800; color:var(--ink); }
+.payInput input{
+  width:55%; text-align:right; font-size:16px; font-weight:800;
+  padding:9px 12px; border-radius:11px;
+}
+.payQuick{ display:flex; gap:7px; margin:8px 0 6px; }
+.payQuick button{
+  flex:1; padding:8px 6px; border:none; border-radius:10px;
+  background:var(--card); color:var(--ink);
+  font-size:11.5px; font-weight:800;
+  box-shadow:inset 0 0 0 1px var(--line);
+}
+.payQuick button:active{ transform:scale(.96); background:var(--leaf-soft); }
+.payDebt{ margin-top:4px; padding-top:9px; border-top:1px dashed var(--line); }
+.payDebt.has b{ color:var(--danger); font-size:17px; }
+
+/* ═══ Chekdagi to'lov qatorlari ═══ */
+.rPayBlock{ margin-top:6px; padding-top:6px; border-top:1px dashed var(--line); }
+.rPayBlock.hidden{ display:none; }
+.rPayRow{ display:flex; justify-content:space-between; font-size:12.5px; padding:3px 0; }
+.rPayRow span{ color:var(--muted); font-weight:600; }
+.rPayRow b{ font-weight:800; color:var(--ink); }
+.rPayDebt b{ color:var(--danger); font-size:14px; }
+.printClone .rPayRow{ font-size:18px; padding:5px 0; }
+.printClone .rPayDebt b{ font-size:21px; }
+
+/* Qarz yozish tugmasi */
+.debtAddBtn{
+  width:100%; margin:0 0 10px;
+  color:var(--danger) !important; font-weight:800;
+  border-color:rgba(240,62,62,.35) !important;
+}
+
+/* ═══ TIZIM HOLATI ═══ */
+.shSummary{ display:flex; gap:8px; margin:4px 0 10px; }
+.shSummary > div{ flex:1; text-align:center; padding:12px 6px; background:var(--bg); border-radius:14px; }
+.shSummary span{ display:block; font-size:18px; font-weight:800; color:var(--ink); }
+.shSummary span.lossSum{ color:var(--danger); }
+.shSummary label{ font-size:10.5px; font-weight:700; color:var(--muted); }
+.shRow{ margin-bottom:9px; }
+.shTop{ display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:4px; }
+.shTop span{ font-weight:700; color:var(--ink); }
+.shTop b{ font-weight:800; color:var(--muted); font-size:11.5px; }
+.shBar{ height:6px; border-radius:99px; background:var(--line-soft); overflow:hidden; }
+.shBar i{ display:block; height:100%; background:var(--forest); border-radius:99px; }
+.shBar.warn i{ background:var(--danger); }
+.shSection{
+  margin:18px 0 8px; padding-top:14px; border-top:1px solid var(--line-soft);
+  font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--muted);
+}
+.shRestore{ display:block; width:100%; margin-top:8px; text-align:center; cursor:pointer; }
+
+/* ═══ BOSH SAHIFA GRAFIKLARI ═══ */
+.chCard{ margin-top:12px; }
+.chHead{ display:flex; justify-content:space-between; align-items:baseline; }
+.chHead b{ font-size:15px; font-weight:800; color:var(--forest-dark); }
+.chBars{ display:flex; gap:7px; align-items:flex-end; height:120px; margin-top:12px; }
+.chCol{ flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; }
+.chBarWrap{ flex:1; width:100%; display:flex; align-items:flex-end; }
+.chBar{
+  width:100%; border-radius:8px 8px 3px 3px;
+  background:linear-gradient(180deg, var(--amber), var(--forest));
+  opacity:.55; transform-origin:bottom;
+  animation: chGrow .6s cubic-bezier(.22,.8,.28,1) backwards;
+}
+.chBar.today{ opacity:1; box-shadow:0 4px 12px rgba(226,78,23,.3); }
+.chCol:nth-child(1) .chBar{ animation-delay:.02s; } .chCol:nth-child(2) .chBar{ animation-delay:.06s; }
+.chCol:nth-child(3) .chBar{ animation-delay:.10s; } .chCol:nth-child(4) .chBar{ animation-delay:.14s; }
+.chCol:nth-child(5) .chBar{ animation-delay:.18s; } .chCol:nth-child(6) .chBar{ animation-delay:.22s; }
+.chCol:nth-child(7) .chBar{ animation-delay:.26s; }
+@keyframes chGrow{ from{ transform:scaleY(0); } to{ transform:scaleY(1); } }
+.chCol span{ font-size:10.5px; font-weight:700; color:var(--muted); }
+.chCol span.today{ color:var(--forest-dark); font-weight:800; }
+.tsRow{ margin-top:10px; }
+.tsTop{ display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:4px; }
+.tsTop span{ font-weight:700; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tsTop b{ font-weight:800; flex-shrink:0; margin-left:8px; }
+.tsBar{ height:7px; border-radius:99px; background:var(--line-soft); overflow:hidden; }
+.tsBar i{ display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,var(--amber),var(--forest)); }
+@media (prefers-reduced-motion: reduce){ .chBar{ animation:none; } }
+
+/* Sarlavha ikonkalari */
+.hIco{ display:inline-flex; vertical-align:-3px; margin-right:7px; }
+.hIco svg{ stroke:var(--forest); }
+
+/* ═══ Til almashtirgich — yon menyu sarlavhasi yonida ═══ */
+.menuTitleGroup{ display:flex; align-items:center; gap:10px; }
+.langPill{
+  display:inline-flex; padding:2px; border-radius:999px;
+  background:var(--line-soft); gap:2px;
+}
+.langPill button{
+  border:none; background:transparent; cursor:pointer;
+  min-width:34px; padding:4px 9px; border-radius:999px;
+  font-size:11px; font-weight:800; letter-spacing:.04em;
+  color:var(--muted); line-height:1.2;
+  transition:background .22s, color .22s, transform .15s;
+}
+.langPill button:active{ transform:scale(.92); }
+/* Faol til — sariq */
+.langPill button.on{
+  background:var(--amber); color:#3A2A08;
+  box-shadow:0 2px 6px rgba(247,169,40,.4);
+}
+
+/* ═══ ZAXIRADAN TIKLASH — terminal ═══ */
+#restoreTerm{
+  position:fixed; inset:0; z-index:10050;
+  background:#05070a;
+  display:flex; align-items:center; justify-content:center;
+  padding:calc(14px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom));
+  animation:rtIn .28s ease;
+}
+#restoreTerm.hidden{ display:none; }
+@keyframes rtIn{ from{ opacity:0; } to{ opacity:1; } }
+/* ekran chiziqlari — eski monitor effekti */
+#restoreTerm::after{
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(0deg, rgba(0,255,120,.035) 0 1px, transparent 1px 3px);
+}
+.rtWin{
+  width:100%; max-width:560px; height:min(78vh, 620px);
+  display:flex; flex-direction:column;
+  border:1px solid rgba(60,255,140,.28); border-radius:14px; overflow:hidden;
+  box-shadow:0 0 40px rgba(40,255,130,.14), inset 0 0 30px rgba(40,255,130,.05);
+  transition:opacity .4s, transform .4s;
+}
+#restoreTerm.rtFinished .rtWin{ opacity:.18; transform:scale(.97); }
+.rtBar{
+  display:flex; align-items:center; gap:6px; padding:9px 12px;
+  background:#0d1117; border-bottom:1px solid rgba(60,255,140,.18);
+}
+.rtBar i{ width:10px; height:10px; border-radius:50%; background:#ff5f56; }
+.rtBar i:nth-child(2){ background:#ffbd2e; } .rtBar i:nth-child(3){ background:#27c93f; }
+.rtBar span{ margin-left:8px; font:600 11px ui-monospace,Menlo,Consolas,monospace; color:#6b8f7a; }
+.rtBody{
+  flex:1; overflow:hidden; padding:10px 12px;
+  font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  white-space:pre; text-shadow:0 0 6px currentColor;
+}
+.rtLine{ animation:rtLine .12s ease-out; overflow:hidden; text-overflow:ellipsis; }
+@keyframes rtLine{ from{ opacity:0; transform:translateY(4px); } to{ opacity:1; transform:none; } }
+.c-green{ color:#3dff8f; } .c-cyan{ color:#39d0ff; } .c-yel{ color:#ffd84a; }
+.c-mag{ color:#ff5ad2; } .c-red{ color:#ff5a5a; } .c-dim{ color:#4f7a62; text-shadow:none; }
+.rtProg{ display:flex; align-items:center; gap:10px; padding:10px 12px; background:#0d1117;
+  border-top:1px solid rgba(60,255,140,.18); }
+.rtProg b{ font:800 12px ui-monospace,Menlo,monospace; color:#3dff8f; min-width:38px; }
+.rtTrack{ flex:1; height:6px; border-radius:99px; background:#132019; overflow:hidden; }
+.rtTrack i{ display:block; height:100%; width:0; background:linear-gradient(90deg,#1fbf6a,#3dff8f);
+  box-shadow:0 0 10px #3dff8f; transition:width .08s linear; }
+
+/* Yakuniy ✓ */
+.rtDone{ position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:14px; }
+.rtDone.hidden{ display:none; }
+.rtCheck svg{ width:110px; height:110px; }
+.rtCheck circle{ fill:none; stroke:#3dff8f; stroke-width:2.5;
+  stroke-dasharray:145; stroke-dashoffset:145; animation:rtDraw .6s ease forwards;
+  filter:drop-shadow(0 0 8px #3dff8f); }
+.rtCheck path{ fill:none; stroke:#3dff8f; stroke-width:4; stroke-linecap:round; stroke-linejoin:round;
+  stroke-dasharray:40; stroke-dashoffset:40; animation:rtDraw .4s .45s ease forwards;
+  filter:drop-shadow(0 0 8px #3dff8f); }
+@keyframes rtDraw{ to{ stroke-dashoffset:0; } }
+.rtDoneTxt{ font:800 26px ui-monospace,Menlo,monospace; letter-spacing:.2em; color:#3dff8f;
+  text-shadow:0 0 14px #3dff8f; opacity:0; animation:rtIn .4s .7s ease forwards; }
+.rtDoneSub{ font:600 12px ui-monospace,Menlo,monospace; color:#6b8f7a;
+  opacity:0; animation:rtIn .4s .9s ease forwards; }
+@media (prefers-reduced-motion: reduce){ .rtLine{ animation:none; } }
+
+/* ═══ BONUS ═══ */
+.bonusSetBtn{ width:100%; margin:0 0 10px; }
+.bonusCard{
+  margin:0 0 12px; padding:13px 14px; border-radius:16px;
+  background:linear-gradient(135deg, var(--amber-soft), #fff);
+  border:1px solid rgba(247,169,40,.35);
+}
+.bonusCard.ready{
+  background:linear-gradient(135deg, #E9F9EE, #fff); border-color:rgba(40,160,80,.45);
+  box-shadow:0 0 0 3px rgba(40,160,80,.12);
+  animation:bnPulse 2.2s ease-in-out infinite;
+}
+@keyframes bnPulse{ 50%{ box-shadow:0 0 0 6px rgba(40,160,80,.06); } }
+.bnHead{ display:flex; justify-content:space-between; align-items:center; gap:8px;
+  font-size:12.5px; font-weight:800; color:var(--ink); }
+.bnEdit{ border:none; background:rgba(0,0,0,.06); border-radius:9px; padding:5px 10px;
+  font-size:11px; font-weight:800; color:var(--ink); }
+.bnBar{ height:9px; margin:10px 0 7px; border-radius:99px; background:rgba(0,0,0,.07); overflow:hidden; }
+.bnBar i{ display:block; height:100%; border-radius:99px;
+  background:linear-gradient(90deg, var(--amber), var(--forest)); transition:width .5s; }
+.bonusCard.ready .bnBar i{ background:linear-gradient(90deg,#3cc46b,#1f9a4c); }
+.bnNums{ display:flex; gap:6px; align-items:baseline; font-size:12px; }
+.bnNums b{ font-size:16px; font-weight:800; color:var(--ink); }
+.bnNums span{ color:var(--muted); font-weight:600; }
+.bnLeft{ margin-top:5px; font-size:11.5px; font-weight:700; color:var(--muted); }
+.bnReady{ margin-top:8px; font-size:13px; font-weight:700; color:#1f7a3e; }
+.bnCard{ margin-top:8px; font-size:12px; color:var(--muted); }
+.bnCard b{ color:var(--ink); letter-spacing:.03em; }
+.bnHistT{ margin:10px 0 3px; font-size:10.5px; font-weight:800; letter-spacing:.05em;
+  text-transform:uppercase; color:var(--muted); }
+.bnHist{ display:flex; justify-content:space-between; font-size:12px; padding:3px 0; }
+.bnHist b{ font-weight:800; }
+.bnToggle{ display:flex; align-items:center; gap:9px; font-size:13.5px; font-weight:700; cursor:pointer; }
+.bnToggle input{ width:20px; height:20px; accent-color:var(--forest); }
+
+/* ═══ CHEKLAR TARIXI ═══ */
+.rcTitle{ margin:14px 0 6px; font-size:11px; font-weight:800; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--muted); }
+.rcRow{ padding:10px 12px; margin-bottom:7px; border-radius:13px;
+  background:var(--bg); border:1px solid var(--line-soft); }
+.rcTop{ display:flex; justify-content:space-between; font-size:12.5px; }
+.rcTop span{ font-weight:800; color:var(--muted); } .rcTop b{ font-weight:800; }
+.rcMeta{ font-size:10.5px; font-weight:600; color:var(--muted); margin-top:2px; }
+.rcItems{ font-size:12px; color:var(--ink); margin-top:5px; line-height:1.45; }
+.rcPay{ display:flex; justify-content:space-between; gap:8px; margin-top:6px; font-size:11.5px; }
+.rcDebt{ color:var(--danger); } .rcOk{ color:var(--forest); font-weight:700; }
+.ownerBox{ margin-top:12px; }
+
+/* ═══ TO'LOV SO'ROVLARI ═══ */
+.prqBox{ margin:4px 0 12px; }
+.prqTitle{ font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--muted); margin:6px 0 7px; }
+.prqRow{ padding:11px 13px; margin-bottom:8px; border-radius:14px;
+  background:var(--amber-soft); border:1px solid rgba(247,169,40,.35); }
+.prqTop{ display:flex; justify-content:space-between; align-items:baseline; }
+.prqTop b{ font-size:16px; font-weight:800; }
+.prqTop span{ font-size:11.5px; font-weight:800; color:var(--forest-dark); }
+.prqMeta{ font-size:11px; font-weight:600; color:var(--muted); margin-top:2px; }
+.prqNote{ font-size:12.5px; margin-top:5px; }
+.prqWait{ margin-top:6px; font-size:11.5px; font-weight:800; color:#B07A10; }
+.prqBtns{ display:flex; gap:7px; margin-top:9px; }
+.prqBtns button{ flex:1; padding:10px; font-size:12px; }
+.prqMethods{ display:flex; gap:7px; }
+.prqMethods button{ flex:1; padding:10px 6px; border-radius:11px; border:none;
+  background:var(--card); box-shadow:inset 0 0 0 1px var(--line);
+  font-size:12.5px; font-weight:800; color:var(--ink); }
+.prqMethods button.on{ background:var(--forest); color:#fff; box-shadow:none; }
+
+/* ═══ XARITA: MAGAZINLAR RO'YXATI (ochiladigan) ═══ */
+.storeListToggle{
+  width:100%; margin-top:14px; display:flex; align-items:center; gap:11px;
+  padding:14px 16px; border:none; border-radius:16px; cursor:pointer;
+  background:var(--card); box-shadow:var(--lift-1, 0 2px 8px rgba(0,0,0,.06)), inset 0 0 0 1px var(--line-soft);
+  font-size:14.5px; font-weight:800; color:var(--ink); text-align:left;
+  transition:border-radius .3s, box-shadow .25s;
+}
+.storeListToggle.open{ border-radius:16px 16px 0 0; }
+.sltIc{ display:inline-flex; }
+.sltIc svg{ stroke:var(--forest); }
+.sltTxt{ flex:1; }
+.sltCount{
+  min-width:26px; padding:3px 8px; border-radius:99px; text-align:center;
+  background:var(--leaf-soft); color:var(--forest-dark); font-size:12px; font-weight:800;
+}
+.sltChev{
+  width:9px; height:9px; margin:0 3px 3px 2px;
+  border-right:2.4px solid var(--muted); border-bottom:2.4px solid var(--muted);
+  transform:rotate(45deg); transition:transform .32s cubic-bezier(.34,1.3,.5,1);
+}
+.storeListToggle.open .sltChev{ transform:rotate(-135deg); margin-bottom:-3px; }
+
+/* Pastga oqib ochilish — balandlik animatsiyasi */
+.storeListWrap{
+  display:grid; grid-template-rows:0fr;
+  transition:grid-template-rows .38s cubic-bezier(.22,.8,.28,1);
+}
+.storeListWrap.open{ grid-template-rows:1fr; }
+.storeListInner{
+  overflow:hidden; background:var(--card); border-radius:0 0 16px 16px;
+  box-shadow:inset 0 0 0 1px var(--line-soft);
+}
+.storeListWrap.open .storeListInner{ padding:8px 8px 10px; }
+.storeListSearch{
+  width:100%; margin:0 0 6px; padding:10px 12px; border-radius:11px;
+  font-size:13.5px; border:1px solid var(--line); background:var(--bg);
+}
+#storeList{ max-height:52vh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+
+/* Ixcham qator */
+.slRow{
+  width:100%; display:flex; align-items:center; gap:10px;
+  padding:10px 9px; border:none; background:none; text-align:left;
+  border-bottom:1px solid var(--line-soft); cursor:pointer;
+  animation:slIn .3s cubic-bezier(.22,.8,.28,1) backwards;
+}
+.slRow:last-child{ border-bottom:none; }
+.slRow:active{ background:var(--leaf-soft); border-radius:11px; }
+.slDot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.slMain{ flex:1; min-width:0; display:flex; flex-direction:column; }
+.slName{ font-size:13.5px; font-weight:800; color:var(--ink);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.slBonus{ font-style:normal; }
+.slMeta{ font-size:11px; font-weight:600; color:var(--muted); margin-top:1px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.slRight{ flex-shrink:0; font-size:12.5px; font-weight:800; color:var(--muted); }
+.slRight.debt{ color:var(--danger); }
+.storeListWrap.open .slRow:nth-child(1){ animation-delay:.04s } .storeListWrap.open .slRow:nth-child(2){ animation-delay:.07s }
+.storeListWrap.open .slRow:nth-child(3){ animation-delay:.10s } .storeListWrap.open .slRow:nth-child(4){ animation-delay:.13s }
+.storeListWrap.open .slRow:nth-child(5){ animation-delay:.16s } .storeListWrap.open .slRow:nth-child(6){ animation-delay:.19s }
+@keyframes slIn{ from{ opacity:0; transform:translateY(-6px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion: reduce){ .storeListWrap{ transition:none; } .slRow{ animation:none; } }
+
+/* Firebase holati */
+.fbStatus{ margin:0 0 12px; padding:10px 13px; border-radius:12px; font-size:12px; font-weight:700; line-height:1.45; }
+.fbStatus.ok{ background:#E9F9EE; color:#1f7a3e; }
+.fbStatus.warn{ background:var(--amber-soft); color:#8a5a00; border-left:4px solid var(--amber); }
+.fbStatus.bad{ background:#FDECEC; color:#b3261e; border-left:4px solid var(--danger); }
+
+/* ═══ CHEK XARITASI ═══ */
+.prnMapWrap{ height:230px; border-radius:14px; overflow:hidden; border:1px solid var(--line); }
+#prnMap{ width:100%; height:100%; }
+
+/* ═══ CHEK O'CHIRISH ═══ */
+.rcTop{ align-items:center; gap:8px; }
+.rcTop b{ margin-left:auto; }
+.rcDel{ width:24px; height:24px; border:none; border-radius:50%; flex-shrink:0;
+  background:rgba(240,62,62,.12); color:var(--danger); font-size:16px; font-weight:800; line-height:1; }
+.rcClean{ width:100%; margin:0 0 8px; font-size:12px; color:var(--danger) !important; }
+
+/* ═══ MOLIYA ═══ */
+.finOpenBtn{ width:100%; display:flex; align-items:center; gap:12px; margin:0 0 14px;
+  padding:14px 16px; border:none; border-radius:16px; text-align:left; cursor:pointer;
+  background:linear-gradient(135deg, var(--leaf-soft), var(--card));
+  box-shadow:inset 0 0 0 1px rgba(234,90,31,.25); }
+.finOpenBtn > span:nth-child(2){ flex:1; display:flex; flex-direction:column; }
+.finOpenBtn b{ font-size:15px; font-weight:800; color:var(--ink); }
+.finOpenBtn small{ font-size:11px; font-weight:600; color:var(--muted); margin-top:2px; }
+.finTabs{ display:flex; gap:6px; overflow-x:auto; margin:6px 0 14px; padding-bottom:2px; }
+.finTabs button{ flex-shrink:0; padding:8px 13px; border:none; border-radius:99px;
+  background:var(--line-soft); font-size:12px; font-weight:800; color:var(--muted); }
+.finTabs button.on{ background:var(--forest); color:#fff; }
+.finGrid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.finCard{ padding:11px 12px; border-radius:14px; background:var(--bg); display:flex; flex-direction:column; }
+.finCard.big{ padding:14px 13px; }
+.finCard label{ font-size:10.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); }
+.finCard b{ font-size:16px; font-weight:800; color:var(--ink); margin-top:3px; }
+.finCard.big b{ font-size:21px; }
+.finCard span{ font-size:10.5px; color:var(--muted); font-weight:600; margin-top:2px; }
+.finCard.pos b{ color:#1f7a3e; } .finCard.neg b{ color:var(--danger); }
+.finNote{ font-size:11.5px; margin:8px 0 0; }
+.finSec{ margin:18px 0 7px; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+.finTable{ border-radius:13px; background:var(--bg); overflow:hidden; }
+.finRow{ display:grid; grid-template-columns:1fr auto 92px; gap:10px; align-items:center;
+  padding:9px 12px; border-bottom:1px solid var(--line-soft); font-size:12.5px; }
+.finRow:last-child{ border-bottom:none; }
+.finRow.head{ font-size:10px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
+.finRow span{ font-weight:700; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.finRow em{ font-style:normal; color:var(--muted); font-weight:600; text-align:right; }
+.finRow b{ text-align:right; font-weight:800; }
+.finRow b.pos{ color:#1f7a3e; } .finRow b.neg{ color:var(--danger); } .finRow b.muted{ color:var(--muted); font-size:11px; font-weight:700; }
+
+/* ═══ MAHSULOT TARTIBI ═══ */
+.reorderBtn{
+  margin-left:auto; display:inline-flex; align-items:center; gap:6px;
+  padding:8px 13px; border:none; border-radius:11px; cursor:pointer;
+  background:var(--line-soft); color:var(--ink); font-size:12px; font-weight:800;
+  transition:background .2s, color .2s, transform .15s;
+}
+.reorderBtn:active{ transform:scale(.95); }
+.reorderBtn.on{ background:var(--forest); color:#fff; }
+.reorderBtn.on .hIco svg{ stroke:#fff; }
+.reorderHint{
+  margin:0 0 12px; padding:11px 14px; border-radius:13px;
+  background:var(--leaf-soft); color:var(--forest-dark);
+  font-size:12px; font-weight:700; line-height:1.5;
+}
+
+/* Tartiblash rejimida setka */
+.prodGrid.reordering{ position:relative; }
+.prodGrid.reordering .prodCard{
+  transition:transform .22s cubic-bezier(.22,.8,.28,1), box-shadow .2s;
+  touch-action:pan-y;              /* uzun bosishda sahifa sakramasin */
+  -webkit-user-select:none; user-select:none;
+}
+.prodGrid.reordering .prodCard:not(.dragging){ animation:roWobble 2.4s ease-in-out infinite; }
+@keyframes roWobble{ 0%,100%{ transform:rotate(-.5deg); } 50%{ transform:rotate(.5deg); } }
+
+/* Ko'tarilgan kartochka */
+.prodCard.dragging{
+  position:absolute; z-index:60; pointer-events:none;
+  animation:none !important; transform:scale(1.06) rotate(1.5deg);
+  box-shadow:0 14px 34px rgba(28,23,18,.3); opacity:.96;
+}
+
+/* ↑ ↓ paneli */
+.roBar{
+  position:absolute; top:6px; left:6px; right:6px; z-index:5;
+  display:flex; align-items:center; justify-content:space-between; gap:6px;
+  padding:4px; border-radius:11px;
+  background:rgba(255,255,255,.92);
+  -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+  box-shadow:0 2px 8px rgba(28,23,18,.14);
+}
+.roBtn{
+  width:30px; height:30px; border:none; border-radius:9px; flex-shrink:0;
+  background:var(--leaf-soft); color:var(--forest-dark);
+  font-size:15px; font-weight:800; line-height:1;
+}
+.roBtn:disabled{ opacity:.3; }
+.roBtn:active:not(:disabled){ transform:scale(.9); }
+.roNum{ font-size:12px; font-weight:800; color:var(--muted); }
+body.darkMode .roBar{ background:rgba(30,26,22,.92); }
+
+/* ═══ SAVATCHA SANOG'I ═══ */
+.bottomNav .navBadge{
+  position:absolute; top:-5px; right:-9px; min-width:17px; height:17px;
+  padding:0 5px; border-radius:99px;
+  background:linear-gradient(135deg,#FF5A5A,#D0263C); color:#fff;
+  font-size:10px; font-weight:800; line-height:17px; text-align:center;
+  box-shadow:0 2px 6px rgba(208,38,60,.5), 0 0 0 2px rgba(38,33,29,.9);
+  letter-spacing:-.02em;
+}
+.bottomNav .navBadge.hidden{ display:none; }
+.navBadge.pop{ animation:badgePop .42s cubic-bezier(.34,1.4,.5,1); }
+@keyframes badgePop{ 0%{transform:scale(1);} 40%{transform:scale(1.45);} 100%{transform:scale(1);} }
+
+/* Savatga uchib tushish */
+.flyDot{
+  position:fixed; width:44px; height:44px; border-radius:50%; z-index:9999;
+  background:var(--forest) center/cover no-repeat;
+  box-shadow:0 6px 18px rgba(28,23,18,.3); pointer-events:none;
+  transition:transform .6s cubic-bezier(.45,.05,.55,.95), opacity .6s ease;
+}
+
+/* ═══ BONUSLAR guruhi (yon menyu) ═══ */
+.rwToggle .sltChev{ transition:transform .3s; }
+.rwToggle.open .sltChev{ transform:rotate(-135deg); margin-bottom:-3px; }
+.rwGroup{ display:grid; grid-template-rows:0fr; transition:grid-template-rows .35s cubic-bezier(.22,.8,.28,1); }
+.rwGroup.open{ grid-template-rows:1fr; }
+.rwGroupInner{ overflow:hidden; }
+.sideMenuItem.sub{ margin:0 0 7px 14px; padding:10px 12px; }
+.sideMenuItem.sub small{ opacity:.7; }
+.rwIc{ font-size:17px; width:22px; text-align:center; }
+
+/* Bonus ro'yxati */
+.blRow{ width:100%; display:flex; align-items:center; gap:10px; padding:11px 12px;
+  margin-bottom:7px; border:none; border-radius:13px; background:var(--bg); text-align:left; }
+.blRow.ready{ background:#E9F9EE; }
+.blRow.off{ opacity:.6; }
+.blMain{ flex:1; min-width:0; }
+.blName{ display:block; font-size:13.5px; font-weight:800; color:var(--ink); }
+.blBar{ display:block; height:5px; margin-top:5px; border-radius:99px; background:rgba(0,0,0,.08); overflow:hidden; }
+.blBar i{ display:block; height:100%; background:linear-gradient(90deg,var(--amber),var(--forest)); }
+.blRight{ flex-shrink:0; font-size:12px; font-weight:800; color:var(--forest-dark); }
+.blOff{ font-size:11px; font-weight:700; color:var(--muted); }
+
+/* Hisobdagi pul (savat) */
+.balanceRow{ display:flex; justify-content:space-between; align-items:center; gap:8px;
+  margin:8px 0; padding:10px 13px; border-radius:12px;
+  background:#E9F9EE; font-size:12.5px; font-weight:700; color:#1f7a3e; }
+.balanceRow .bUsed{ color:#1f7a3e; font-weight:800; }
+
+/* ═══ SOVG'A QUTISI ═══ */
+#giftBox{ position:fixed; inset:0; z-index:10060; display:flex; align-items:center; justify-content:center;
+  padding:24px; background:rgba(12,10,8,.55); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
+#giftBox.hidden{ display:none; }
+.gbConfetti{ position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+.gbConfetti i{ position:absolute; top:-20px; width:9px; height:14px; border-radius:2px;
+  animation:gbFall 2.6s linear infinite; }
+@keyframes gbFall{ to{ transform:translateY(105vh) rotate(720deg); } }
+.gbCard{ position:relative; width:100%; max-width:320px; background:var(--card);
+  border-radius:24px; padding:22px; text-align:center; box-shadow:0 20px 54px rgba(28,23,18,.35);
+  animation:gbIn .5s cubic-bezier(.34,1.3,.5,1); }
+@keyframes gbIn{ from{ opacity:0; transform:scale(.8) translateY(20px);} to{ opacity:1; transform:none; } }
+.gbBox{ position:relative; width:110px; height:92px; margin:6px auto 14px; }
+.gbBody{ position:absolute; bottom:0; left:8px; right:8px; height:62px; border-radius:8px;
+  background:linear-gradient(135deg,#EA5A1F,#B8430F); }
+.gbLid{ position:absolute; top:6px; left:0; right:0; height:26px; border-radius:7px;
+  background:linear-gradient(135deg,#F7A928,#EA8A1F); transform-origin:left bottom;
+  animation:gbOpen .7s .25s cubic-bezier(.34,1.4,.5,1) forwards; z-index:2; }
+@keyframes gbOpen{ to{ transform:rotate(-38deg) translate(-12px,-16px); } }
+.gbRibbon{ position:absolute; bottom:0; left:50%; width:14px; height:62px; margin-left:-7px;
+  background:rgba(255,255,255,.55); }
+.gbTitle{ font-size:20px; font-weight:800; color:var(--ink); }
+.gbText{ font-size:12.5px; color:var(--muted); font-weight:600; margin-top:4px; }
+.gbCode{ margin:14px 0 6px; padding:13px; border-radius:14px; cursor:pointer;
+  background:var(--leaf-soft); color:var(--forest-dark);
+  font:800 21px/1 ui-monospace,Menlo,monospace; letter-spacing:.12em; }
+.gbHint{ font-size:11.5px; font-weight:700; color:var(--muted); }
+@media (prefers-reduced-motion: reduce){ .gbConfetti{ display:none; } .gbLid{ animation:none; transform:rotate(-38deg) translate(-12px,-16px); } }
+
+/* ═══ PROFILDAGI BONUSLAR ═══ */
+#pfRewards .card{ margin-top:12px; }
+.balCard{ background:linear-gradient(135deg,#E9F9EE,var(--card)); border:1px solid rgba(40,160,80,.3); }
+.balBig{ font-size:26px; font-weight:800; color:#1f7a3e; letter-spacing:-.02em; }
+
+/* Sovg'a chizig'i */
+.giftCard{ background:linear-gradient(135deg,var(--amber-soft),var(--card)); border:1px solid rgba(247,169,40,.35); }
+.gpBar{ height:12px; border-radius:99px; background:rgba(0,0,0,.08); overflow:hidden; margin:8px 0 7px; position:relative; }
+.gpBar i{ display:block; height:100%; border-radius:99px;
+  background:linear-gradient(90deg,var(--amber),var(--forest));
+  transition:width .6s cubic-bezier(.22,.8,.28,1); position:relative; }
+.gpBar i::after{ content:''; position:absolute; inset:0;
+  background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.45) 50%,transparent 70%);
+  animation:gpShine 2.2s linear infinite; }
+@keyframes gpShine{ to{ transform:translateX(140%); } }
+.gpNums{ display:flex; align-items:baseline; gap:6px; font-size:12px; }
+.gpNums b{ font-size:19px; font-weight:800; color:var(--ink); }
+.gpNums span{ color:var(--muted); font-weight:600; }
+.gpLeft{ margin-top:5px; font-size:12px; font-weight:600; color:var(--muted); line-height:1.45; }
+.gpLeft b{ color:var(--ink); }
+
+/* Mening promo-kodlarim */
+.mpRow{ display:flex; align-items:center; gap:9px; padding:10px 0; border-bottom:1px solid var(--line-soft); }
+.mpRow:last-of-type{ border-bottom:none; }
+.mpCode{ flex-shrink:0; padding:9px 11px; border-radius:11px; cursor:pointer;
+  background:var(--leaf-soft); color:var(--forest-dark);
+  font:800 14px/1 ui-monospace,Menlo,monospace; letter-spacing:.08em; }
+.mpInfo{ flex:1; min-width:0; font-size:11.5px; font-weight:600; color:var(--muted); line-height:1.4; }
+.mpExp{ display:block; font-size:10.5px; opacity:.8; }
+.mpUse{ flex-shrink:0; padding:8px 12px !important; font-size:11.5px; }
+
+/* Referal */
+.refCard{ background:linear-gradient(135deg,var(--blue-soft),var(--card)); border:1px solid rgba(10,122,255,.22); }
+.refLinkRow{ display:flex; gap:7px; }
+.refLinkRow input{ flex:1; min-width:0; padding:10px 12px; border-radius:11px;
+  border:1px solid var(--line); background:var(--bg); font-size:11.5px; color:var(--muted); }
+.refCopy{ flex-shrink:0; padding:0 14px; border:none; border-radius:11px;
+  background:var(--blue); color:#fff; font-size:12px; font-weight:800; }
+.refCopy:active{ transform:scale(.95); }

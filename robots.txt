@@ -1,0 +1,100 @@
+# Unutilmas Ta'm — robots.txt
+# Maqsad: AI botlar saytni o'qib, nusxa ko'chirishiga to'sqinlik qilish.
+# Eslatma: halol botlar bu qoidalarga bo'ysunadi. Qoidabuzarlarni
+# .htaccess dagi User-Agent bloklari to'xtatadi.
+
+# ─── AI o'quv botlari ───
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: OAI-SearchBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: Perplexity-User
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
+
+User-agent: cohere-ai
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+User-agent: omgili
+Disallow: /
+
+User-agent: ImagesiftBot
+Disallow: /
+
+User-agent: YouBot
+Disallow: /
+
+User-agent: AI2Bot
+Disallow: /
+
+User-agent: Timpibot
+Disallow: /
+
+User-agent: DuckAssistBot
+Disallow: /
+
+# ─── Sayt nusxalovchi vositalar ───
+User-agent: HTTrack
+Disallow: /
+
+User-agent: WebCopier
+Disallow: /
+
+User-agent: Wget
+Disallow: /
+
+User-agent: WebZIP
+Disallow: /
+
+User-agent: SiteSnagger
+Disallow: /
+
+# ─── Oddiy qidiruv tizimlari: bosh sahifa ochiq, kod yopiq ───
+User-agent: *
+Disallow: /js/
+Disallow: /css/
+Disallow: /sw.js
+Disallow: /assets/dev-card.html
+Allow: /
+
+Sitemap: https://unutilmastam.uz/sitemap.xml

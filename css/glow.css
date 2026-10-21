@@ -1,0 +1,764 @@
+/* ═══════════════════════════════════════════════════════════════
+   Unutilmas Ta'm — glow.css  (v14.1)  "Premium Touch"
+   Tinch, qimmat ko'rinish + har bir bosishga jonli javob.
+   O'z-o'zidan aylanib/yonib turadigan bezak YO'Q — hamma harakat
+   foydalanuvchi bosganda, tekkanda, ochganda ishlaydi.
+   Faqat ko'rinish; mantiqqa tegmaydi.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root{
+  --g-orange:#FF7A2F; --g-red:#EA3F2A; --g-gold:#FFC145;
+  --g-pink:#FF5D8F;  --g-violet:#7C5CFF; --g-cyan:#22C4E8; --g-mint:#2FD39A;
+
+  --g-grad-brand:linear-gradient(135deg,#FF9A3C 0%,#FF5A1F 52%,#EA3A3A 100%);
+  --g-grad-gold:linear-gradient(135deg,#FFD25E 0%,#FF9A3C 100%);
+  --g-grad-cool:linear-gradient(135deg,#3BC9F0 0%,#6C63FF 100%);
+  --g-grad-mint:linear-gradient(135deg,#34D6A0 0%,#1FA5B8 100%);
+  --g-grad-berry:linear-gradient(135deg,#FF6A9A 0%,#B44CFF 100%);
+
+  --g-gloss:linear-gradient(180deg,rgba(255,255,255,.34) 0%,rgba(255,255,255,0) 52%);
+  --g-glow-brand:0 1px 0 rgba(255,255,255,.35) inset,0 8px 22px rgba(255,90,31,.32);
+  --g-ease:cubic-bezier(.22,.8,.28,1);
+  --g-spring:cubic-bezier(.34,1.5,.5,1);
+}
+
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+button,[onclick],.prodCard,.card,.statCard{-webkit-touch-callout:none;}
+button{touch-action:manipulation;}
+
+/* ─────────────────────────────────────────────
+   1. UMUMIY BOSISH — har bir bosiladigan narsa "bosiladi"
+   (individual `scale` xossasi — transform bilan to'qnashmaydi)
+   ───────────────────────────────────────────── */
+button:not(:disabled):not(.floatBasket),
+[onclick]:not(.modalBg):not(.sideMenuOverlay):not(.imgViewerBg):not(.onboardingBg),
+.prodCard,.statCard.clickable,.catCard,.chatListItem,.contactRow,.blRow,.notifCardClick,
+.langOption,.mapTypeOpt,.mpRow,.debtRowHead,.finRow{
+  transition:scale .16s var(--g-ease),filter .2s,background-color .2s,box-shadow .3s var(--g-ease),border-color .25s;
+}
+button:not(:disabled):not(.floatBasket):active,
+[onclick]:not(.modalBg):not(.sideMenuOverlay):not(.imgViewerBg):not(.onboardingBg):active,
+.prodCard:active,.statCard.clickable:active,.catCard:active,.chatListItem:active,
+.contactRow:active,.blRow:active,.notifCardClick:active,.langOption:active,.mpRow:active{
+  scale:.978;
+  transition-duration:.16s;
+}
+/* Katta yuzalar kamroq siqiladi */
+.card[onclick]:active,.prodCard:active,.chatListItem:active,.blRow:active{scale:.988;}
+
+/* Ro'yxat qatorlari bosilganda yumshoq rang oladi */
+.chatListItem:active,.contactRow:active,.blRow:active,.notifCardClick:active,.catCard:active,
+.langOption:active,.sideMenuItem:active{background-color:var(--leaf-soft);}
+.finRow:active,.debtRowHead:active{background-color:var(--leaf-soft);}
+
+/* ─────────────────────────────────────────────
+   2. IKONKALAR — bosilganda jonlanadi
+   ───────────────────────────────────────────── */
+button svg,.navBtn svg,.sideMenuItem svg,.hIco svg,.icWrap svg{
+  transition:transform .3s var(--g-spring),stroke .2s,fill .2s;
+}
+button:not(:disabled):active svg{transform:scale(.82);}
+.fxTap svg{animation:iconPop .5s var(--g-spring);}
+@keyframes iconPop{
+  0%{transform:scale(.7);}
+  45%{transform:scale(1.28) rotate(-8deg);}
+  75%{transform:scale(.95) rotate(3deg);}
+  100%{transform:scale(1) rotate(0);}
+}
+/* Turli ikonkalar — turlicha javob */
+.fxTap.quickAddBtn2 svg,.fxTap.addBtn svg,.fxTap.debtAddBtn svg{animation:iconSpin .5s var(--g-spring);}
+.fxTap.modalClose svg,.fxTap.imgViewerClose svg{animation:iconSpin .45s var(--g-spring);}
+@keyframes iconSpin{0%{transform:rotate(-90deg) scale(.6);}60%{transform:rotate(12deg) scale(1.2);}100%{transform:rotate(0) scale(1);}}
+.fxTap.favHeartBtn svg,.fxTap.favHeartBtn2 svg{animation:heartPop .6s var(--g-spring);}
+@keyframes heartPop{
+  0%{transform:scale(.6);}
+  30%{transform:scale(1.55);}
+  55%{transform:scale(.88);}
+  80%{transform:scale(1.14);}
+  100%{transform:scale(1);}
+}
+.fxTap.floatBasket svg,.fxTap#nav-savat svg{animation:cartShake .55s var(--g-ease);}
+@keyframes cartShake{
+  0%,100%{transform:rotate(0);}
+  20%{transform:rotate(-14deg) scale(1.1);}
+  40%{transform:rotate(11deg) scale(1.1);}
+  60%{transform:rotate(-7deg);}
+  80%{transform:rotate(4deg);}
+}
+.fxTap.tinyIconBtn.danger svg{animation:trashShake .45s var(--g-ease);}
+@keyframes trashShake{0%,100%{transform:rotate(0);}25%{transform:rotate(-16deg);}50%{transform:rotate(13deg);}75%{transform:rotate(-8deg);}}
+.fxTap.rightBtn svg,.fxTap.iconBtn svg{animation:iconPop .5s var(--g-spring);}
+
+/* Ikonka qutilari — rangli, chuqur, yaltiroq (statik) */
+.icWrap,.raIc,.rwIc,.vcStepIc,.onboardingIconWrap,.regChoiceIcon,.brandIc{position:relative;overflow:hidden;}
+.icWrap::after,.raIc::after,.rwIc::after,.vcStepIc::after,.onboardingIconWrap::after,.regChoiceIcon::after,.brandIc::after{
+  content:'';position:absolute;inset:0;background:var(--g-gloss);pointer-events:none;border-radius:inherit;
+}
+.statCard .icWrap{background:var(--g-grad-brand) !important;box-shadow:0 6px 16px rgba(255,90,31,.36),0 1px 0 rgba(255,255,255,.4) inset;}
+.statCard .icWrap svg,.empty .icWrap svg{stroke:#fff !important;}
+.statCard.blue .icWrap{background:var(--g-grad-cool) !important;box-shadow:0 6px 16px rgba(80,110,255,.36),0 1px 0 rgba(255,255,255,.4) inset;}
+.statCard.warn .icWrap{background:var(--g-grad-gold) !important;box-shadow:0 6px 16px rgba(247,169,40,.4),0 1px 0 rgba(255,255,255,.4) inset;}
+.statGrid > .statCard:nth-child(4n+3) .icWrap{background:var(--g-grad-mint) !important;box-shadow:0 6px 16px rgba(47,211,154,.36),0 1px 0 rgba(255,255,255,.4) inset;}
+.statGrid > .statCard:nth-child(4n+4) .icWrap{background:var(--g-grad-berry) !important;box-shadow:0 6px 16px rgba(255,93,143,.36),0 1px 0 rgba(255,255,255,.4) inset;}
+.empty .icWrap,.onboardingIconWrap,.regChoiceIcon{background:var(--g-grad-brand) !important;box-shadow:0 10px 26px rgba(255,90,31,.36),0 1px 0 rgba(255,255,255,.4) inset;}
+.statCard:active .icWrap{transform:scale(.9) rotate(-6deg);transition:transform .2s var(--g-spring);}
+.statCard .icWrap{transition:transform .35s var(--g-spring);}
+@media (hover:hover){@media (hover:hover){.statCard:hover .icWrap{transform:translateY(-2px) rotate(-5deg) scale(1.06);}}}
+.sideMenuItem svg,.hIco svg{stroke:var(--forest);}
+@media (hover:hover){@media (hover:hover){.sideMenuItem:hover svg{transform:scale(1.15) rotate(-6deg);}}}
+.sideMenuItem:active svg{transform:scale(.85);}
+
+/* ─────────────────────────────────────────────
+   3. ASOSIY TUGMALAR — chuqur, yaltiroq, bosilganda cho'kadi
+   ───────────────────────────────────────────── */
+.primaryBtn,.buyBtn2,.orderBtn2,.tcOk,.searchGoBtn,.mpUse{
+  background-image:var(--g-gloss),var(--g-grad-brand);
+  box-shadow:var(--g-glow-brand);
+}
+.primaryBtn:active,.buyBtn2:active,.orderBtn2:active,.tcOk:active{
+  filter:brightness(.94) saturate(1.05);
+  box-shadow:0 1px 0 rgba(255,255,255,.2) inset,0 2px 6px rgba(255,90,31,.3);
+}
+@media (hover:hover){@media (hover:hover){.primaryBtn:hover,.buyBtn2:hover,.orderBtn2:hover,.tcOk:hover{filter:brightness(1.06) saturate(1.08);}}}
+.buyBtn2:disabled,.orderBtn2:disabled,.primaryBtn:disabled{background-image:none;box-shadow:none;}
+@media (hover:hover){@media (hover:hover){.buyBtn2:not(:disabled):hover svg,.primaryBtn:not(:disabled):hover svg{transform:translateX(2px) scale(1.1);}}}
+
+.ghostBtn,.dlBtn2{
+  border:1px solid rgba(255,122,47,.20);
+  background-image:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0));
+}
+@media (hover:hover){@media (hover:hover){.ghostBtn:hover,.dlBtn2:hover{border-color:rgba(255,122,47,.5);box-shadow:0 6px 18px rgba(255,122,47,.20);}}}
+.dangerGhostBtn{border:1px solid rgba(240,62,62,.22);}
+@media (hover:hover){@media (hover:hover){.dangerGhostBtn:hover{box-shadow:0 6px 18px rgba(240,62,62,.22);}}}
+@media (hover:hover){@media (hover:hover){.quickAddBtn2:hover{border-color:var(--forest);background:var(--leaf-soft);box-shadow:0 4px 14px rgba(255,122,47,.28);}}}
+@media (hover:hover){@media (hover:hover){.quickAddBtn2:hover svg{stroke:var(--forest);}}}
+.quickAddBtn2:active{background:var(--forest);border-color:var(--forest);}
+.quickAddBtn2:active svg{stroke:#fff;}
+.floatBasket{
+  background-image:var(--g-gloss),var(--g-grad-brand);
+  box-shadow:0 2px 4px rgba(184,67,15,.3),0 16px 36px rgba(234,90,31,.42),0 1px 0 rgba(255,255,255,.3) inset;
+}
+.floatBasket.bump{animation:basketBump .5s var(--g-spring);}
+@keyframes basketBump{
+  0%{transform:translateX(-50%) scale(1);}
+  35%{transform:translateX(-50%) scale(1.14);}
+  65%{transform:translateX(-50%) scale(.96);}
+  100%{transform:translateX(-50%) scale(1);}
+}
+
+/* Sonlar tugmalari (+ / −) */
+.pdQtyBox button{transition:scale .16s var(--g-ease),background .2s,box-shadow .25s;}
+.pdQtyBox button:active{background:var(--leaf-soft);}
+.pdQtyBox button:active svg{transform:scale(1.25);}
+
+/* ─────────────────────────────────────────────
+   4. TANLOV TUGMALARI (chip, tab, toggle)
+   ───────────────────────────────────────────── */
+.catChip,.tallyTabs button,.orderTypeToggle button,.periodTabs button,.authTabs .authTabBtn,.tabRowSlim button,.finTabs button,.scanModeBtns button{
+  transition:background .25s,color .25s,scale .16s var(--g-ease),box-shadow .3s var(--g-ease),border-color .25s;
+}
+.catChip{border:1px solid var(--line-soft);background-image:linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,0));}
+body.darkMode .catChip{color:var(--ink);}
+@media (hover:hover){@media (hover:hover){.catChip:hover{border-color:rgba(255,122,47,.45);box-shadow:0 4px 14px rgba(255,122,47,.18);}}}
+.catChip.active{
+  background-image:var(--g-gloss),var(--g-grad-brand);color:#fff;border-color:transparent;
+  box-shadow:0 6px 18px rgba(255,90,31,.38),0 1px 0 rgba(255,255,255,.25) inset;
+  animation:chipPop .42s var(--g-spring);
+}
+@keyframes chipPop{0%{transform:scale(.86);}55%{transform:scale(1.07);}100%{transform:scale(1);}}
+.finTabs button.on{background-image:var(--g-gloss),var(--g-grad-brand);box-shadow:0 5px 14px rgba(255,90,31,.34);animation:chipPop .4s var(--g-spring);}
+.tallyTabs button.active,.orderTypeToggle button.active,.periodTabs button.active,.authTabs .authTabBtn.active,.tabRowSlim button.active{animation:chipPop .4s var(--g-spring);}
+
+/* Almashtirgichlar (switch) — prujinali, bosilganda cho'ziladi */
+.darkModeSwitch,.miniSwitch{transition:background .3s var(--g-ease),box-shadow .3s;}
+.darkModeSwitch.on{background:var(--g-grad-brand) !important;box-shadow:0 0 0 1px rgba(255,255,255,.2) inset,0 4px 12px rgba(255,90,31,.4);}
+.miniSwitch.on{background:linear-gradient(135deg,#5FE08A,#2FB56A);box-shadow:0 4px 12px rgba(47,181,106,.4);}
+.darkModeSwitchDot{transition:transform .38s var(--g-spring),width .2s var(--g-ease);}
+.darkModeSwitch:active .darkModeSwitchDot{width:26px;}
+.darkModeSwitch.on:active .darkModeSwitchDot{transform:translateX(12px);}
+.miniSwitch i{transition:transform .38s var(--g-spring),width .2s var(--g-ease);}
+.miniSwitch:active i{width:calc(100% - 2px);max-width:22px;}
+
+/* ─────────────────────────────────────────────
+   5. MAHSULOT KARTOCHKASI
+   ───────────────────────────────────────────── */
+.prodCard{
+  --mx:50%;--my:0%;
+  border:1px solid rgba(255,122,47,.10);
+  transition:transform .4s var(--g-spring),scale .16s var(--g-ease),box-shadow .35s var(--g-ease),border-color .3s;
+}
+.prodCard::before{
+  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(170px circle at var(--mx) var(--my),rgba(255,140,60,.20),transparent 65%);
+  opacity:0;transition:opacity .3s;
+}
+.prodCard.spot::before{opacity:1;}
+@media (hover:hover){@media (hover:hover){.prodCard:hover::before{opacity:1;}}}
+@media (hover:hover){@media (hover:hover){.prodCard:hover{border-color:rgba(255,122,47,.40);box-shadow:0 0 0 1px rgba(255,122,47,.18),0 14px 32px rgba(255,90,31,.20);}}}
+.prodCard.picked{box-shadow:0 0 0 2px var(--forest) inset,var(--g-glow-brand);}
+.prodImg,.prodImg2{
+  background:linear-gradient(145deg,#FFE7CF,#FFC48C 60%,#FFA35C);
+  box-shadow:0 6px 16px rgba(255,122,47,.26),0 1px 0 rgba(255,255,255,.6) inset;
+  transition:transform .45s var(--g-spring),box-shadow .35s;
+}
+body.darkMode .prodImg,body.darkMode .prodImg2{background:linear-gradient(145deg,#4A2C16,#7A4520);}
+@media (hover:hover){@media (hover:hover){.prodCard:hover .prodImg,.prodCard:hover .prodImg2{transform:translateY(-2px) rotate(-2deg) scale(1.05);box-shadow:0 12px 26px rgba(255,122,47,.40);}}}
+.prodCard:active .prodImg,.prodCard:active .prodImg2{transform:scale(.94);}
+.prodCard .pstock{background:var(--g-grad-brand);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;}
+.prodCard.justAdded{animation:cardAddGlow .7s var(--g-ease);}
+@keyframes cardAddGlow{0%{box-shadow:0 0 0 0 rgba(255,122,47,.7);}100%{box-shadow:0 0 0 22px rgba(255,122,47,0);}}
+.favHeartBtn,.favHeartBtn2{transition:scale .16s var(--g-ease),background .2s,box-shadow .25s;box-shadow:0 2px 8px rgba(28,23,18,.14);}
+.favHeartBtn.active,.favHeartBtn2.active{box-shadow:0 2px 12px rgba(240,62,62,.35);}
+
+/* ─────────────────────────────────────────────
+   6. PASTKI MENYU
+   ───────────────────────────────────────────── */
+.navGlider{
+  background:linear-gradient(135deg,rgba(255,154,60,.50),rgba(234,58,58,.38));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.34),0 4px 14px rgba(255,90,31,.45);
+}
+.bottomNav .navBtn.active svg{filter:drop-shadow(0 0 5px rgba(255,190,120,.8));}
+.bottomNav .navBtn:active svg{transform:scale(.8);}
+.navBadge{background:var(--g-grad-berry) !important;}
+.navBadge.pop{animation:badgePop .5s var(--g-spring);}
+
+/* ─────────────────────────────────────────────
+   7. STATISTIKA, KARTA, NISHON
+   ───────────────────────────────────────────── */
+.statCard{position:relative;overflow:hidden;transition:transform .4s var(--g-spring),scale .16s var(--g-ease),box-shadow .35s var(--g-ease);}
+.statCard::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:var(--g-grad-brand);opacity:.9;}
+.statCard.blue::before{background:var(--g-grad-cool);}
+.statCard.warn::before{background:var(--g-grad-gold);}
+.statGrid > .statCard:nth-child(4n+3)::before{background:var(--g-grad-mint);}
+.statGrid > .statCard:nth-child(4n+4)::before{background:var(--g-grad-berry);}
+@media (hover:hover){@media (hover:hover){.statCard:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(255,90,31,.16),0 0 0 1px rgba(255,122,47,.16);}}}
+.statCard .num{font-variant-numeric:tabular-nums;letter-spacing:-.03em;}
+.card{transition:transform .35s var(--g-spring),scale .16s var(--g-ease),box-shadow .3s var(--g-ease);}
+@media (hover:hover){@media (hover:hover){.card:hover{box-shadow:0 10px 26px rgba(255,90,31,.10),var(--sheen);}}}
+.badge.green{box-shadow:0 0 0 1px rgba(47,169,104,.22),0 2px 8px rgba(47,169,104,.22);}
+.badge.red{box-shadow:0 0 0 1px rgba(240,62,62,.22),0 2px 8px rgba(240,62,62,.22);}
+.badge.amber{box-shadow:0 0 0 1px rgba(247,169,40,.28),0 2px 8px rgba(247,169,40,.26);}
+.badge.blue{box-shadow:0 0 0 1px rgba(10,122,255,.22),0 2px 8px rgba(10,122,255,.22);}
+.sectionHead h2{position:relative;padding-left:12px;}
+.sectionHead h2::before{content:'';position:absolute;left:0;top:12%;bottom:12%;width:4px;border-radius:4px;background:var(--g-grad-brand);}
+.notifDot,.pendingDot,.chatUnreadDot{animation:dotBeat 2.2s ease-in-out infinite;} /* faqat yangi xabar bor paytida diqqat tortadi */
+@keyframes dotBeat{0%,100%{box-shadow:0 0 0 0 rgba(240,62,62,.5);}60%{box-shadow:0 0 0 7px rgba(240,62,62,0);}}
+
+/* ─────────────────────────────────────────────
+   8. MAYDONLAR — fokusda yorug' halqa
+   ───────────────────────────────────────────── */
+.field input,.field select,.field textarea{transition:box-shadow .25s var(--g-ease),border-color .25s,background .25s;}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--forest);
+  box-shadow:0 0 0 4px rgba(255,122,47,.16),0 6px 18px rgba(255,122,47,.18);
+}
+.field label{transition:color .2s;}
+.field:focus-within label{color:var(--forest);}
+*:focus-visible{outline-color:var(--g-orange);}
+.searchBarRow .searchBar{transition:box-shadow .25s var(--g-ease);}
+.searchBarRow .searchBar:focus-within{box-shadow:0 0 0 3px rgba(255,122,47,.22),0 8px 22px rgba(255,122,47,.18);}
+
+/* ─────────────────────────────────────────────
+   9. EKRANLAR, OYNALAR, MENYU — ochilish va almashish
+   ───────────────────────────────────────────── */
+.view.active{animation:viewIn .45s var(--g-ease);}
+@keyframes viewIn{from{opacity:0;transform:translateY(14px) scale(.985);}to{opacity:1;transform:none;}}
+.modalBg{-webkit-backdrop-filter:blur(8px) saturate(140%);backdrop-filter:blur(8px) saturate(140%);}
+.modalCard{border:1px solid rgba(255,122,47,.14);box-shadow:var(--lift-3),0 0 50px rgba(255,122,47,.10);animation:modalRise .44s var(--g-spring);}
+body.darkMode .modalCard{border-color:rgba(255,150,80,.2);}
+.modalCard > *{animation:modalItem .45s var(--g-ease) backwards;}
+.modalCard > *:nth-child(2){animation-delay:.03s;}
+.modalCard > *:nth-child(3){animation-delay:.06s;}
+.modalCard > *:nth-child(4){animation-delay:.09s;}
+.modalCard > *:nth-child(5){animation-delay:.12s;}
+.modalCard > *:nth-child(n+6){animation-delay:.15s;}
+@keyframes modalItem{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+.modalClose{transition:transform .35s var(--g-spring),background .2s,box-shadow .25s,scale .16s;}
+@media (hover:hover){@media (hover:hover){.modalClose:hover{transform:rotate(90deg);background:var(--leaf-soft);}}}
+.modalClose:active{background:var(--danger-soft);}
+.sideMenuItem{transition:transform .3s var(--g-spring),background .25s,box-shadow .3s,scale .16s;}
+@media (hover:hover){@media (hover:hover){.sideMenuItem:hover{transform:translateX(4px);background:var(--leaf-soft);box-shadow:inset 3px 0 0 var(--g-orange);}}}
+.sideMenuItemAccent{background:var(--g-grad-brand) !important;color:#fff !important;box-shadow:0 8px 22px rgba(255,90,31,.34);}
+.sideMenuItemAccent svg{stroke:#fff !important;}
+.langOption.active{box-shadow:0 0 0 2px var(--forest),0 6px 16px rgba(255,122,47,.24);}
+.langCheck{animation:chipPop .4s var(--g-spring);}
+
+/* Yuqori panel */
+header.topbar .rightBtn,header.topbar .iconBtn{transition:transform .3s var(--g-spring),box-shadow .3s var(--g-ease),background .2s,scale .16s;}
+@media (hover:hover){@media (hover:hover){header.topbar .rightBtn:hover,header.topbar .iconBtn:hover{box-shadow:0 0 0 1px rgba(255,122,47,.22),0 6px 16px rgba(255,90,31,.18);}}}
+body.fxScrolled header.topbar{box-shadow:0 1px 0 var(--line),0 10px 28px rgba(28,23,18,.10);}
+
+/* ─────────────────────────────────────────────
+   10. PROGRESS, SOVG'A, PUL — to'lganda silliq
+   ───────────────────────────────────────────── */
+.barFill,.gpBar > i,.bnBar > i{background:linear-gradient(90deg,#FFB13C,#FF5A1F,#EA3A3A);box-shadow:0 0 10px rgba(255,122,47,.45);transition:width .8s var(--g-ease);}
+.giftCard,.bonusCard,.balCard{box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 10px 26px rgba(255,90,31,.14);}
+.gbBox:active{animation:giftShake .5s var(--g-ease);}
+@keyframes giftShake{0%,100%{transform:rotate(0);}20%{transform:rotate(-8deg) scale(1.06);}40%{transform:rotate(7deg) scale(1.06);}60%{transform:rotate(-4deg);}80%{transform:rotate(2deg);}}
+.moneyPill{box-shadow:0 4px 12px rgba(47,169,104,.18);transition:transform .3s var(--g-spring),scale .16s;}
+@media (hover:hover){@media (hover:hover){.moneyPill:hover{transform:translateY(-2px);}}}
+@media (hover:hover){@media (hover:hover){.mpRow:hover{box-shadow:0 10px 22px rgba(255,122,47,.16);}}}
+.mpUse{color:#fff;}
+.amountPulse{animation:amountPop .5s var(--g-spring);}
+@keyframes amountPop{0%{transform:scale(1);}35%{transform:scale(1.14);color:var(--forest);}100%{transform:scale(1);}}
+
+/* Splash, onboarding, ro'yxatdan o'tish */
+.splashLogoFull{filter:drop-shadow(0 12px 26px rgba(255,180,90,.5));}
+.onboardingDot.active,.igDot.active{background:var(--g-orange);box-shadow:0 0 8px rgba(255,122,47,.7);}
+.onboardingDot,.igDot{transition:all .35s var(--g-spring);}
+.regChoiceCard{transition:transform .4s var(--g-spring),scale .16s,box-shadow .35s var(--g-ease),border-color .3s;}
+@media (hover:hover){@media (hover:hover){.regChoiceCard:hover{transform:translateY(-4px);box-shadow:0 18px 38px rgba(255,90,31,.22),0 0 0 1px rgba(255,122,47,.28);}}}
+.installFab{box-shadow:0 10px 28px rgba(255,90,31,.42);}
+#ptrCircle{box-shadow:0 6px 18px rgba(255,90,31,.36),0 0 0 2px rgba(255,122,47,.3);}
+.heroBanner{box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 14px 34px rgba(255,90,31,.30);}
+.heroBanner:active{scale:.985;transition:scale .16s var(--g-ease);}
+.heroTextOverlay .eyebrow{background:var(--g-grad-gold);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none;letter-spacing:.14em;}
+
+/* ─────────────────────────────────────────────
+   11. TO'LQIN (ripple) va UCHQUN (JS yaratadi)
+   ───────────────────────────────────────────── */
+.fxRing{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;z-index:5;}
+.fxRipple{
+  position:absolute;border-radius:50%;pointer-events:none;
+  background:rgba(255,255,255,.45);transform:scale(0);opacity:.9;
+  animation:fxRippleGrow .6s var(--g-ease) forwards;
+}
+.fxRipple.dark{background:rgba(255,90,31,.20);}
+body.darkMode .fxRipple.dark{background:rgba(255,190,140,.22);}
+@keyframes fxRippleGrow{to{transform:scale(2.7);opacity:0;}}
+.fxSpark{
+  position:fixed;z-index:99999;pointer-events:none;width:7px;height:7px;border-radius:50%;
+  background:var(--c,#FFC145);box-shadow:0 0 8px var(--c,#FFC145);
+  animation:sparkFly .65s var(--g-ease) forwards;
+}
+@keyframes sparkFly{0%{transform:translate(0,0) scale(1);opacity:1;}100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0;}}
+
+@media (hover:none){
+  @media (hover:hover){@media (hover:hover){.prodCard:hover,.statCard:hover,.card:hover,.regChoiceCard:hover,.sideMenuItem:hover{transform:none;}}}
+}
+@media (prefers-reduced-motion:reduce){
+  .fxRipple,.fxSpark{display:none;}
+  .fxTap svg{animation:none !important;}
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   12. YON MENYU — qimmat, rangli SVG ikonka plitkalari
+   ═══════════════════════════════════════════════════════════════ */
+.sideMenu{
+  background:linear-gradient(180deg,#FFFEFB 0%,#FBF3EA 100%);
+  border-left:1px solid rgba(255,122,47,.16);
+  box-shadow:-18px 0 60px rgba(28,23,18,.28),0 0 0 1px rgba(255,255,255,.4) inset;
+}
+.sideMenu::before{ /* yuqori chekkada nozik brend chizig'i (statik) */
+  content:'';position:absolute;left:0;right:0;top:0;height:4px;
+  background:var(--g-grad-brand);
+}
+body.darkMode .sideMenu{background:linear-gradient(180deg,#1E1913 0%,#15110D 100%);border-left-color:rgba(255,150,80,.2);}
+.sideMenuOverlay{-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);background:rgba(20,12,6,.5);}
+.sideMenuHeader h3{
+  font-size:22px;font-weight:800;letter-spacing:-.03em;
+  background:var(--g-grad-brand);-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+.sideMenuLabel{
+  display:flex;align-items:center;gap:8px;color:var(--muted);
+}
+.sideMenuLabel::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent);}
+
+/* Bandlar — oq kartochka, chuqurlik, o'ng tomonda strelka */
+.sideMenuItem,.langOption{
+  position:relative;
+  background:#fff;
+  border:1px solid rgba(28,23,18,.06);
+  box-shadow:0 1px 2px rgba(28,23,18,.04),0 6px 16px rgba(28,23,18,.05);
+  gap:12px;
+}
+body.darkMode .sideMenuItem,body.darkMode .langOption{background:#241E17;border-color:rgba(255,255,255,.07);box-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 18px rgba(0,0,0,.28);}
+.sideMenuItem:not(.sideMenuItemAccent):not(.rwToggle):not(.sideMenuToggleItem)::after{
+  content:'';width:7px;height:7px;flex-shrink:0;margin-left:auto;margin-right:2px;
+  border-right:2px solid rgba(28,23,18,.28);border-top:2px solid rgba(28,23,18,.28);
+  transform:rotate(45deg);transition:transform .3s var(--g-spring),border-color .2s;
+}
+body.darkMode .sideMenuItem:not(.sideMenuItemAccent):not(.rwToggle):not(.sideMenuToggleItem)::after{border-color:rgba(255,255,255,.3);}
+@media (hover:hover){@media (hover:hover){.sideMenuItem:not(.sideMenuItemAccent):not(.rwToggle):not(.sideMenuToggleItem):hover::after{transform:translateX(3px) rotate(45deg);border-color:var(--forest);}}}
+.sideMenuItem small{display:block;margin-top:2px;font-size:10.5px;font-weight:600;color:var(--muted);opacity:1;}
+.sideMenuItemAccent{
+  background-image:var(--g-gloss),var(--g-grad-brand) !important;border-color:transparent !important;
+  box-shadow:0 10px 24px rgba(255,90,31,.36),0 1px 0 rgba(255,255,255,.35) inset !important;
+}
+.sideMenuItemAccent::after{
+  content:'';width:7px;height:7px;flex-shrink:0;margin-left:auto;margin-right:2px;
+  border-right:2px solid rgba(255,255,255,.8);border-top:2px solid rgba(255,255,255,.8);transform:rotate(45deg);
+}
+
+/* Ikonka plitkalari — har bir band o'z rangida */
+.sideMenuItem > span[id^="ic-"],.sideMenuItem > .hIco,.sideMenuItem > .rwIc,
+.langOption > #ic-darkmode-icon{
+  position:relative;overflow:hidden;
+  width:38px;height:38px;flex-shrink:0;margin:0 !important;
+  display:flex !important;align-items:center;justify-content:center;
+  border-radius:12px;
+  background:var(--t,var(--g-grad-brand));
+  box-shadow:0 6px 14px var(--ts,rgba(255,90,31,.32)),0 1px 0 rgba(255,255,255,.45) inset;
+  transition:transform .35s var(--g-spring),box-shadow .3s;
+}
+.sideMenuItem > span[id^="ic-"]::after,.sideMenuItem > .hIco::after,.sideMenuItem > .rwIc::after,
+.langOption > #ic-darkmode-icon::after{
+  content:'';position:absolute;inset:0;background:var(--g-gloss);pointer-events:none;border-radius:inherit;
+}
+.sideMenuItem > span[id^="ic-"] svg,.sideMenuItem > .hIco svg,.sideMenuItem > .rwIc svg,
+.langOption > #ic-darkmode-icon svg{
+  stroke:#fff !important;stroke-width:1.9;width:19px;height:19px;
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.18));position:relative;z-index:1;
+}
+@media (hover:hover){@media (hover:hover){.sideMenuItem:hover > span[id^="ic-"],.sideMenuItem:hover > .hIco,.sideMenuItem:hover > .rwIc{transform:rotate(-6deg) scale(1.08);}}}
+.sideMenuItem:active > span[id^="ic-"],.sideMenuItem:active > .hIco,.sideMenuItem:active > .rwIc{transform:scale(.9);}
+.sideMenuItem.sub{margin-left:18px;width:calc(100% - 18px);padding:9px 12px;}
+.sideMenuItem.sub > .rwIc{width:32px;height:32px;border-radius:10px;}
+.sideMenuItem.sub > .rwIc svg{width:16px;height:16px;}
+.sideMenuItemAccent > span[id^="ic-"]{background:rgba(255,255,255,.22) !important;box-shadow:0 0 0 1px rgba(255,255,255,.35) inset !important;}
+
+/* Har bir bo'lim — o'z ranglari */
+#ic-tally-drawer{--t:linear-gradient(135deg,#FFD25E,#FF9A3C);--ts:rgba(247,169,40,.42);}
+#ic-sys-health{--t:linear-gradient(135deg,#34D6A0,#1FA5B8);--ts:rgba(47,211,154,.40);}
+#ic-printer-test{--t:linear-gradient(135deg,#9B7BFF,#6C4CFF);--ts:rgba(124,92,255,.40);}
+#ic-calc-drawer{--t:linear-gradient(135deg,#4FA3FF,#2F6BFF);--ts:rgba(47,107,255,.38);}
+#ic-broadcast-drawer{--t:linear-gradient(135deg,#FF6A9A,#E8377A);--ts:rgba(255,93,143,.40);}
+#ic-productupdate-drawer{--t:linear-gradient(135deg,#FF9A3C,#EA3A3A);--ts:rgba(255,90,31,.38);}
+#ic-couriers-drawer{--t:linear-gradient(135deg,#3BC9F0,#1E90D6);--ts:rgba(34,196,232,.40);}
+#ic-promo-drawer{--t:linear-gradient(135deg,#C65CFF,#8B3DFF);--ts:rgba(160,80,255,.40);}
+#ic-zone-drawer{--t:linear-gradient(135deg,#7BD957,#2FA968);--ts:rgba(80,190,90,.40);}
+#ic-settings-drawer{--t:linear-gradient(135deg,#8E9AAF,#5B6478);--ts:rgba(91,100,120,.38);}
+#ic-darkmode-icon{--t:linear-gradient(135deg,#6C63FF,#3A2E9E);--ts:rgba(76,60,200,.42);}
+.rwToggle > .hIco{--t:linear-gradient(135deg,#FFD25E,#FF8A1F);--ts:rgba(255,160,40,.45);}
+.rwGift{--t:linear-gradient(135deg,#FF7A5A,#EA3A5A);--ts:rgba(234,58,90,.38);}
+.rwParty{--t:linear-gradient(135deg,#C65CFF,#8B3DFF);--ts:rgba(160,80,255,.38);}
+.rwStar{--t:linear-gradient(135deg,#FFD25E,#FF9A3C);--ts:rgba(247,169,40,.42);}
+.rwUsers{--t:linear-gradient(135deg,#3BC9F0,#2F6BFF);--ts:rgba(47,140,255,.38);}
+.rwToggle .sltChev{transition:transform .35s var(--g-spring);}
+.rwToggle.open{box-shadow:0 0 0 1.5px rgba(255,160,40,.5),0 10px 22px rgba(255,160,40,.18);}
+.rwGroupInner{padding-top:2px;}
+
+/* Admin soati — chuqur brend kartasi */
+.adminClock{
+  background-image:var(--g-gloss),linear-gradient(135deg,#FF9A3C 0%,#EA3A3A 100%) !important;
+  box-shadow:0 12px 28px rgba(255,90,31,.34),0 1px 0 rgba(255,255,255,.35) inset !important;
+  border-radius:20px !important;
+}
+.adminClock .acTime{text-shadow:0 2px 10px rgba(0,0,0,.2);}
+
+/* ═══════════════════════════════════════════════════════════════
+   13. BONUS KARTALARI SARLAVHALARI — rangli SVG plitka
+   ═══════════════════════════════════════════════════════════════ */
+.cardTitle{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:-.02em;}
+.ttIc{
+  position:relative;overflow:hidden;width:28px;height:28px;flex-shrink:0;border-radius:9px;
+  display:inline-flex;align-items:center;justify-content:center;
+  box-shadow:0 5px 12px var(--ts),0 1px 0 rgba(255,255,255,.45) inset;
+}
+.ttIc::after{content:'';position:absolute;inset:0;background:var(--g-gloss);border-radius:inherit;}
+.ttIc svg{stroke:#fff !important;position:relative;z-index:1;stroke-width:1.9;}
+.ttGold{background:linear-gradient(135deg,#FFD25E,#FF8A1F);--ts:rgba(255,160,40,.42);}
+.ttBerry{background:linear-gradient(135deg,#C65CFF,#8B3DFF);--ts:rgba(160,80,255,.40);}
+.ttCool{background:linear-gradient(135deg,#3BC9F0,#2F6BFF);--ts:rgba(47,140,255,.40);}
+.ttMint{background:linear-gradient(135deg,#34D6A0,#1FA5B8);--ts:rgba(47,211,154,.40);}
+
+/* ═══════════════════════════════════════════════════════════════
+   14. UMUMIY QIMMAT KO'RINISH — shrift, sirt, chuqurlik
+   ═══════════════════════════════════════════════════════════════ */
+h1,h2,h3,.brand,.statCard .num,.pdTotalRow b,.rTotalAmt,.balBig,.tallyBarSum{
+  font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;
+}
+.card,.statCard{
+  background-image:linear-gradient(180deg,rgba(255,255,255,.75) 0%,rgba(255,255,255,0) 45%);
+  border:1px solid rgba(255,122,47,.08);
+}
+body.darkMode .card,body.darkMode .statCard{background-image:linear-gradient(180deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,0) 45%);border-color:rgba(255,255,255,.07);}
+.modalCard{background-image:linear-gradient(180deg,rgba(255,255,255,.8) 0%,rgba(255,255,255,0) 30%);}
+body.darkMode .modalCard{background-image:none;}
+.modalCard h3{
+  display:flex;align-items:center;gap:8px;
+}
+.modalCard::before{background:linear-gradient(90deg,rgba(255,122,47,.25),rgba(255,122,47,.55),rgba(255,122,47,.25));}
+.field input,.field select,.field textarea{
+  box-shadow:0 1px 0 rgba(255,255,255,.7),inset 0 1px 3px rgba(28,23,18,.06);
+}
+.field input,.field textarea{background-image:linear-gradient(180deg,rgba(28,23,18,.03),rgba(28,23,18,0));}
+body.darkMode .field input,body.darkMode .field select,body.darkMode .field textarea{box-shadow:inset 0 1px 3px rgba(0,0,0,.35);}
+body.darkMode .field input,body.darkMode .field textarea{background-image:none;}
+::selection{background:rgba(255,122,47,.28);}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#FFB27A,#FF7A2F);border-radius:6px;}
+.avatarSm,.avatarPreview{box-shadow:0 0 0 2px #fff,0 0 0 3.5px rgba(255,122,47,.55),0 6px 14px rgba(255,90,31,.22);}
+body.darkMode .avatarSm,body.darkMode .avatarPreview{box-shadow:0 0 0 2px #221C15,0 0 0 3.5px rgba(255,150,80,.6);}
+.verifiedTick{filter:drop-shadow(0 2px 4px rgba(10,122,255,.4));}
+.empty .t{font-weight:800;letter-spacing:-.02em;}
+.tallyBar{background-image:var(--g-gloss),linear-gradient(135deg,#2F8A4A,#1F5A30);}
+
+/* Matn har doim chapdan boshlansin (uzun nomlar ikki qatorga tushganda ham) */
+.sideMenuItem{text-align:left;}
+.sideMenuItem > span:not([id^="ic-"]):not(.hIco):not(.rwIc):not(.miniSwitch):not(.sltChev){flex:1;text-align:left;}
+
+/* ═══════════════════════════════════════════════════════════════
+   15. IXCHAM (compact) — hamma narsa biroz kichikroq va zichroq
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Yon menyu */
+.sideMenu{width:min(74vw,272px);padding:calc(16px + env(safe-area-inset-top)) 13px calc(14px + env(safe-area-inset-bottom));}
+.sideMenuHeader{margin-bottom:12px;}
+.sideMenuHeader h3{font-size:19px;}
+.sideMenuLabel{font-size:10.5px;margin:2px 0 6px;}
+.sideMenuItem,.langOption{padding:8px 10px;gap:10px;border-radius:14px;font-size:13px;margin-bottom:6px !important;}
+.sideMenuItem small{font-size:9.5px;margin-top:1px;line-height:1.25;}
+.sideMenuItem > span[id^="ic-"],.sideMenuItem > .hIco,.sideMenuItem > .rwIc,
+.langOption > #ic-darkmode-icon{width:31px;height:31px;border-radius:10px;}
+.sideMenuItem > span[id^="ic-"] svg,.sideMenuItem > .hIco svg,.sideMenuItem > .rwIc svg,
+.langOption > #ic-darkmode-icon svg{width:16px;height:16px;}
+.sideMenuItem.sub{margin-left:14px;width:calc(100% - 14px);padding:6px 9px;}
+.sideMenuItem.sub > .rwIc{width:27px;height:27px;border-radius:9px;}
+.sideMenuItem.sub > .rwIc svg{width:14px;height:14px;}
+.sideMenuItem:not(.sideMenuItemAccent):not(.rwToggle):not(.sideMenuToggleItem)::after,.sideMenuItemAccent::after{width:6px;height:6px;}
+.sideMenuItemAccent{padding:9px 11px;}
+.darkModeSwitch{width:38px;height:22px;}
+.darkModeSwitchDot{width:18px;height:18px;}
+.darkModeSwitch.on .darkModeSwitchDot{transform:translateX(16px);}
+.secretAdminBtn{height:34px;margin:2px 0 10px;border-radius:12px;}
+.adminClock{margin:2px 0 10px !important;padding:10px 12px !important;border-radius:16px !important;}
+.adminClock .acTime{font-size:22px;}
+.adminClock .acDate{font-size:11px;}
+
+/* Bonus kartalari sarlavhalari */
+.ttIc{width:24px;height:24px;border-radius:8px;}
+.ttIc svg{width:13px;height:13px;}
+
+/* Tepa panel */
+header.topbar{padding:calc(9px + env(safe-area-inset-top)) 14px 9px;}
+header.topbar .brand{font-size:16px;}
+header.topbar .who{font-size:10.5px;}
+
+/* Suzuvchi savat */
+.floatBasket{padding:11px 19px;font-size:13.5px;}
+
+/* Tugmalar */
+.primaryBtn{padding:12px 14px;font-size:14px;border-radius:14px;}
+.ghostBtn,.dangerGhostBtn,.dlBtn2{padding:8px 11px;font-size:12px;border-radius:12px;}
+.buyBtn2{padding:7px 6px;font-size:11px;border-radius:11px;}
+.quickAddBtn2{width:32px;height:32px;border-radius:11px;}
+.tinyIconBtn{width:32px;height:32px;border-radius:11px;}
+.callActionBtn{width:58px;height:58px;}
+.catChip{height:30px;padding:0 12px;font-size:12px;}
+.catChipRow{padding:8px 0 4px;margin-bottom:4px;}
+.pdQtyBox button{width:34px;height:34px;border-radius:12px;}
+
+/* Kartalar va bloklar */
+.card{padding:13px;border-radius:18px;}
+.statCard{padding:12px;border-radius:18px;}
+.statCard .icWrap{transform-origin:center;}
+.statCard .num{font-size:22px;}
+.statGrid{gap:9px;}
+.heroBanner{height:120px;margin-bottom:14px;border-radius:22px;}
+.heroTextOverlay{padding:11px 15px;}
+.heroTextOverlay h1{font-size:15.5px;}
+.sectionHead{margin-bottom:8px;}
+.sectionHead h2{font-size:16.5px;}
+.prodImgWrap{padding:11px 0 4px;}
+.prodImg{width:60px;height:60px;border-radius:18px;}
+.prodCard .pname{font-size:12px;}
+.prodGrid{gap:9px;}
+.badge{font-size:10px;padding:3.5px 8px;}
+
+/* Oynalar */
+.modalCard{padding:10px 16px calc(18px + env(safe-area-inset-bottom));border-radius:24px 24px 0 0;}
+.modalCard h3{font-size:17px;margin-bottom:11px;}
+.modalCard::before{margin:0 auto 12px;}
+.modalClose{width:28px;height:28px;}
+.field label{font-size:12px;}
+.field input,.field select,.field textarea{padding-top:10px;padding-bottom:10px;font-size:14px;}
+.modalBg.center .modalCard{border-radius:24px;}
+
+/* ═══════════════════════════════════════════════════════════════
+   16. YUMSHOQ VA SILLIQ — animatsiyalar "tomchi suv"dek oqadi
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --g-spring:cubic-bezier(.3,1.08,.5,1);   /* kuchsiz sakrash — yumshoq */
+  --g-flow:cubic-bezier(.25,.85,.3,1);     /* suvdek oqish */
+}
+html{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+button,[onclick],a,label,select{-webkit-tap-highlight-color:transparent;}
+
+/* Ikonka animatsiyalari — kichik amplituda, uzoqroq davom etadi */
+.fxTap svg{animation-duration:.6s;}
+@keyframes iconPop{
+  0%{transform:scale(.86);}
+  50%{transform:scale(1.1) rotate(-3deg);}
+  100%{transform:scale(1) rotate(0);}
+}
+@keyframes iconSpin{0%{transform:rotate(-50deg) scale(.8);}65%{transform:rotate(5deg) scale(1.08);}100%{transform:rotate(0) scale(1);}}
+@keyframes heartPop{
+  0%{transform:scale(.8);}
+  40%{transform:scale(1.28);}
+  70%{transform:scale(.95);}
+  100%{transform:scale(1);}
+}
+@keyframes cartShake{
+  0%,100%{transform:rotate(0);}
+  30%{transform:rotate(-7deg) scale(1.05);}
+  60%{transform:rotate(5deg) scale(1.05);}
+  80%{transform:rotate(-2deg);}
+}
+@keyframes trashShake{0%,100%{transform:rotate(0);}30%{transform:rotate(-8deg);}60%{transform:rotate(6deg);}}
+@keyframes giftShake{0%,100%{transform:rotate(0);}30%{transform:rotate(-5deg) scale(1.03);}60%{transform:rotate(4deg) scale(1.03);}}
+@keyframes chipPop{0%{transform:scale(.93);}60%{transform:scale(1.03);}100%{transform:scale(1);}}
+@keyframes cardAddGlow{0%{box-shadow:0 0 0 0 rgba(255,122,47,.45);}100%{box-shadow:0 0 0 18px rgba(255,122,47,0);}}
+@keyframes amountPop{0%{transform:scale(1);}40%{transform:scale(1.07);}100%{transform:scale(1);}}
+@keyframes basketBump{
+  0%{transform:translateX(-50%) scale(1);}
+  40%{transform:translateX(-50%) scale(1.07);}
+  100%{transform:translateX(-50%) scale(1);}
+}
+@keyframes viewIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+@keyframes modalItem{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.view.active{animation-duration:.5s;animation-timing-function:var(--g-flow);}
+.modalCard{animation-duration:.5s;}
+.modalCard > *{animation-duration:.5s;animation-timing-function:var(--g-flow);}
+
+/* To'lqin — tinch, sekin so'nadi */
+.fxRipple{background:rgba(255,255,255,.30);animation:fxRippleGrow .85s var(--g-flow) forwards;}
+.fxRipple.dark{background:rgba(255,90,31,.12);}
+body.darkMode .fxRipple.dark{background:rgba(255,190,140,.14);}
+@keyframes fxRippleGrow{0%{transform:scale(.2);opacity:.9;}100%{transform:scale(2.4);opacity:0;}}
+.fxSpark{animation-duration:.85s;animation-timing-function:var(--g-flow);width:6px;height:6px;}
+
+/* Hamma o'tishlar biroz uzoqroq va silliqroq */
+.catChip,.tallyTabs button,.orderTypeToggle button,.periodTabs button,.finTabs button{transition-duration:.35s;transition-timing-function:var(--g-flow);}
+.prodCard,.card,.statCard,.sideMenuItem,.regChoiceCard{transition-timing-function:var(--g-flow);}
+.darkModeSwitchDot,.miniSwitch i{transition-duration:.45s;}
+
+/* ═══════════════════════════════════════════════════════════════
+   17. PASTKI MENYU — kattaroq, oval "suv tomchisi"dek oqadi
+   ═══════════════════════════════════════════════════════════════ */
+.bottomNav{padding:7px;bottom:calc(10px + env(safe-area-inset-bottom));}
+.bottomNav .navBtn{padding:9px 4px;gap:3px;border-radius:22px;}
+.bottomNav .navBtn .tx{font-size:10px;}
+.bottomNav .navBtn svg{width:22px;height:22px;}
+.bottomNav.compact .navBtn{padding:11px 2px;}
+.bottomNav.compact .navBtn svg{width:22px;height:22px;}
+.navGlider{
+  top:7px;height:calc(100% - 14px);border-radius:22px;
+  transition:
+    transform .7s var(--g-flow),
+    width     .7s var(--g-flow),
+    opacity   .3s ease;
+  transform-origin:50% 50%;
+}
+/* Tomchi yaltirashi */
+.navGlider::after{
+  content:'';position:absolute;top:4px;left:16%;width:44%;height:32%;border-radius:50%;
+  background:radial-gradient(ellipse at 40% 40%,rgba(255,255,255,.55),rgba(255,255,255,0) 72%);
+  pointer-events:none;
+}
+/* Siljiganda tomchidek cho'ziladi va yig'iladi (JS .drop qo'shadi) */
+.navGlider.drop{animation:dropMove .7s var(--g-flow);}
+@keyframes dropMove{
+  0%  {scale:1 1;}
+  28% {scale:var(--sx,1.12) .9;}
+  62% {scale:.985 1.035;}
+  100%{scale:1 1;}
+}
+.bottomNav .navBtn.active svg{transition:transform .6s var(--g-spring),stroke .3s;}
+.bottomNav .navBtn:active{transform:scale(.95);}
+
+/* ═══════════════════════════════════════════════════════════════
+   18. TEPADAGI LOGOTIP VA "Unutilmas Ta'm" YOZUVI
+   ═══════════════════════════════════════════════════════════════ */
+header.topbar{
+  background:linear-gradient(180deg,rgba(255,252,247,.92),rgba(255,247,238,.78));
+  -webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);
+  border-bottom:1px solid rgba(255,122,47,.14);
+}
+body.darkMode header.topbar{background:linear-gradient(180deg,rgba(30,25,19,.92),rgba(22,18,14,.8));border-bottom-color:rgba(255,150,80,.18);}
+.brandRow{gap:11px;}
+.brandRow .brandIc{
+  position:relative;width:46px;height:46px;border-radius:16px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,#FFFFFF 0%,#FFEBD6 100%);
+  box-shadow:0 0 0 1.5px rgba(255,122,47,.35),0 8px 18px rgba(255,90,31,.24),0 1px 0 #fff inset;
+  transition:transform .5s var(--g-spring),box-shadow .35s var(--g-flow);
+}
+body.darkMode .brandRow .brandIc{background:linear-gradient(145deg,#3A2C1E,#2A2016);box-shadow:0 0 0 1.5px rgba(255,150,80,.4),0 8px 18px rgba(0,0,0,.4);}
+.brandRow .brandIc img{width:36px !important;height:36px !important;filter:drop-shadow(0 2px 3px rgba(255,90,31,.25));}
+.brandRow:active .brandIc{transform:scale(.94) rotate(-3deg);}
+.brandRow .brand{
+  font-family:'Playfair Display',Georgia,'Times New Roman',serif;
+  font-style:italic;font-weight:800;font-size:24px;letter-spacing:.008em;line-height:1.12;
+  background:linear-gradient(100deg,#9E2A0E 0%,#D4400F 32%,#EE6A1A 62%,#C2790A 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  -webkit-text-stroke:0.4px rgba(120,30,0,.25);
+  filter:drop-shadow(0 1px 0 rgba(255,255,255,.8)) drop-shadow(0 2px 5px rgba(180,60,10,.18));
+  position:relative;padding-bottom:4px;display:inline-block;
+}
+body.darkMode .brandRow .brand{
+  background:linear-gradient(100deg,#FFC08A 0%,#FF9A4D 45%,#FFDB8F 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-stroke:0.4px rgba(0,0,0,.18);
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));
+}
+.brandRow .brand::after{ /* nozik bezak chizig'i */
+  content:'';position:absolute;left:1px;bottom:0;width:58%;height:2px;border-radius:2px;
+  background:linear-gradient(90deg,#FF7A2F,rgba(255,193,69,0));
+}
+.brandRow .who{font-size:10.5px;font-weight:600;letter-spacing:.02em;color:var(--muted);margin-top:2px;}
+header.topbar .rightBtn{
+  border:1px solid rgba(255,122,47,.28);
+  background-image:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,0));
+  color:var(--forest-dark,#B8430F);font-weight:800;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   19. TELEFON QO'NG'IROQ QATORLARI (do'kon, profil)
+   ═══════════════════════════════════════════════════════════════ */
+.phoneCallRow{
+  display:flex;align-items:center;gap:9px;
+  padding:9px 11px;margin:6px 0;border-radius:13px;
+  background:linear-gradient(180deg,rgba(47,169,104,.08),rgba(47,169,104,.03));
+  border:1px solid rgba(47,169,104,.18);
+  text-decoration:none;color:var(--ink);
+  transition:transform .3s var(--g-spring),box-shadow .3s var(--g-flow),background .2s;
+}
+body.darkMode .phoneCallRow{background:linear-gradient(180deg,rgba(80,200,140,.10),rgba(80,200,140,.03));border-color:rgba(80,200,140,.22);}
+.phoneCallRow:active{transform:scale(.98);}
+.phoneCallIcon{
+  width:30px;height:30px;flex-shrink:0;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#34D6A0,#1FA5B8);
+  box-shadow:0 4px 10px rgba(47,169,104,.32),0 1px 0 rgba(255,255,255,.4) inset;
+}
+.phoneCallIcon svg{stroke:#fff !important;}
+.phoneCallNum{flex:1;font-weight:700;font-size:14px;letter-spacing:.01em;}
+.phoneRowDel{width:28px;height:28px;flex-shrink:0;}
+.pfPhonesSection{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);}
+.pfPhonesTitle{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+.pfPhoneAddRow{display:flex;gap:7px;margin-top:6px;}
+.pfPhoneAddRow input{
+  flex:1;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line-soft);
+  background:var(--fill);font-size:13.5px;
+}
+.pfPhoneAddRow .ghostBtn{display:flex;align-items:center;gap:5px;padding:0 13px;white-space:nowrap;}
+
+/* ═══════════════════════════════════════════════════════════════
+   20. YON MENYU — yana biroz ixchamroq
+   ═══════════════════════════════════════════════════════════════ */
+.sideMenuItem,.langOption{padding:7px 9px;gap:9px;font-size:12.5px;margin-bottom:5px !important;}
+.sideMenuItem small{font-size:9px;}
+.sideMenuItem > span[id^="ic-"],.sideMenuItem > .hIco,.sideMenuItem > .rwIc,
+.langOption > #ic-darkmode-icon{width:28px;height:28px;border-radius:9px;}
+.sideMenuItem > span[id^="ic-"] svg,.sideMenuItem > .hIco svg,.sideMenuItem > .rwIc svg,
+.langOption > #ic-darkmode-icon svg{width:14.5px;height:14.5px;}
+.sideMenuItem.sub{margin-left:12px;width:calc(100% - 12px);padding:5.5px 8px;}
+.sideMenuItem.sub > .rwIc{width:24px;height:24px;border-radius:8px;}
+.sideMenuItem.sub > .rwIc svg{width:12.5px;height:12.5px;}
+.sideMenuHeader h3{font-size:18px;}
+.sideMenuLabel{font-size:10px;margin:2px 0 5px;}
+
+/* Analitika davr tugmalari endi 4 ta — biroz ixchamroq sig'adi */
+.periodTabs button{padding:9px 4px;font-size:11px;white-space:nowrap;}

@@ -1,0 +1,273 @@
+/* ═══════════════════════════════════════════════════════════════
+   Unutilmas Ta'm — polish.css
+   Chuqurlik, harakat va planshetga moslashuv qatlami.
+
+   Tamoyillar:
+   1. Harakat — FOYDALANUVCHI AMALIGA javob beradi, o'z-o'zidan emas.
+      Bosilganda, ochilganda, tasdiqlanganda. Bezak uchun emas.
+   2. Chuqurlik — soya darajasi elementning VAZIFASIGA bog'liq:
+      panel > oyna > kartochka > maydon. Hammasi bir xil emas.
+   3. Moslashuv — iPad'da bu ilova kun bo'yi ishlatiladi, shuning
+      uchun planshet alohida ko'rinish oladi, cho'zilgan telefon emas.
+   4. Kuch bir joyda — mahsulot kartochkasi va pul lahzalari
+      (jami, chek, sotish). Qolgani jim turadi.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root{
+  /* Chuqurlik darajalari — vazifasiga qarab */
+  --lift-1: 0 1px 2px rgba(28,23,18,.04), 0 2px 6px rgba(28,23,18,.045);
+  --lift-2: 0 2px 4px rgba(28,23,18,.05), 0 10px 24px rgba(28,23,18,.09);
+  --lift-3: 0 4px 10px rgba(28,23,18,.07), 0 22px 50px rgba(28,23,18,.16);
+  --lift-brand: 0 3px 8px rgba(226,78,23,.22), 0 12px 28px rgba(226,78,23,.20);
+
+  /* Yuzadagi nozik yorug'lik — "shisha" hissi */
+  --sheen: inset 0 1px 0 rgba(255,255,255,.55);
+
+  --ease-out: cubic-bezier(.22,.8,.28,1);
+  --ease-spring: cubic-bezier(.34,1.32,.5,1);
+}
+
+body.darkMode{
+  --lift-1: 0 1px 2px rgba(0,0,0,.3), 0 2px 6px rgba(0,0,0,.28);
+  --lift-2: 0 2px 6px rgba(0,0,0,.34), 0 12px 28px rgba(0,0,0,.4);
+  --lift-3: 0 6px 14px rgba(0,0,0,.42), 0 26px 56px rgba(0,0,0,.55);
+  --sheen: inset 0 1px 0 rgba(255,255,255,.07);
+}
+
+/* ───────────────────────────────────────────────
+   1. BOSISH — har bir amal javob beradi
+   ─────────────────────────────────────────────── */
+.primaryBtn, .ghostBtn, .dlBtn2, .buyBtn2, .quickAddBtn2,
+.orderBtn2, .tcOk, .tcNo, .statCard.clickable, .prodCard,
+.sideMenuItem, .tallyTabs button, .orderTypeToggle button{
+  transition: transform .16s var(--ease-out),
+              box-shadow .24s var(--ease-out),
+              background .2s var(--ease-out),
+              filter .2s var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+.primaryBtn:active, .buyBtn2:active, .orderBtn2:active,
+.tcOk:active, .tcNo:active{ transform: scale(.965) translateY(1px); }
+.ghostBtn:active, .dlBtn2:active, .sideMenuItem:active{ transform: scale(.98); }
+.statCard.clickable:active, .prodCard:active{ transform: scale(.985); }
+
+/* Asosiy tugmalarda brend soyasi — pul lahzalari shu yerda */
+.primaryBtn{ box-shadow: var(--lift-brand); }
+.primaryBtn:active{ box-shadow: 0 2px 6px rgba(226,78,23,.28); }
+
+/* Bosilganda tarqaladigan to'lqin */
+.rippleHost{ position: relative; overflow: hidden; }
+.rippleDot{
+  position: absolute; border-radius: 50%;
+  background: rgba(255,255,255,.42);
+  transform: scale(0); opacity: .9;
+  pointer-events: none;
+  animation: rippleGrow .55s var(--ease-out) forwards;
+}
+.ghostBtn .rippleDot, .dlBtn2 .rippleDot{ background: rgba(28,23,18,.10); }
+@keyframes rippleGrow{ to{ transform: scale(2.6); opacity: 0; } }
+
+/* ───────────────────────────────────────────────
+   2. CHUQURLIK — vazifasiga qarab
+   ─────────────────────────────────────────────── */
+.card, .prodCard, .statCard{ box-shadow: var(--lift-1), var(--sheen); }
+.modalCard{ box-shadow: var(--lift-3); }
+header.topbar{ box-shadow: 0 1px 0 var(--line), 0 6px 20px rgba(28,23,18,.05); }
+
+/* Mahsulot kartochkasi — ilovaning eng ko'p bosiladigan yuzasi */
+.prodCard{
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.7) 0%, rgba(255,255,255,0) 42%),
+    var(--card);
+}
+.prodCard.picked{ box-shadow: var(--lift-2), 0 0 0 2px var(--forest) inset; }
+
+/* Yashil panel va sotildi xabari — puldagi lahzalar, chuqurroq */
+.tallyBar{ box-shadow: 0 4px 10px rgba(31,74,40,.18), 0 16px 34px rgba(31,74,40,.24); }
+
+/* ───────────────────────────────────────────────
+   3. OYNALAR — ochilishi va yopilishi ko'rinadi
+   ─────────────────────────────────────────────── */
+.modalBg{
+  transition: opacity .26s var(--ease-out);
+  opacity: 1;
+}
+.modalBg .modalCard{
+  animation: modalRise .34s var(--ease-spring);
+}
+@keyframes modalRise{
+  from{ opacity: 0; transform: translateY(26px) scale(.965); }
+  to  { opacity: 1; transform: none; }
+}
+
+/* Yon menyu ichidagi bandlar navbat bilan kiradi — bir marta */
+.sideMenu.open .sideMenuItem{
+  animation: menuIn .34s var(--ease-out) backwards;
+}
+.sideMenu.open .sideMenuItem:nth-child(1){ animation-delay:.02s; }
+.sideMenu.open .sideMenuItem:nth-child(2){ animation-delay:.05s; }
+.sideMenu.open .sideMenuItem:nth-child(3){ animation-delay:.08s; }
+.sideMenu.open .sideMenuItem:nth-child(4){ animation-delay:.11s; }
+.sideMenu.open .sideMenuItem:nth-child(5){ animation-delay:.14s; }
+@keyframes menuIn{
+  from{ opacity:0; transform: translateX(-14px); }
+  to  { opacity:1; transform:none; }
+}
+
+/* ───────────────────────────────────────────────
+   4. TANLOV TUGMALARI — siljiydigan ko'rsatkich
+   ─────────────────────────────────────────────── */
+.tallyTabs button, .orderTypeToggle button{ position: relative; }
+.tallyTabs button.active::after,
+.orderTypeToggle button.active::after{
+  content:''; position:absolute; left:26%; right:26%; bottom:5px; height:3px;
+  border-radius:99px; background: currentColor; opacity:.55;
+  animation: tabMark .3s var(--ease-spring);
+}
+@keyframes tabMark{ from{ transform: scaleX(.2); opacity:0; } to{ transform:none; opacity:.55; } }
+
+/* ───────────────────────────────────────────────
+   5. JAMI SUMMA — o'zgarganda sezilsin
+   ─────────────────────────────────────────────── */
+.amountPulse{ animation: amountPop .42s var(--ease-spring); }
+@keyframes amountPop{
+  0%{ transform: scale(1); }
+  38%{ transform: scale(1.09); }
+  100%{ transform: scale(1); }
+}
+
+/* ───────────────────────────────────────────────
+   6. PLANSHET — iPad'da kun bo'yi ishlatiladi
+   ─────────────────────────────────────────────── */
+@media (min-width: 700px){
+  main{ max-width: 760px; margin: 0 auto; }
+  .bottomNav{ max-width: 560px; }
+
+  /* Mahsulotlar kengroq ekranda uch ustun */
+  .prodGrid{ grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+
+  /* Statistika kartochkalari bir qatorda */
+  .statGrid{ grid-template-columns: repeat(4, minmax(0,1fr)); }
+
+  /* Oynalar markazda, o'rtacha kenglikda */
+  .modalCard{ max-width: 520px; border-radius: 26px; }
+  .tallySheet{ max-width: 620px; height: 84vh; border-radius: 26px; }
+
+  /* Matn biroz yirikroq — uzoqroqdan ko'riladi */
+  .prodCard .pname2, .prodCard .pname{ font-size: 14.5px; }
+  .priceNow2{ font-size: 16px; }
+}
+
+@media (min-width: 1000px){
+  main{ max-width: 920px; }
+  .prodGrid{ grid-template-columns: repeat(4, minmax(0,1fr)); }
+  .tallySheet{ max-width: 720px; }
+}
+
+/* Yon tomonga burilganda pastki menyu joy egallamasin */
+@media (max-height: 460px) and (orientation: landscape){
+  .bottomNav{ padding: 4px 6px; }
+  .bottomNav .navBtn{ padding: 5px 4px; }
+  .bottomNav .navBtn span{ font-size: 9px; }
+}
+
+/* ───────────────────────────────────────────────
+   7. KLAVIATURA BILAN ISHLASH
+   ─────────────────────────────────────────────── */
+:focus-visible{
+  outline: 2.5px solid var(--forest);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* ───────────────────────────────────────────────
+   8. HARAKATNI KAMAYTIRISH so'ralganda — hurmat qilamiz
+   ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+  .rippleDot{ display: none; }
+}
+
+/* Chop etish nusxasida hech qanday harakat bo'lmasin */
+.printClone *{ animation: none !important; transition: none !important; }
+
+/* ═══════════════════════════════════════════════════════════════
+   TUGMALAR — boy, lekin bosilganda MA'NOLI
+   Har effekt bosishga javob beradi: ko'tarilish, yorug'lik, bosilish.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Asosiy tugma: ustidan o'tadigan yorug'lik va chuqurlik */
+.primaryBtn{
+  position: relative;
+  overflow: hidden;
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 55%),
+    var(--btn-grad);
+  border: none;
+}
+.primaryBtn::before{
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(105deg,
+    transparent 30%, rgba(255,255,255,.34) 48%, transparent 66%);
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+.primaryBtn:active::before{ animation: sheenSweep .62s var(--ease-out); }
+@keyframes sheenSweep{ to{ transform: translateX(130%); } }
+
+/* Yengil tugma — bosilganda brend rangiga yaqinlashadi */
+.ghostBtn{ transition: background .22s var(--ease-out), border-color .22s var(--ease-out),
+                       transform .16s var(--ease-out), box-shadow .22s var(--ease-out); }
+.ghostBtn:active{ background: var(--leaf-soft); border-color: var(--forest); }
+
+/* Savatga qo'shish — qisqa "sakrash" */
+.quickAddBtn2:active{ animation: addPop .38s var(--ease-spring); }
+@keyframes addPop{
+  0%{ transform: scale(1); }
+  40%{ transform: scale(.82) rotate(-8deg); }
+  100%{ transform: scale(1) rotate(0); }
+}
+
+/* Tasdiqlash oynasidagi ko'k/qizil tugmalar — nafas oladi */
+.tcOk, .tcNo{ position: relative; overflow: hidden; }
+.tcOk::after{
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(circle at 50% 120%, rgba(255,255,255,.3), transparent 62%);
+  pointer-events:none;
+}
+
+/* Mahsulot kartochkasi — barmoq tekkanda ko'tariladi */
+.prodCard{ transform-origin: center bottom; }
+@media (hover: hover){
+  @media (hover:hover){.prodCard:hover{ transform: translateY(-3px); box-shadow: var(--lift-2), var(--sheen); }}
+  @media (hover:hover){.primaryBtn:hover{ filter: brightness(1.04); }}
+  @media (hover:hover){.statCard.clickable:hover{ transform: translateY(-2px); box-shadow: var(--lift-2); }}
+}
+
+/* Pastki menyu uslubi glassnav.css da — shisha panel va siljiydigan oval */
+
+/* Yashil hisob paneli — yangi mahsulot qo'shilganda sezdiradi */
+.tallyBar{ transition: box-shadow .3s var(--ease-out), opacity .25s; }
+.tallyBar:active{ transform: scale(.985); }
+
+/* Kirish maydonlari — fokusda brend halqasi */
+input, textarea, select{
+  transition: border-color .2s var(--ease-out), box-shadow .2s var(--ease-out);
+}
+input:focus, textarea:focus, select:focus{
+  border-color: var(--forest) !important;
+  box-shadow: 0 0 0 3.5px var(--leaf-soft);
+  outline: none;
+}
+
+/* Ro'yxatga yangi qator qo'shilganda */
+.tallyRow, .restockRow{ animation: rowIn .3s var(--ease-out) backwards; }
+@keyframes rowIn{ from{ opacity:0; transform: translateY(6px); } to{ opacity:1; transform:none; } }
+
+/* Ikonkalar bosilganda biroz aylanадi */
+.tinyIconBtn:active{ transform: scale(.88) rotate(-6deg); }

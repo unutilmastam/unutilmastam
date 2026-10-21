@@ -1,0 +1,76 @@
+/* Unutilmas Ta'm — components.css */
+.card{background:var(--card);}
+body.darkMode input,body.darkMode textarea,body.darkMode select{background:var(--fill);color:var(--ink);}
+body.darkMode .prodCard,body.darkMode .sessionRow{background:var(--card);}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Inter',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  min-height:100vh;
+  padding-bottom:calc(112px + env(safe-area-inset-bottom));
+}
+h1,h2,h3,.brand{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Plus Jakarta Sans',system-ui,sans-serif;letter-spacing:-.02em;}
+
+/* ═════════ INTERNET YO'Q — ogohlantirish tasmasi ═════════ */
+#offlineBar{
+  position:fixed;left:0;right:0;bottom:0;z-index:9997;
+  background:linear-gradient(180deg,#3B3128,#241C14);
+  color:#FFE9D6;font-size:12.5px;font-weight:700;
+  padding:9px 16px calc(9px + env(safe-area-inset-bottom));
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transform:translateY(110%);transition:transform .38s var(--spring-pop);
+  box-shadow:0 -4px 18px rgba(28,23,18,.28);
+}
+#offlineBar.show{transform:translateY(0);}
+#offlineBar .dot{width:7px;height:7px;border-radius:50%;background:#F0A24B;flex-shrink:0;animation:offPulse 1.6s ease-in-out infinite;}
+@keyframes offPulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+#offlineBar.online{background:linear-gradient(180deg,#2F6B3A,#1F4A28);color:#DFF5E4;}
+#offlineBar.online .dot{background:#7BD98F;animation:none;}
+
+/* ═════════ TEPADAN PASTGA TORTIB YANGILASH (Pull to refresh) ═════════
+   iPhone'da "Ekranga qo'shish" orqali ochilgan ilovada brauzerning o'z
+   yangilash imkoni yo'q — shuning uchun o'zimiz qo'shamiz. */
+#ptrBox{
+  position:fixed;top:0;left:0;right:0;height:0;z-index:9998;
+  display:flex;align-items:flex-end;justify-content:center;
+  pointer-events:none;overflow:hidden;
+  padding-top:env(safe-area-inset-top);
+}
+#ptrCircle{
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(255,255,255,.96);
+  box-shadow:0 4px 16px rgba(28,23,18,.20);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:9px;
+  transform:scale(.5);opacity:0;
+}
+#ptrCircle svg{display:block;}
+#ptrArrow{transition:transform .25s var(--spring-pop);transform-origin:center;}
+#ptrBox.ready #ptrArrow{transform:rotate(180deg);}
+#ptrBox.spin #ptrCircle{animation:ptrSpin .75s linear infinite;}
+@keyframes ptrSpin{to{transform:scale(1) rotate(360deg);}}
+/* MUHIM: bu yerda #appShell'ga transform/will-change BERILMAYDI.
+   Sabab: ota elementga transform berilsa, ichidagi position:fixed elementlar
+   (pastki menyu) ekranga emas, o'sha elementga nisbatan joylashadi va sahifa
+   oxiriga tushib ketadi. Shuning uchun faqat asosiy kontent (main) suriladi. */
+main{will-change:transform;}
+body.ptrActive{overscroll-behavior-y:contain;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;color:var(--ink);}
+button{-webkit-tap-highlight-color:transparent;}
+*:focus-visible{outline:2.5px solid var(--leaf);outline-offset:2px;border-radius:4px;}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-thumb{background:rgba(28,23,18,.16);border-radius:4px;}
+::selection{background:var(--leaf-soft);}
+svg.icon{display:block;flex-shrink:0;}
+.hidden{display:none !important;}
+a{color:inherit;text-decoration:none;}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-delay:0s !important;transition-duration:.01ms !important;}
+}
+
+/* ---------- TOPBAR : frosted glass ---------- */

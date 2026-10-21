@@ -1,0 +1,125 @@
+/* ═══════════════════════════════════════════════════════════════
+   Unutilmas Ta'm — glassnav.css
+   Pastki menyu: qorong'i shaffof "shisha" panel va faol band
+   ostida siljiydigan yorug' oval.
+
+   Videodagi uslub: panel orqasidagi rang ko'rinib turadi, faol
+   band ostidagi oval bosilgan bandga silliq suriladi.
+   ═══════════════════════════════════════════════════════════════ */
+
+.bottomNav{
+  position: fixed;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  left: 14px; right: 14px; z-index: 50;
+  max-width: 520px; margin: 0 auto;
+
+  /* Qorong'i shisha — orqadagi rang ko'rinib turadi */
+  background: rgba(38, 33, 29, .62);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  backdrop-filter: blur(30px) saturate(190%);
+
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 999px;
+  padding: 7px;
+
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+
+  /* Yuqori qirrada nozik yorug'lik + tashqi soya */
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.22),
+    inset 0 -1px 0 rgba(0,0,0,.18),
+    0 10px 30px rgba(20,14,10,.30),
+    0 2px 8px rgba(20,14,10,.18);
+
+  /* Ichidagi oval chetdan chiqmasin */
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* ───────── Siljiydigan oval ───────── */
+.navGlider{
+  position: absolute;
+  top: 7px; left: 0;
+  height: calc(100% - 14px);
+  border-radius: 22px;
+  background: rgba(255,255,255,.17);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.26),
+    0 2px 10px rgba(0,0,0,.14);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  /* Siljish — yumshoq prujina */
+  transition:
+    transform .42s cubic-bezier(.32,1.12,.42,1),
+    width     .42s cubic-bezier(.32,1.12,.42,1),
+    opacity   .25s ease;
+  will-change: transform, width;
+}
+.navGlider.on{ opacity: 1; }
+
+/* ───────── Bandlar ───────── */
+.bottomNav .navBtn{
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  background: none !important;
+  border: none;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px;
+  padding: 9px 4px;
+  color: rgba(255,255,255,.66);
+  border-radius: 22px;
+  transition: color .26s ease, transform .18s var(--ease-out);
+}
+.bottomNav .navBtn svg{
+  stroke: rgba(255,255,255,.72);
+  transition: stroke .26s ease, transform .34s cubic-bezier(.34,1.32,.5,1);
+}
+.bottomNav .navBtn .tx{
+  font-size: 9.5px; font-weight: 700; letter-spacing: .01em;
+  opacity: .82; transition: opacity .26s ease;
+}
+
+/* Faol band — oq va to'liq */
+.bottomNav .navBtn.active{
+  color: #fff;
+  background: none !important;
+}
+.bottomNav .navBtn.active svg{
+  stroke: #fff;
+  transform: translateY(-1px) scale(1.08);
+}
+.bottomNav .navBtn.active .tx{ opacity: 1; }
+
+.bottomNav .navBtn:active{ transform: scale(.93); }
+
+/* Oval ostidagi yumshoq halqa o'rniga hech narsa —
+   videodagidek faqat oval qoladi */
+.bottomNav .navBtn.active::before{ display: none !important; }
+
+/* Savat sanog'i qorong'i panelda ham ko'rinsin */
+.bottomNav .navBadge{
+  box-shadow: 0 0 0 2px rgba(38,33,29,.85);
+}
+
+/* ───────── Qorong'i rejim ───────── */
+body.darkMode .bottomNav{
+  background: rgba(22,19,17,.72);
+  border-color: rgba(255,255,255,.12);
+}
+
+/* ───────── Harakatni kamaytirish ───────── */
+@media (prefers-reduced-motion: reduce){
+  .navGlider{ transition: opacity .01ms; }
+}
+
+/* ───────── Bandlar ko'p bo'lganda ─────────
+   5 tadan ko'p band bo'lsa yozuvlar sig'maydi —
+   faqat ikonka qoladi, panel toza ko'rinadi. */
+.bottomNav.compact .navBtn{ padding: 11px 2px; }
+.bottomNav.compact .navBtn .tx{ display: none; }
+.bottomNav.compact .navBtn svg{ width: 21px; height: 21px; }
+.bottomNav.compact .navGlider{ border-radius: 20px; }
