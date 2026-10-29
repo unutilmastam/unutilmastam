@@ -121,6 +121,7 @@ export function Office({ agents, workerHealthy }: { agents: OfficeAgent[]; worke
     agent: a,
     seat: SEAT_BY_KEY[a.key] ?? (ALL_SEATS[i % ALL_SEATS.length] as Seat),
     look: LOOKS[i % LOOKS.length] as Look,
+    phase: i * 2.3 + 0.7,
   }));
   // Paint back row first so front-row people overlap it.
   const ordered = [...placed].sort((a, b) => a.seat.base - b.seat.base);
@@ -138,8 +139,8 @@ export function Office({ agents, workerHealthy }: { agents: OfficeAgent[]; worke
             <SceneDefs />
             <Architecture night={night} />
             <Lounge people={paused.map((p) => p.look)} />
-            {ordered.map(({ agent, seat, look }) => (
-              <Workstation key={agent.key} agent={agent} seat={seat} look={look} />
+            {ordered.map(({ agent, seat, look, phase }) => (
+              <Workstation key={agent.key} agent={agent} seat={seat} look={look} phase={phase} />
             ))}
             <Foreground />
           </svg>
@@ -754,7 +755,7 @@ function screenFill(pose: Pose): string {
 }
 
 /** Desk with monitors, chair and — only when the agent is at work — the person. */
-function Workstation({ agent, seat, look }: { agent: OfficeAgent; seat: Seat; look: Look }) {
+function Workstation({ agent, seat, look, phase }: { agent: OfficeAgent; seat: Seat; look: Look; phase: number }) {
   const pose = agent.pose;
   const present = pose === 'working' || pose === 'idle' || pose === 'error' || pose === 'stopping';
   const glow = STATUS_COLOR[pose];
@@ -801,10 +802,18 @@ function Workstation({ agent, seat, look }: { agent: OfficeAgent; seat: Seat; lo
       <path d="M-87 -21 q5 0 5 4 q0 4 -5 4" fill="none" stroke="#e8e3da" strokeWidth="1.5" opacity="0.9" />
 
       {/* person seen from behind (only when really at work) */}
-      {present && <Person look={look} rim={glow} typing={pose === 'working'} />}
-
-      {/* ergonomic chair */}
-      <Chair occupied={present} />
+      {/* person and chair swivel together while the agent waits for work */}
+      <g className={pose === 'idle' ? 'p-swivel' : undefined} style={{ animationDelay: `${-phase * 1.3}s` }}>
+        {present && (
+          <Person
+            look={look}
+            rim={glow}
+            phase={phase}
+            activity={pose === 'working' ? 'type' : pose === 'error' ? 'error' : 'idle'}
+          />
+        )}
+        <Chair occupied={present} />
+      </g>
     </g>
   );
 }
@@ -870,27 +879,61 @@ function ScreenContent({
   return null;
 }
 
-function Person({ look, rim, typing }: { look: Look; rim: string; typing: boolean }) {
+type Activity = 'type' | 'idle' | 'error' | 'rest';
+
+/**
+ * A person seen from behind. Small, irregular loops (breathing, typing, glancing between
+ * monitors, sipping coffee, a hand to the head when something failed) chosen by the agent's real
+ * state; `phase` offsets the loops so nobody moves in sync.
+ */
+function Person({ look, rim, activity, phase }: { look: Look; rim: string; activity: Activity; phase: number }) {
+  const d = (base: number) => ({ animationDelay: `${-((phase * 1.7 + base) % 11).toFixed(2)}s` });
+  const head = activity === 'type' ? 'p-head-scan' : activity === 'error' ? 'p-head-stress' : 'p-head-look';
   return (
-    <g className={typing ? 'office-typing' : undefined}>
-      {/* arms towards the keyboard */}
-      <path d="M-34 -6 C-40 -14 -38 -24 -28 -26 L-20 -14 Z" fill={look.top} />
-      <path d="M34 -6 C40 -14 38 -24 28 -26 L20 -14 Z" fill={look.top} />
-      {/* torso / hoodie with screen rim light */}
-      <path d="M-38 30 C-40 -6 -32 -34 -14 -42 L14 -42 C32 -34 40 -6 38 30 Z" fill={look.top} />
-      <path d="M-38 30 C-40 -6 -32 -34 -14 -42 L14 -42 C32 -34 40 -6 38 30 Z" fill="url(#of-sheen)" />
-      <path d="M-14 -42 C-32 -34 -40 -6 -38 30" fill="none" stroke={rim} strokeOpacity="0.45" strokeWidth="1.5" />
-      <path d="M14 -42 C32 -34 40 -6 38 30" fill="none" stroke={rim} strokeOpacity="0.45" strokeWidth="1.5" />
-      <path d="M-15 -42 C-10 -30 10 -30 15 -42" fill="none" stroke="#000" strokeOpacity="0.35" strokeWidth="3" />
-      {/* neck, ears, head */}
+    <g className={activity === 'error' ? 'p-lean-in' : activity === 'idle' ? 'p-lean-back' : undefined}>
+      {/* coffee: hidden behind the body until it is raised (idle and resting only) */}
+      {(activity === 'idle' || activity === 'rest') && (
+        <g className="p-sip" style={d(3)}>
+          <path d="M22 -20 C26 -30 26 -40 22 -48 L16 -46 C19 -38 19 -30 16 -22 Z" fill={look.top} />
+          <circle cx="20" cy="-50" r="4" fill={look.skin} />
+          <rect x="15" y="-62" width="9" height="11" rx="2" fill="#e8e3da" />
+        </g>
+      )}
+      {/* arms: elbows bob while typing; the right hand goes to the mouse now and then */}
+      <g className={activity === 'type' ? 'p-type-l' : undefined} style={d(0)}>
+        <path d="M-34 -6 C-40 -14 -38 -24 -28 -26 L-20 -14 Z" fill={look.top} />
+      </g>
+      <g className={activity === 'type' ? 'p-mouse' : undefined} style={d(5)}>
+        <g className={activity === 'type' ? 'p-type-r' : undefined} style={d(0.45)}>
+          <path d="M34 -6 C40 -14 38 -24 28 -26 L20 -14 Z" fill={look.top} />
+        </g>
+      </g>
+      {/* torso / hoodie with screen rim light, breathing */}
+      <g className="p-breathe" style={d(1)}>
+        <path d="M-38 30 C-40 -6 -32 -34 -14 -42 L14 -42 C32 -34 40 -6 38 30 Z" fill={look.top} />
+        <path d="M-38 30 C-40 -6 -32 -34 -14 -42 L14 -42 C32 -34 40 -6 38 30 Z" fill="url(#of-sheen)" />
+        <path d="M-14 -42 C-32 -34 -40 -6 -38 30" fill="none" stroke={rim} strokeOpacity="0.45" strokeWidth="1.5" />
+        <path d="M14 -42 C32 -34 40 -6 38 30" fill="none" stroke={rim} strokeOpacity="0.45" strokeWidth="1.5" />
+        <path d="M-15 -42 C-10 -30 10 -30 15 -42" fill="none" stroke="#000" strokeOpacity="0.35" strokeWidth="3" />
+      </g>
+      {/* neck, ears, head: glances between monitors / looks around */}
       <rect x="-6" y="-52" width="12" height="12" rx="4" fill={look.skin} />
       <rect x="-6" y="-52" width="12" height="12" rx="4" fill="#000" opacity="0.35" />
-      <ellipse cx="-13.5" cy="-64" rx="2.5" ry="4" fill={look.skin} />
-      <ellipse cx="13.5" cy="-64" rx="2.5" ry="4" fill={look.skin} />
-      <ellipse cx="0" cy="-66" rx="13.5" ry="15.5" fill={look.hair} />
-      {look.long && <path d="M-13 -70 C-16 -50 -14 -40 -10 -36 L10 -36 C14 -40 16 -50 13 -70 Z" fill={look.hair} />}
-      {look.bun && <circle cx="0" cy="-84" r="6" fill={look.hair} />}
-      <path d="M-11 -76 C-6 -82 6 -82 11 -76" fill="none" stroke={rim} strokeOpacity="0.35" strokeWidth="1.2" />
+      <g className={head} style={d(2)}>
+        <ellipse cx="-13.5" cy="-64" rx="2.5" ry="4" fill={look.skin} />
+        <ellipse cx="13.5" cy="-64" rx="2.5" ry="4" fill={look.skin} />
+        <ellipse cx="0" cy="-66" rx="13.5" ry="15.5" fill={look.hair} />
+        {look.long && <path d="M-13 -70 C-16 -50 -14 -40 -10 -36 L10 -36 C14 -40 16 -50 13 -70 Z" fill={look.hair} />}
+        {look.bun && <circle cx="0" cy="-84" r="6" fill={look.hair} />}
+        <path d="M-11 -76 C-6 -82 6 -82 11 -76" fill="none" stroke={rim} strokeOpacity="0.35" strokeWidth="1.2" />
+      </g>
+      {/* something failed: a hand goes to the back of the head */}
+      {activity === 'error' && (
+        <g className="p-scratch" style={d(4)}>
+          <path d="M30 -24 C36 -40 30 -60 16 -70 L11 -64 C22 -56 26 -42 22 -26 Z" fill={look.top} />
+          <ellipse cx="12" cy="-70" rx="5" ry="4" fill={look.skin} />
+        </g>
+      )}
     </g>
   );
 }
@@ -932,7 +975,7 @@ function Lounge({ people }: { people: Look[] }) {
       <rect x="-80" y="-30" width="160" height="34" rx="10" fill="#3b3f4a" />
       {people.slice(0, 2).map((look, i) => (
         <g key={`${look.hair}${look.top}`} transform={`translate(${i === 0 ? -34 : 34} -8) scale(0.85)`}>
-          <Person look={look} rim="#f0ad4e" typing={false} />
+          <Person look={look} rim="#f0ad4e" activity="rest" phase={i * 3 + 2} />
         </g>
       ))}
       <rect x="-86" y="-4" width="172" height="26" rx="8" fill="#2f333d" />

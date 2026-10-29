@@ -328,6 +328,210 @@ select {
 .office-meter {
   animation: office-meter 1.8s linear infinite;
 }
+/* People in the office: small irregular loops, never in sync (delays set per person) */
+.p-breathe,
+.p-head-scan,
+.p-head-look,
+.p-head-stress,
+.p-type-l,
+.p-type-r,
+.p-mouse,
+.p-sip,
+.p-scratch,
+.p-swivel {
+  transform-box: fill-box;
+  will-change: transform;
+}
+.p-breathe {
+  transform-origin: 50% 100%;
+  animation: p-breathe 3.6s ease-in-out infinite;
+}
+@keyframes p-breathe {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  45% {
+    transform: scale(1.012, 1.022);
+  }
+}
+.p-head-scan {
+  transform-origin: 50% 90%;
+  animation: p-head-scan 9.5s ease-in-out infinite;
+}
+@keyframes p-head-scan {
+  0%,
+  14%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  20%,
+  34% {
+    transform: translate(-2.6px, 0.4px) rotate(-6deg);
+  }
+  40%,
+  52% {
+    transform: translate(0, 0.8px) rotate(0deg);
+  }
+  58%,
+  76% {
+    transform: translate(2.6px, 0.3px) rotate(6deg);
+  }
+  82%,
+  90% {
+    transform: translate(0, -0.6px) rotate(1deg);
+  }
+}
+.p-head-look {
+  transform-origin: 50% 90%;
+  animation: p-head-look 13s ease-in-out infinite;
+}
+@keyframes p-head-look {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  15%,
+  28% {
+    transform: translate(-3px, -1px) rotate(-9deg);
+  }
+  36%,
+  48% {
+    transform: translate(0, -2px) rotate(0deg);
+  }
+  58%,
+  70% {
+    transform: translate(3.2px, -0.5px) rotate(10deg);
+  }
+  80% {
+    transform: translate(0.5px, 0) rotate(2deg);
+  }
+}
+.p-head-stress {
+  transform-origin: 50% 90%;
+  animation: p-head-stress 3.2s ease-in-out infinite;
+}
+@keyframes p-head-stress {
+  0%,
+  100% {
+    transform: translate(0, 1.5px) rotate(-2deg);
+  }
+  50% {
+    transform: translate(0, 2.5px) rotate(3deg);
+  }
+}
+.p-type-l,
+.p-type-r {
+  transform-origin: 50% 0%;
+  animation: p-type 0.86s steps(1, end) infinite;
+}
+@keyframes p-type {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  12% {
+    transform: translateY(-1.2px);
+  }
+  24% {
+    transform: translateY(0);
+  }
+  41% {
+    transform: translateY(-0.9px);
+  }
+  55% {
+    transform: translateY(0);
+  }
+  68% {
+    transform: translateY(-1.4px);
+  }
+  80% {
+    transform: translateY(-0.3px);
+  }
+}
+.p-mouse {
+  animation: p-mouse 8.5s ease-in-out infinite;
+}
+@keyframes p-mouse {
+  0%,
+  58%,
+  100% {
+    transform: translate(0, 0);
+  }
+  64%,
+  86% {
+    transform: translate(6px, -1px);
+  }
+  70% {
+    transform: translate(6.6px, -1.4px);
+  }
+  78% {
+    transform: translate(5.6px, -0.8px);
+  }
+}
+.p-sip {
+  transform-origin: 50% 100%;
+  animation: p-sip 12s ease-in-out infinite;
+}
+@keyframes p-sip {
+  0%,
+  52%,
+  100% {
+    transform: translate(0, 34px);
+  }
+  62%,
+  74% {
+    transform: translate(-1px, 0) rotate(-6deg);
+  }
+  68% {
+    transform: translate(-1px, -1px) rotate(-14deg);
+  }
+  84% {
+    transform: translate(0, 34px);
+  }
+}
+.p-scratch {
+  transform-origin: 80% 90%;
+  animation: p-scratch 1.6s ease-in-out infinite;
+}
+@keyframes p-scratch {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg) translateY(-0.6px);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+  75% {
+    transform: rotate(-4deg) translateY(-0.4px);
+  }
+}
+.p-swivel {
+  transform-origin: 50% 100%;
+  animation: p-swivel 7s ease-in-out infinite alternate;
+}
+@keyframes p-swivel {
+  from {
+    transform: rotate(-1.6deg) translateX(-1px);
+  }
+  to {
+    transform: rotate(1.6deg) translateX(1px);
+  }
+}
+.p-lean-back {
+  transform: translateY(-1.5px) scale(0.985);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.p-lean-in {
+  transform: translateY(2.5px) scale(1.01);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
 .office-typing {
   animation: office-type 0.9s ease-in-out infinite;
   transform-box: fill-box;
