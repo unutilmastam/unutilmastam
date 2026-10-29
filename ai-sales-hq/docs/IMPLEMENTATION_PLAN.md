@@ -114,7 +114,7 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [x] E2E: prospect → order → customer confirms → owner approves → payment → delivered (phone + iPad)
 - [x] Green CI run → **MVP** ✅
 
-## Phase 7b — Live website v14.5 integration ✅ (code done; CI pending)
+## Phase 7b — Live website v14.5 integration ✅
 - [x] Live site code reviewed (owner's archive); data model in `docs/LIVE_SITE_V14_5.md`
 - [x] Split Firestore documents (`app/<key>__pN`) reassembled with the website's own consistency rule
 - [x] Website shop price `priceStore` → unconfirmed wholesale price; owner overrides kept until the site changes (D-019)
@@ -134,9 +134,11 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [ ] Dependency audit, headers/CSP review, log redaction review
 - [ ] SECURITY.md incl. ZRU-547 note (A9)
 
-## Phase 10 — cPanel deployment guide + backups
-- [ ] `DEPLOYMENT_HOSTMASTER.md` (technical) + Uzbek step-by-step from a phone
-- [ ] Subdomain, AutoSSL, app setup, env, migrations, cron entries
-- [ ] Backup cron: daily `mysqldump`, keep 14 days, outside `public_html`; restore drill
-- [ ] Rollback procedure; smoke test after deploy
-- [ ] Deploy only with explicit owner approval (A14)
+## Phase 10 — cPanel deployment guide + backups ✅ (code done; CI pending)
+- [x] `DEPLOYMENT_HOSTMASTER.md` (technical) + `DEPLOY_UZ.md` (Uzbek, from a phone, no Terminal)
+- [x] Release bundle built in CI (esbuild, ~26 MB, no npm/Prisma CLI on the server), published to `ai-sales-hq-release` from `main` after all checks (D-020)
+- [x] cPanel Git "Deploy HEAD Commit" → `deploy/deploy.sh`: settings file, config check, pre-deploy backup, previous copy, migrations (Prisma-compatible runner), copy, restart, health check
+- [x] Subdomain, AutoSSL, Node app, settings file (`~/ai-sales-hq-data/hq.env`, DB_* parts), cron entries documented
+- [x] Backup cron: daily `mysqldump`, keep 14 days, outside `public_html`; restore + rollback scripts; full drill in CI
+- [x] Deploy only by the owner pressing the button (A14)
+- [ ] ⏳ Owner: answers to `HOSTING_CHECKLIST_UZ.md` (Node version, cron interval) and the first installation

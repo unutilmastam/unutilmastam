@@ -87,6 +87,8 @@ For UI work: `npm run dev -w @hq/api` (port 3001) and `npm run dev -w @hq/web` (
 
 Background work: cron runs `node apps/api/dist/worker.js --once` every minute (DB lock, ≤ 50 s budget).
 
+Hosting: `docs/DEPLOY_UZ.md` (owner, from a phone) and `docs/DEPLOYMENT_HOSTMASTER.md` (technical). CI builds the bundle (`scripts/build-release.sh`) and publishes it to the `ai-sales-hq-release` branch from `main`; on the server `node apps/api/dist/ops.js migrate|check-config` replaces the Prisma CLI.
+
 Errors: `{"error": {"code", "message" (Uzbek), "details"?, "requestId"}}`; every response carries `X-Request-ID`.
 
 Security: Argon2id, server-side sessions (hashed tokens, `__Host-` cookie, HttpOnly, Secure, SameSite=Strict, idle + absolute expiry), CSRF (Origin check + double-submit header), DB-backed login throttling, TOTP mandatory in production, CSP/HSTS via Helmet, audit log for every auth event, log redaction.

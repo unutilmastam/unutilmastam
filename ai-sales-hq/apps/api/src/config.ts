@@ -69,11 +69,27 @@ export type Config = z.output<typeof schema>;
 
 export class ConfigError extends Error {}
 
+/**
+ * On the hosting the owner may give the database as DB_NAME / DB_USER / DB_PASSWORD (+ DB_HOST,
+ * DB_PORT) instead of a URL, so a password with symbols needs no URL encoding by hand.
+ */
+export function withDatabaseUrl(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  if (env.DATABASE_URL || !env.DB_NAME || !env.DB_USER || env.DB_PASSWORD === undefined) return env;
+  const e = encodeURIComponent;
+  const host = env.DB_HOST || 'localhost';
+  const port = env.DB_PORT || '3306';
+  return { ...env, DATABASE_URL: `mysql://${e(env.DB_USER)}:${e(env.DB_PASSWORD)}@${host}:${port}/${e(env.DB_NAME)}` };
+}
+
 /** Parses the environment. The error lists variable names only, never values. */
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
-  const parsed = schema.safeParse(env);
+  const parsed = schema.safeParse(withDatabaseUrl(env));
   if (!parsed.success) {
-    const lines = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`);
+    const lines = parsed.error.issues.map((i) =>
+      i.path[0] === 'DATABASE_URL' && !withDatabaseUrl(env).DATABASE_URL
+        ? 'DATABASE_URL: missing - set DB_NAME, DB_USER and DB_PASSWORD (or DATABASE_URL)'
+        : `${i.path.join('.')}: ${i.message}`,
+    );
     throw new ConfigError(`Invalid configuration:\n  ${lines.join('\n  ')}`);
   }
   return parsed.data;

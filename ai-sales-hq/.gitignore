@@ -10,3 +10,6 @@ apps/api/src/generated/
 coverage/
 playwright-report/
 test-results/
+
+# CI release bundle (scripts/build-release.sh)
+/release/

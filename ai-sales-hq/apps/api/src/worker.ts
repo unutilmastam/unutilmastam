@@ -1,5 +1,6 @@
 // cPanel cron entry (A2): `node dist/worker.js --once [--max-seconds 50]`, every minute.
 // Takes a DB lock so two runs never overlap, works until its time budget, then exits.
+import { resolve } from 'node:path';
 import { catalogSourceFor } from './app';
 import { loadConfig } from './config';
 import { createDb } from './lib/db';
@@ -19,7 +20,7 @@ function maxSeconds(argv: string[]): number {
 
 async function main() {
   if (!process.argv.includes('--once')) throw new Error('Usage: node dist/worker.js --once [--max-seconds 50]');
-  loadEnvFile();
+  loadEnvFile(resolve(__dirname, '..'));
   const config = loadConfig();
   const log = createLogger(config.LOG_LEVEL);
   const db = createDb(config.DATABASE_URL);

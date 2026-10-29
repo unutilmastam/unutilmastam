@@ -35,4 +35,13 @@ describe('config', () => {
       expect(String(e)).not.toContain('topsecret');
     }
   });
+
+  it('builds DATABASE_URL from DB_* parts, encoding symbols in the password', () => {
+    const { DATABASE_URL: _u, ...rest } = base;
+    const c = loadConfig({ ...rest, DB_NAME: 'utam_hq', DB_USER: 'utam_hq', DB_PASSWORD: 'p@ss#w0rd&x/1' });
+    expect(c.DATABASE_URL).toBe('mysql://utam_hq:p%40ss%23w0rd%26x%2F1@localhost:3306/utam_hq');
+    const parsed = new URL(c.DATABASE_URL);
+    expect(decodeURIComponent(parsed.password)).toBe('p@ss#w0rd&x/1');
+    expect(() => loadConfig({ ...rest })).toThrow(/DB_NAME, DB_USER and DB_PASSWORD/);
+  });
 });

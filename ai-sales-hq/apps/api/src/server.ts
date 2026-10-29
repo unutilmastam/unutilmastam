@@ -7,7 +7,7 @@ import { loadEnvFile } from './lib/env-file';
 import { redactText } from './lib/logger';
 
 async function main() {
-  loadEnvFile();
+  loadEnvFile(resolve(__dirname, '..'));
   const config = loadConfig();
   const db = createDb(config.DATABASE_URL);
   const webDir = process.env.WEB_DIST_DIR ?? resolve(__dirname, '..', '..', 'web', 'out');

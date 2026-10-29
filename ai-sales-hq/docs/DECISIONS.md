@@ -190,3 +190,12 @@ A3 asks for "server-side Firebase Admin SDK with a read-only service account". W
 - **Website overview ("Sayt" page).** A live, read-only view: new and today's orders, store vs personal order counts, recent store orders, store debts from the ledger, pending store-owner registrations, products with shop prices and out of stock, stores without a map location. Nothing from it is stored; personal customers appear only as counts. Owner-only (`integrations.manage`).
 - **Still read-only.** Nothing is written to Firestore or to the website's hosting folder. Orders prepared in AI Sales HQ stay in AI Sales HQ; the owner enters accepted orders on the website as before.
 
+## D-020 — Deployment: prebuilt bundle via a release branch and cPanel Git (Accepted, Phase 10)
+
+- **Why.** The owner has no computer and shared hosting may kill `npm install` (memory) or lack the OpenSSL the Prisma engines need. So the server never builds or installs anything.
+- **Bundle.** CI compiles, bundles API/worker/ops with esbuild (Prisma's WASM query compiler is embedded), adds the argon2 native package under `apps/api/node_modules` (CloudLinux reserves the root `node_modules`), the static PWA, migrations and the deploy scripts. The browser tests run against this bundle.
+- **Delivery.** From `main` only, after every check is green and a full deploy drill passes, CI commits the bundle to the `ai-sales-hq-release` branch (generated content; it never touches `main` or the website files at the repository root). The repository is public, so cPanel Git clones it without keys; the owner presses "Update from Remote" and "Deploy HEAD Commit".
+- **Migrations without the CLI.** `ops.js migrate` applies `prisma/migrations` with the same `_prisma_migrations` bookkeeping (sha256 checksums) as `prisma migrate deploy`, under a MySQL named lock; CI checks both tools agree.
+- **Settings.** One file `~/ai-sales-hq-data/hq.env` (600) for server, cron and deploy — cPanel's per-app environment screen does not reach cron jobs. The database can be given as `DB_*` parts so passwords with symbols need no URL encoding. The first deploy generates the secrets.
+- **Safety.** Every deploy backs up the database first and keeps the previous copy; a failed config check, backup or migration stops the deploy before the running app changes.
+
