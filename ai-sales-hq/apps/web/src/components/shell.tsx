@@ -13,9 +13,10 @@ import { t } from '@/lib/strings';
 // `phone: false` items live under "Ko'proq" on phones (the bottom bar holds five).
 const NAV: { href: string; label: string; short?: string; icon: IconName; permission?: string; phone?: boolean }[] = [
   { href: '/', label: t.nav.home, icon: 'home' },
-  { href: '/agents/', label: t.nav.agents, icon: 'agents', permission: 'agents.view' },
+  { href: '/agents/', label: t.nav.agents, icon: 'agents', permission: 'agents.view', phone: false },
   { href: '/prospects/', label: t.nav.prospects, icon: 'store', permission: 'prospects.view' },
   { href: '/outreach/', label: t.nav.outreach, icon: 'send', permission: 'prospects.view' },
+  { href: '/orders/', label: t.nav.orders, icon: 'box', permission: 'orders.view' },
   { href: '/catalog/', label: t.nav.catalog, icon: 'catalog', phone: false },
   { href: '/discovery/', label: t.nav.discovery, icon: 'search', permission: 'prospects.view', phone: false },
   { href: '/integrations/', label: t.nav.integrations, icon: 'link', permission: 'integrations.manage', phone: false },

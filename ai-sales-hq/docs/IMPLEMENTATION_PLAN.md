@@ -100,13 +100,18 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [x] Green CI run ✅
 - [ ] ⏳ Owner: Anthropic API key (optional; guide `docs/AI_SETUP_UZ.md`) — until then templates are used
 
-## Phase 7 — Order preparation + owner handoff + notifications (MVP complete)
-- [ ] Order statuses (A10) + separate payment status UNPAID/PARTIAL/PAID (owner-only)
-- [ ] Price snapshot per item; `PRICE_CHANGED` re-confirmation; server-side totals
-- [ ] Availability = UNKNOWN unless verified → owner review
-- [ ] READY_FOR_OWNER_REVIEW → in-app + Telegram notification
-- [ ] DELIVERED and payment changes owner-only
-- [ ] End-to-end MVP walkthrough in CI with mocks
+## Phase 7 — Order preparation + owner handoff + notifications (MVP complete) ✅ (code done; CI pending)
+- [x] Order statuses (A10) enforced in one pure module (`domain/orders.ts`) with optimistic status updates and an event row + audit entry per transition; separate payment status UNPAID/PARTIAL/PAID with amount paid / due (D-018)
+- [x] Price snapshot per item (unit price, price id, source, RETAIL/WHOLESALE, time) from **confirmed** catalog prices only; totals in BigInt so'm on the server, client totals ignored
+- [x] `PRICE_CHANGED` when the catalog price moves before approval: checked at customer confirmation, at approval and every 10 minutes by the Order Manager agent (`orders.check_prices`); never silently recalculated — re-saving the items takes the new price and sends the order back to DRAFT
+- [x] Missing information listed (items, address, phone, changed prices) and blocks the confirmation request; availability shown as UNKNOWN unless verified
+- [x] Assisted-manual customer confirmation: confirmation text with copy / `sms:` button, the owner/staff records what the customer said (stored with time)
+- [x] READY_FOR_OWNER_REVIEW → in-app notification (forwarded to the owner bot when configured), deduplicated per order
+- [x] Approve / reject / hold, DELIVERED, closing and payments owner-only (server permissions + domain check); overpayment and concurrent payments refused
+- [x] One open draft per prospect (repeat "create" returns it); prospect moves to NEGOTIATION on order and WON on delivery
+- [x] Dashboard: orders awaiting review, draft / approved / delivered values and recorded payments kept apart; daily report counts
+- [x] UI: Buyurtmalar list with status filters, order page (items editor, details, actions by status, payments, history), "Buyurtma tuzish" on the prospect page; bottom bar on phones
+- [x] E2E: prospect → order → customer confirms → owner approves → payment → delivered (phone + iPad)
 - [ ] Green CI run → **MVP**
 
 ## Phase 8 — Optional channel adapters (only when credentials exist)

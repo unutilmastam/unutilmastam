@@ -94,8 +94,12 @@ test.describe
       await director.getByRole('button', { name: 'Ishga tushirish' }).click();
       await expect(director.getByText(/^(Ishlayapti|Ish vaqtini kutmoqda)$/)).toBeVisible();
       await noHorizontalScroll(page);
-      // Later-phase agents cannot be started.
-      await expect(page.locator('li', { hasText: 'Buyurtma menejeri' }).getByRole('button')).toHaveCount(0);
+      // Phase 7: every agent, the Order Manager included, can be switched on by the owner.
+      await expect(
+        page
+          .locator('li', { hasText: 'Buyurtma menejeri' })
+          .getByRole('button', { name: /^(Faollashtirish|Ishga tushirish)$/ }),
+      ).toBeVisible();
 
       await director.getByRole('button', { name: "To'xtatish" }).click();
       await expect(director.getByText("To'xtatilgan", { exact: true })).toBeVisible();
@@ -162,6 +166,56 @@ test.describe
       await expect(page.getByRole('button', { name: 'Tasdiqlash' })).toHaveCount(0);
 
       await page.goto('/prospects/');
+      await expect(page.getByText(name)).toBeVisible();
+      await noHorizontalScroll(page);
+    });
+
+    test('order: prepare from the prospect, customer confirms, owner approves, delivers, records payment', async ({
+      page,
+    }, info) => {
+      test.skip(secret === null, 'needs the enrolled owner');
+      await login(page);
+      await page.goto('/prospects/new/');
+      const name = `Buyurtma ${info.project.name}`;
+      await page.fill('input[name=name]', name);
+      await page.fill('input[name=phone]', info.project.name === 'phone' ? '93 777 88 99' : '94 222 33 44');
+      await page.fill('input[name=address]', 'Denov, Bozor 2');
+      await page.selectOption('select[name=category]', 'SUPERMARKET');
+      await page.getByRole('button', { name: 'Saqlash' }).click();
+      await page.waitForURL(/\/prospects\/view\/\?id=/);
+
+      await page.getByRole('button', { name: 'Buyurtma tuzish' }).click();
+      await page.waitForURL(/\/orders\/view\/\?id=/);
+      await expect(page.getByText('Qoralama', { exact: true }).first()).toBeVisible();
+      await page.getByRole('button', { name: "Qator qo'shish" }).click();
+      const product = page.getByRole('combobox', { name: 'Mahsulot' });
+      const teftil = await product.locator('option', { hasText: 'TEFTIL' }).first().getAttribute('value');
+      await product.selectOption(teftil ?? '');
+      await page.getByRole('combobox', { name: 'Narx turi' }).selectOption('WHOLESALE');
+      await page.getByRole('spinbutton', { name: 'Miqdor (dona)' }).fill('10');
+      await page.getByRole('button', { name: 'Mahsulotlarni saqlash' }).click();
+      // Server-computed from the confirmed wholesale price (21 000 x 10).
+      await expect(page.getByText("210 000 so'm").first()).toBeVisible();
+      await noHorizontalScroll(page);
+
+      await page.getByRole('button', { name: 'Mijozdan tasdiq so‘rash' }).click();
+      await expect(page.getByText('Mijozga yuboriladigan matn')).toBeVisible();
+      await expect(page.getByRole('link', { name: 'SMS ochish' })).toHaveAttribute('href', /^sms:\+998/);
+      await page.getByRole('textbox', { name: 'Mijoz nima dedi?' }).fill('Ha, olamiz');
+      await page.getByRole('button', { name: 'Mijoz tasdiqladi' }).click();
+      await expect(page.getByText('Sizning tasdig‘ingizni kutmoqda', { exact: true }).first()).toBeVisible();
+
+      await page.getByRole('button', { name: 'Tasdiqlash — yetkazishga' }).click();
+      await expect(page.getByText('Yetkazishga tasdiqlangan', { exact: true }).first()).toBeVisible();
+      await page.getByRole('spinbutton', { name: "Summa (so'm)" }).fill('210000');
+      await page.getByRole('button', { name: "To'lovni yozish" }).click();
+      await expect(page.getByRole('button', { name: "To'lovni yozish" })).toHaveCount(0);
+      await page.getByRole('button', { name: 'Yetkazildi deb belgilash' }).click();
+      await page.getByRole('button', { name: 'Ha, mijoz qabul qildi' }).click();
+      await expect(page.getByText('Yetkazildi', { exact: true }).first()).toBeVisible();
+      await noHorizontalScroll(page);
+
+      await page.goto('/orders/');
       await expect(page.getByText(name)).toBeVisible();
       await noHorizontalScroll(page);
     });

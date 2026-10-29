@@ -48,9 +48,8 @@ describe.skipIf(!hasDb)('cron worker (MySQL)', () => {
     await agents.ensureAgents();
   });
 
-  it('agents start as DRAFT; unavailable agents cannot start; transitions are audited', async () => {
+  it('agents start as DRAFT; transitions are audited', async () => {
     expect((await db.agent.findMany()).every((a) => a.state === 'DRAFT')).toBe(true);
-    await expect(agents.command('order_manager', 'activate', owner)).rejects.toMatchObject({ code: 'not_available' });
     await agents.command('director', 'activate', owner);
     await expect(agents.command('director', 'pause', owner)).rejects.toMatchObject({ code: 'illegal_action' });
     expect((await agents.command('director', 'start', owner)).state).toBe('RUNNING');

@@ -44,9 +44,10 @@ describe.skipIf(!hasDb)('control center + Telegram API (MySQL)', () => {
     expect(o.agents).toHaveLength(6);
     const director = o.agents.find((a: any) => a.key === 'director');
     expect(director).toMatchObject({ state: 'DRAFT', available: true, allowedActions: ['activate'] });
+    // Phase 7: every agent is available.
     expect(o.agents.find((a: any) => a.key === 'order_manager')).toMatchObject({
-      available: false,
-      allowedActions: [],
+      available: true,
+      allowedActions: ['activate'],
     });
     expect(o.worker).toMatchObject({ healthy: false, lastRunAt: null });
   });

@@ -7,7 +7,7 @@ import { Office, type OfficeAgent } from '@/components/office';
 import { AppShell, Card, Pill } from '@/components/shell';
 import { Alert } from '@/components/ui';
 import { api } from '@/lib/api';
-import { when } from '@/lib/format';
+import { som, when } from '@/lib/format';
 import { t } from '@/lib/strings';
 
 type IntegrationStatus = 'NOT_CONFIGURED' | 'CONFIGURED' | 'CONNECTED' | 'ERROR';
@@ -26,6 +26,13 @@ interface Summary {
   lastSuccessfulSyncAt: string | null;
   conversations: { active: number; needsOwner: number };
   prospects: { newToday: number; qualified: number; needsReview: number; total: number };
+  orders: {
+    awaitingReview: number;
+    draftValue: number;
+    approvedValue: number;
+    deliveredValue: number;
+    paidSom: number;
+  };
 }
 
 const TONE = { NOT_CONFIGURED: 'muted', CONFIGURED: 'warn', CONNECTED: 'ok', ERROR: 'bad' } as const;
@@ -163,15 +170,26 @@ function Dashboard({ name, canSeeAgents }: { name: string; canSeeAgents: boolean
 
           <Card>
             <h2 className="mb-3 text-sm uppercase tracking-[0.18em] text-gold">{t.dashboard.sales}</h2>
-            {/* These modules arrive in later phases; no number is shown until real data exists. */}
             <ul className="grid gap-1 text-sm">
               <Count label={t.dashboard.prospectsTotal} value={summary.prospects.total} href="/prospects/" />
               <Count label={t.dashboard.prospectsNew} value={summary.prospects.newToday} href="/prospects/" />
               <Count label={t.dashboard.qualified} value={summary.prospects.qualified} href="/prospects/" />
               <Count label={t.dashboard.needsReview} value={summary.prospects.needsReview} href="/prospects/" />
               <Count label={t.dashboard.conversations} value={summary.conversations.active} href="/outreach/" />
-              <Later label={t.dashboard.ordersReview} phase={7} />
+              <Count label={t.dashboard.ordersReview} value={summary.orders.awaitingReview} href="/orders/" />
             </ul>
+          </Card>
+
+          <Card>
+            <h2 className="mb-3 text-sm uppercase tracking-[0.18em] text-gold">{t.dashboard.orders}</h2>
+            {/* Draft, approved and delivered values are kept apart; only recorded payments are money received. */}
+            <ul className="grid gap-1 text-sm">
+              <Money label={t.dashboard.draftValue} value={summary.orders.draftValue} />
+              <Money label={t.dashboard.approvedValue} value={summary.orders.approvedValue} />
+              <Money label={t.dashboard.deliveredValue} value={summary.orders.deliveredValue} />
+              <Money label={t.dashboard.paid} value={summary.orders.paidSom} />
+            </ul>
+            <p className="mt-3 text-xs text-mist">{t.dashboard.ordersNote}</p>
           </Card>
         </aside>
       </div>
@@ -209,11 +227,11 @@ function Count({ label, value, href }: { label: string; value: number; href: str
   );
 }
 
-function Later({ label, phase }: { label: string; phase: number }) {
+function Money({ label, value }: { label: string; value: number }) {
   return (
     <li className="flex items-center justify-between gap-2">
-      <span className="text-mist">{label}</span>
-      <span className="text-xs text-mist">{t.dashboard.later(phase)}</span>
+      <span>{label}</span>
+      <span className="tabular-nums">{som(value)}</span>
     </li>
   );
 }

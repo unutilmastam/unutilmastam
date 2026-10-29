@@ -76,13 +76,13 @@ export const AGENT_DEFINITIONS: readonly AgentDefinition[] = [
     name: 'Buyurtma menejeri',
     role: "Buyurtmani yig'adi, hisoblaydi va egaga topshiradi",
     room: 'orders',
-    jobTypes: [],
+    jobTypes: ['orders.check_prices'],
     availableFromPhase: 7,
     defaultDailyTaskLimit: 100,
   },
 ];
 
-export const CURRENT_PHASE = 6;
+export const CURRENT_PHASE = 7;
 
 export function definitionFor(key: string): AgentDefinition | undefined {
   return AGENT_DEFINITIONS.find((d) => d.key === key);

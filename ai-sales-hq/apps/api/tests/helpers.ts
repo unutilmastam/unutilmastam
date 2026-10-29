@@ -11,6 +11,10 @@ export const ORIGIN = 'http://localhost:3000';
  * the pool may run the two statements on different connections.)
  */
 export async function resetDb(db: Db): Promise<void> {
+  await db.payment.deleteMany();
+  await db.orderEvent.deleteMany();
+  await db.orderItem.deleteMany();
+  await db.order.deleteMany();
   await db.message.deleteMany();
   await db.conversation.deleteMany();
   await db.aiUsageRecord.deleteMany();

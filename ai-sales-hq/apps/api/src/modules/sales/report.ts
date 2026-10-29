@@ -18,12 +18,17 @@ export async function dailyReport(db: Db, now: Date) {
     db.conversation.count({ where: { followUpAt: { lte: new Date(from.getTime() + 2 * 86_400_000) } } }),
     db.aiUsageRecord.aggregate({ where: { createdAt: { gte: from } }, _sum: { costMicroUsd: true } }),
   ]);
+  const [awaitingReview, deliveredToday] = await Promise.all([
+    db.order.count({ where: { status: 'READY_FOR_OWNER_REVIEW' } }),
+    db.order.count({ where: { deliveredAt: { gte: from } } }),
+  ]);
   const usd = Number(ai._sum.costMicroUsd ?? 0n) / 1_000_000;
   const body = [
     `Yangi mijozlar: ${newProspects} · saralanganlar jami: ${qualified}`,
     `Xabar loyihalari: ${drafts} · yuborildi: ${sent} · javoblar: ${replies}`,
     `Sizning qaroringizni kutayotgan suhbatlar: ${needsOwner}`,
     `Ertagacha qayta murojaat: ${followUps}`,
+    `Buyurtmalar: tasdig'ingizni kutmoqda ${awaitingReview} · bugun yetkazildi ${deliveredToday}`,
     `AI xarajati bugun: ${usd.toFixed(3)} $`,
   ].join('\n');
   const day = toTashkent(now).date;
@@ -32,5 +37,16 @@ export async function dailyReport(db: Db, now: Date) {
     { kind: 'director.daily_report', severity: 'INFO', title: `Kunlik hisobot — ${day}`, body, link: '/' },
     now,
   );
-  return { newProspects, qualified, drafts, sent, replies, needsOwner, followUps, aiUsd: usd };
+  return {
+    newProspects,
+    qualified,
+    drafts,
+    sent,
+    replies,
+    needsOwner,
+    followUps,
+    awaitingReview,
+    deliveredToday,
+    aiUsd: usd,
+  };
 }

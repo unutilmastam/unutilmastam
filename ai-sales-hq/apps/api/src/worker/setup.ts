@@ -1,6 +1,7 @@
 import { aiProviderFor, placesFor } from '../app';
 import type { Config } from '../config';
 import { STATE_REASONS } from '../domain/agent-lifecycle';
+import { PRICE_GUARDED } from '../domain/orders';
 import { startOfTashkentDay, toTashkent } from '../domain/schedule';
 import type { AiDrafter } from '../integrations/ai';
 import type { CatalogSource } from '../integrations/firestore';
@@ -17,6 +18,7 @@ import {
 } from '../modules/integrations/service';
 import { enqueue } from '../modules/jobs/queue';
 import { notify } from '../modules/notifications/service';
+import { OrderService } from '../modules/orders/service';
 import { ProspectService } from '../modules/prospects/service';
 import { dailyReport } from '../modules/sales/report';
 import { AiBudgetExceededError, SalesService } from '../modules/sales/service';
@@ -44,6 +46,7 @@ export function createWorker(deps: WorkerDeps, extraHandlers: Record<string, Job
   const ai = aiProviderFor({ db: deps.db, config: deps.config, drafters: deps.drafters }, now);
   const sales = new SalesService(deps.db, prospects, () => ai.drafters(), now);
   const agents = new AgentService(deps.db, now);
+  const orders = new OrderService(deps.db, prospects, sales, now);
 
   const handlers = new Map<string, JobHandler>(
     Object.entries({
@@ -113,6 +116,9 @@ export function createWorker(deps: WorkerDeps, extraHandlers: Record<string, Job
         return { due };
       },
       'director.daily_report': async () => dailyReport(deps.db, now()),
+      'orders.check_prices': async () => ({
+        priceChanged: await orders.checkOpenOrderPrices(agentActor('order_manager')),
+      }),
       ...extraHandlers,
     }),
   );
@@ -204,6 +210,15 @@ export function createWorker(deps: WorkerDeps, extraHandlers: Record<string, Job
       if (director?.state === 'RUNNING' && local.minutes >= 18 * 60) {
         await enqueue(deps.db, { type: 'director.daily_report', idempotencyKey: `director.report:${local.date}` }, at);
       }
+    },
+    // Order Manager: open orders are re-checked against the catalog every 10 minutes (A8 PRICE_CHANGED).
+    async (at) => {
+      const agent = await deps.db.agent.findUnique({ where: { key: 'order_manager' } });
+      if (agent?.state !== 'RUNNING') return;
+      const open = await deps.db.order.count({ where: { status: { in: [...PRICE_GUARDED] } } });
+      if (!open) return;
+      const bucket = Math.floor(at.getTime() / 600_000);
+      await enqueue(deps.db, { type: 'orders.check_prices', idempotencyKey: `orders.check_prices:${bucket}` }, at);
     },
     // Owner notifications go out within a minute, whatever the agents are doing.
     async (at) => {

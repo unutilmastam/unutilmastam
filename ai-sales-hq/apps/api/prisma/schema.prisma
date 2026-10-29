@@ -616,3 +616,112 @@ model AiUsageRecord {
   @@index([createdAt])
   @@map("ai_usage_records")
 }
+
+// ---------------------------------------------------------------------------
+// Phase 7 — orders, price snapshots, owner handoff, payments
+// ---------------------------------------------------------------------------
+
+enum OrderStatus {
+  DRAFT
+  NEEDS_INFORMATION
+  CUSTOMER_CONFIRMATION_PENDING
+  READY_FOR_OWNER_REVIEW
+  APPROVED_FOR_DELIVERY
+  DELIVERED
+  CLOSED
+  ON_HOLD
+  REJECTED
+  CANCELLED
+  PRICE_CHANGED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+}
+
+model Order {
+  id                   String        @id @default(uuid()) @db.Char(36)
+  number               String        @unique @db.VarChar(20)
+  prospectId           String        @map("prospect_id") @db.Char(36)
+  status               OrderStatus   @default(DRAFT)
+  // Server-computed from the items; never accepted from the client (MASTER_SPEC §12).
+  totalSom             BigInt        @default(0) @map("total_som")
+  currency             String        @default("UZS") @db.Char(3)
+  paymentStatus        PaymentStatus @default(UNPAID) @map("payment_status")
+  amountPaidSom        BigInt        @default(0) @map("amount_paid_som")
+  deliveryAddress      String?       @map("delivery_address") @db.VarChar(300)
+  contactPhone         String?       @map("contact_phone") @db.VarChar(20)
+  contactName          String?       @map("contact_name") @db.VarChar(120)
+  requestedDeliveryAt  DateTime?     @map("requested_delivery_at")
+  notes                String?       @db.Text
+  customerConfirmedAt  DateTime?     @map("customer_confirmed_at")
+  customerConfirmation String?       @map("customer_confirmation") @db.VarChar(500)
+  createdByAgentKey    String?       @map("created_by_agent_key") @db.VarChar(40)
+  createdById          String?       @map("created_by_id") @db.Char(36)
+  approvedById         String?       @map("approved_by_id") @db.Char(36)
+  approvedAt           DateTime?     @map("approved_at")
+  deliveredById        String?       @map("delivered_by_id") @db.Char(36)
+  deliveredAt          DateTime?     @map("delivered_at")
+  closedAt             DateTime?     @map("closed_at")
+  createdAt            DateTime      @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+  items                OrderItem[]
+  events               OrderEvent[]
+  payments             Payment[]
+
+  @@index([status])
+  @@index([prospectId])
+  @@map("orders")
+}
+
+// Price snapshot per line (A8): unit price, its source, type and time are frozen here.
+model OrderItem {
+  id                 String        @id @default(uuid()) @db.Char(36)
+  orderId            String        @map("order_id") @db.Char(36)
+  order              Order         @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  productId          String        @map("product_id") @db.Char(36)
+  productName        String        @map("product_name") @db.VarChar(200)
+  packageWeightGrams Int?          @map("package_weight_grams")
+  quantity           Int
+  priceType          PriceType     @map("price_type")
+  priceId            String        @map("price_id") @db.Char(36)
+  priceSource        ProductSource @map("price_source")
+  unitPriceSom       BigInt        @map("unit_price_som")
+  lineTotalSom       BigInt        @map("line_total_som")
+  snapshotAt         DateTime      @map("snapshot_at")
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+// Approval and status history (MASTER_SPEC §12 "approval history").
+model OrderEvent {
+  id         BigInt       @id @default(autoincrement())
+  orderId    String       @map("order_id") @db.Char(36)
+  order      Order        @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  fromStatus OrderStatus? @map("from_status")
+  toStatus   OrderStatus  @map("to_status")
+  actorType  String       @map("actor_type") @db.VarChar(16)
+  actorId    String?      @map("actor_id") @db.VarChar(64)
+  note       String?      @db.VarChar(500)
+  createdAt  DateTime     @map("created_at")
+
+  @@index([orderId])
+  @@map("order_events")
+}
+
+// Only the owner records payments (A10).
+model Payment {
+  id           String   @id @default(uuid()) @db.Char(36)
+  orderId      String   @map("order_id") @db.Char(36)
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  amountSom    BigInt   @map("amount_som")
+  note         String?  @db.VarChar(300)
+  recordedById String   @map("recorded_by_id") @db.Char(36)
+  createdAt    DateTime @map("created_at")
+
+  @@index([orderId])
+  @@map("payments")
+}

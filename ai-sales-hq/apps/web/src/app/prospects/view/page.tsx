@@ -1,13 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { type FormEvent, Suspense, useCallback, useEffect, useState } from 'react';
 import { ConversationPanel } from '@/components/conversation';
 import { AppShell, Card, Pill } from '@/components/shell';
 import { Alert, Button } from '@/components/ui';
 import { api, type Me } from '@/lib/api';
-import { when } from '@/lib/format';
+import { som, when } from '@/lib/format';
+import { ORDER_TONE, type OrderRow } from '@/lib/orders';
 import { NEXT_STAGES, type ProspectContact, type ProspectRow, phone, STAGE_TONE } from '@/lib/prospects';
 import { t } from '@/lib/strings';
 
@@ -113,6 +114,13 @@ function Prospect({ me }: { me: Me }) {
         </Card>
 
         <ConversationPanel prospect={p} canEdit={canEdit} onStageChange={() => void load().catch(() => undefined)} />
+
+        {me.permissions.includes('orders.view') && (
+          <ProspectOrders
+            prospectId={p.id}
+            canCreate={me.permissions.includes('orders.edit') && p.stage !== 'DO_NOT_CONTACT'}
+          />
+        )}
 
         <Card>
           <h3 className="mb-3 font-semibold">{t.prospects.contacts}</h3>
@@ -313,5 +321,53 @@ function ContactRow({ c, canEdit, onVerify }: { c: ProspectContact; canEdit: boo
         </button>
       )}
     </li>
+  );
+}
+
+function ProspectOrders({ prospectId, canCreate }: { prospectId: string; canCreate: boolean }) {
+  const router = useRouter();
+  const [rows, setRows] = useState<OrderRow[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    api<{ orders: OrderRow[] }>(`/orders?prospectId=${prospectId}`)
+      .then((r) => setRows(r.orders))
+      .catch((e: Error) => setError(e.message));
+  }, [prospectId]);
+  const create = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      // An open draft for this prospect is returned instead of a duplicate.
+      const o = await api<{ id: string }>('/orders', { method: 'POST', body: { prospectId, items: [] } });
+      router.push(`/orders/view/?id=${o.id}`);
+    } catch (e) {
+      setError((e as Error).message);
+      setBusy(false);
+    }
+  };
+  return (
+    <Card>
+      <h3 className="mb-3 font-semibold">{t.orders.forProspect}</h3>
+      {error && <Alert kind="error">{error}</Alert>}
+      <ul className="grid gap-2 text-sm">
+        {rows?.map((o) => (
+          <li key={o.id}>
+            <Link href={`/orders/view/?id=${o.id}`} className="flex items-center justify-between gap-2 hover:text-gold">
+              <span>
+                {o.number} · {som(o.totalSom)}
+              </span>
+              <Pill tone={ORDER_TONE[o.status] ?? 'muted'}>{t.orders.status[o.status]}</Pill>
+            </Link>
+          </li>
+        ))}
+        {rows?.length === 0 && <li className="text-mist">{t.orders.none}</li>}
+      </ul>
+      {canCreate && (
+        <Button className="mt-3" onClick={create} disabled={busy}>
+          {t.orders.create}
+        </Button>
+      )}
+    </Card>
   );
 }

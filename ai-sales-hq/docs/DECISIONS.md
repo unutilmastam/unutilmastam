@@ -170,3 +170,13 @@ A3 asks for "server-side Firebase Admin SDK with a read-only service account". W
 - **Rotation of `APP_SECRET_KEY`.** The sealed key can no longer be opened; status becomes `ERROR` ("kalitni qayta kiriting"), drafting falls back to templates, nothing crashes.
 - **Access.** `integrations.manage` (owner) only; save, rejected attempt, model change, removal and test are audit-logged.
 
+## D-018 — Orders and owner handoff (Accepted, Phase 7)
+
+- **Who builds an order.** The owner or staff, from the prospect page, after a real conversation (assisted manual, A5). No AI reads conversations into orders: quantities and products are entered by a person; the Order Manager agent only validates prices. The server never contacts the customer — the confirmation text is copied or opened in the SMS app by the owner, and the customer's answer is recorded by hand.
+- **Prices.** Each line snapshots the current **confirmed** price (retail or wholesale) with its id, source and time. Unconfirmed prices cannot be ordered. A line is stale when the current confirmed price for that product/type is a different row or amount. Stale lines move the order to `PRICE_CHANGED` (A8) at customer confirmation, at approval, or when the Order Manager's 10-minute check runs; the total is never recalculated silently. Saving the items again re-snapshots and returns the order to `DRAFT`, so the customer confirms the new price.
+- **Statuses.** `DRAFT → CUSTOMER_CONFIRMATION_PENDING → READY_FOR_OWNER_REVIEW → APPROVED_FOR_DELIVERY → DELIVERED → CLOSED`, with `NEEDS_INFORMATION`, `ON_HOLD`, `REJECTED`, `CANCELLED`, `PRICE_CHANGED` (table in `domain/orders.ts`). Owner-only targets: approved, rejected, on hold, delivered, closed. Updates are conditional on the status read (no lost updates).
+- **Money.** BigInt so'm end to end in the database and calculations; API responses carry plain numbers (amounts stay far below 2^53). Payments only after approval, never above the total, guarded against concurrent writes; payment status is derived (`UNPAID/PARTIAL/PAID`).
+- **Idempotency.** One open draft per prospect (create returns the existing one); the review notification is deduplicated per order; the price check job is keyed per 10-minute bucket.
+- **Availability.** The catalog has no verified stock data, so every line shows `UNKNOWN` and the owner decides (MASTER_SPEC §12).
+- **Dashboard figures.** Draft value, approved value, delivered value and recorded payments are separate; only recorded payments are money received.
+

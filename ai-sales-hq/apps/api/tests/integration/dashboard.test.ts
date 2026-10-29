@@ -29,7 +29,7 @@ describe.skipIf(!hasDb)('dashboard + office (MySQL)', () => {
     expect(d.lastSuccessfulSyncAt).not.toBeNull();
     expect(d.prospects).toEqual({ newToday: 0, qualified: 0, needsReview: 0, total: 0 });
     expect(d.conversations).toEqual({ active: 0, needsOwner: 0 });
-    expect(d.orders.awaitingReview).toBeNull();
+    expect(d.orders).toEqual({ awaitingReview: 0, draftValue: 0, approvedValue: 0, deliveredValue: 0, paidSom: 0 });
   });
 
   it('office shows the director idle (running, no work) and others absent', async () => {

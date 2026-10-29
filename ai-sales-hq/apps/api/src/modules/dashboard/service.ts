@@ -2,6 +2,7 @@ import { AGENT_DEFINITIONS } from '../../domain/agents';
 import { poseFor } from '../../domain/office';
 import { startOfTashkentDay } from '../../domain/schedule';
 import type { Db } from '../../lib/db';
+import { orderMetrics } from '../orders/metrics';
 
 /**
  * Director dashboard (MASTER_SPEC §17). Every figure is computed from persisted rows; metrics of
@@ -74,9 +75,8 @@ export class DashboardService {
       },
       lastSuccessfulSyncAt: lastSync?.finishedAt ?? null,
       prospects: { newToday: prospectsToday, qualified, needsReview, total: prospectsTotal },
-      // Modules that arrive later (Phases 6–7): not available rather than a fake 0.
       conversations: { active: activeConversations, needsOwner },
-      orders: { awaitingReview: null, draftValue: null, approvedValue: null, deliveredValue: null },
+      orders: await orderMetrics(this.db),
     };
   }
 

@@ -13,6 +13,7 @@ export const PERMISSIONS = {
   'prospects.view': ['OWNER', 'STAFF'],
   'prospects.edit': ['OWNER', 'STAFF'],
   'orders.view': ['OWNER', 'STAFF'],
+  'orders.edit': ['OWNER', 'STAFF'],
   'orders.approve': ['OWNER'],
   'orders.deliver': ['OWNER'],
   'payments.record': ['OWNER'],

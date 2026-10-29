@@ -24,6 +24,8 @@ import { DashboardService } from './modules/dashboard/service';
 import { DiscoveryService, matchSettingsFrom } from './modules/discovery/service';
 import { IntegrationService } from './modules/integrations/service';
 import { notificationRoutes } from './modules/notifications/routes';
+import { orderRoutes } from './modules/orders/routes';
+import { OrderService } from './modules/orders/service';
 import { prospectRoutes } from './modules/prospects/routes';
 import { ProspectService } from './modules/prospects/service';
 import { type AiPing, AiProviderService, type DrafterFactory } from './modules/sales/ai-provider';
@@ -149,6 +151,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   const discovery = new DiscoveryService(db, prospects, getSource, placesFor(deps), now);
   const ai = aiProviderFor(deps, now);
   const sales = new SalesService(db, prospects, () => ai.drafters(), now);
+  const orders = new OrderService(db, prospects, sales, now);
 
   await app.register(
     async (api) => {
@@ -162,6 +165,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
       telegramRoutes(api, { telegram, config });
       prospectRoutes(api, { db, prospects, discovery, now });
       salesRoutes(api, { sales, ai });
+      orderRoutes(api, { orders });
       api.setNotFoundHandler((req, reply) =>
         reply.code(404).send({ error: { code: 'not_found', message: 'Topilmadi', requestId: req.id } }),
       );
