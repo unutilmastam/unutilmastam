@@ -199,3 +199,12 @@ A3 asks for "server-side Firebase Admin SDK with a read-only service account". W
 - **Settings.** One file `~/ai-sales-hq-data/hq.env` (600) for server, cron and deploy — cPanel's per-app environment screen does not reach cron jobs. The database can be given as `DB_*` parts so passwords with symbols need no URL encoding. The first deploy generates the secrets.
 - **Safety.** Every deploy backs up the database first and keeps the previous copy; a failed config check, backup or migration stops the deploy before the running app changes.
 
+## D-021 — Design system v2 (Accepted)
+
+- **Goal.** The owner asked for an interface that reads as a premium, professional product, not a toy. The look follows high-end operations software: quiet layered graphite surfaces, one restrained champagne accent, strong typographic hierarchy, real numbers up front.
+- **Type.** Inter Variable, self-hosted from `@fontsource-variable/inter` (OFL; CSP stays `'self'`), tabular numerals for every figure.
+- **Tokens.** `globals.css` defines surfaces (`ink → graphite → panel → raised`), hairlines, text levels (`paper / mist / faint`), semantic colours and a gold gradient for the single primary action; light theme mirrors every token. Shared classes `surface`, `btn*`, `input*`, `eyebrow`, `skeleton` replace per-page Tailwind strings.
+- **Shell.** Desktop: grouped sidebar (Asosiy / Sotuv / Ma'lumotlar / Tizim) with the user block; phone: glass top bar and five-item tab bar with safe-area padding. Page intros sit under the title; detail pages get a back link above it.
+- **Dashboard.** KPI row (active agents, today's prospects, orders awaiting the owner, delivered value) from persisted data only; attention list, sales funnel, order values and integrations alongside the office. Loading uses skeletons, not text.
+- **Virtual office.** Isometric control rooms drawn in SVG (walls, window lit by Tashkent day/night, desks, monitors, server rack). Agents appear as monogram presence markers with a state ring; working = spinning ring + lit screen, error = red ring and badge, paused = lounge, off hours/absent = empty desk. The mapping from state to drawing is unchanged (A13: nothing simulated).
+

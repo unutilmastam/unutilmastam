@@ -60,7 +60,7 @@ export function DraftCard({
     }
   };
 
-  const link = 'inline-flex min-h-10 items-center rounded-xl border border-line px-3 text-sm hover:border-gold/50';
+  const link = 'inline-flex min-h-10 items-center rounded-xl border border-line px-3 text-sm hover:border-line-strong';
   return (
     <div className="grid gap-2">
       {showProspect && (
@@ -78,7 +78,7 @@ export function DraftCard({
         onChange={(e) => setBody(e.target.value)}
         rows={Math.min(12, Math.max(4, body.split('\n').length + 1))}
         aria-label={t.conversation.title}
-        className="w-full rounded-xl border border-line bg-ink p-3 text-sm leading-relaxed"
+        className="input-area w-full leading-relaxed"
       />
       {message.checks && message.checks.length > 0 && !dirty && (
         <div className="rounded-xl border border-warn/50 p-3 text-sm">
@@ -96,7 +96,7 @@ export function DraftCard({
         {dirty && (
           <button
             type="button"
-            className="min-h-10 rounded-xl bg-gold px-3 text-sm font-medium text-ink"
+            className="btn btn-primary"
             onClick={() => run(() => api(`/messages/${message.id}/edit`, { method: 'POST', body: { body } }))}
           >
             {t.outreach.save}
@@ -148,7 +148,7 @@ export function DraftCard({
             value={channel}
             onChange={(e) => setChannel(e.target.value as (typeof CHANNELS)[number])}
             aria-label={t.outreach.channel}
-            className="min-h-10 rounded-xl border border-line bg-ink px-2 text-sm"
+            className="input px-2"
           >
             {CHANNELS.map((c) => (
               <option key={c} value={c}>
@@ -158,14 +158,14 @@ export function DraftCard({
           </select>
           <button
             type="button"
-            className="min-h-10 rounded-xl bg-gold px-3 text-sm font-medium text-ink hover:bg-gold-soft"
+            className="btn btn-primary"
             onClick={() => run(() => api(`/messages/${message.id}/sent`, { method: 'POST', body: { channel } }))}
           >
             {t.outreach.markSent}
           </button>
           <button
             type="button"
-            className="min-h-10 rounded-xl border border-line px-3 text-sm text-mist"
+            className="btn btn-secondary text-mist"
             onClick={() => run(() => api(`/messages/${message.id}/discard`, { method: 'POST' }))}
           >
             {t.outreach.discard}

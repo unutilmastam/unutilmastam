@@ -33,7 +33,11 @@ interface Desk {
 }
 
 export default function OutreachPage() {
-  return <AppShell title={t.outreach.title}>{(me) => <Outreach me={me} />}</AppShell>;
+  return (
+    <AppShell title={t.outreach.title} subtitle={t.outreach.intro}>
+      {(me) => <Outreach me={me} />}
+    </AppShell>
+  );
 }
 
 function Outreach({ me }: { me: Me }) {
@@ -65,11 +69,10 @@ function Outreach({ me }: { me: Me }) {
       .catch((err: Error) => setMsg({ kind: 'error', text: err.message }))
       .finally(refresh);
   };
-  const input = 'rounded-xl border border-line bg-ink px-3 py-2 text-sm';
+  const input = 'input';
 
   return (
     <div className="grid gap-4">
-      <p className="text-sm text-mist">{t.outreach.intro}</p>
       <p className="text-xs text-mist">
         {desk.ai.configured ? t.outreach.ai(desk.ai.spentTodayUsd, desk.ai.budgetUsd) : t.outreach.aiOff}
       </p>
@@ -121,7 +124,7 @@ function Outreach({ me }: { me: Me }) {
                 <li key={f.prospect.id}>
                   <Link
                     href={`/prospects/view/?id=${f.prospect.id}`}
-                    className="flex items-center justify-between gap-2 rounded-xl border border-line bg-graphite px-4 py-3 hover:border-gold/50"
+                    className="surface flex items-center justify-between gap-2 rounded-xl border border-line px-4 py-3 transition-colors hover:border-line-strong"
                   >
                     <span>{f.prospect.name}</span>
                     <span className="text-xs text-mist">{when(f.followUpAt)}</span>

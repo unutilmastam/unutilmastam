@@ -1,13 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
-import { Icon } from '@/components/icons';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import { Icon, type IconName } from '@/components/icons';
 import { Office, type OfficeAgent } from '@/components/office';
-import { AppShell, Card, Pill } from '@/components/shell';
+import { AppShell, Card, CardHeader, Pill } from '@/components/shell';
 import { Alert } from '@/components/ui';
-import { api } from '@/lib/api';
-import { som, when } from '@/lib/format';
+import { api, type Me } from '@/lib/api';
+import { som, somShort, todayUz, when } from '@/lib/format';
 import { t } from '@/lib/strings';
 
 type IntegrationStatus = 'NOT_CONFIGURED' | 'CONFIGURED' | 'CONNECTED' | 'ERROR';
@@ -39,13 +39,25 @@ const TONE = { NOT_CONFIGURED: 'muted', CONFIGURED: 'warn', CONNECTED: 'ok', ERR
 
 export default function DashboardPage() {
   return (
-    <AppShell title={t.dashboard.title}>
-      {(me) => <Dashboard name={me.user.displayName} canSeeAgents={me.permissions.includes('agents.view')} />}
+    <AppShell title={t.dashboard.title} subtitle={(me) => <Greeting name={me.user.displayName} />}>
+      {(me) => <Dashboard me={me} />}
     </AppShell>
   );
 }
 
-function Dashboard({ name, canSeeAgents }: { name: string; canSeeAgents: boolean }) {
+function Greeting({ name }: { name: string }) {
+  const [date, setDate] = useState('');
+  useEffect(() => setDate(todayUz()), []);
+  return (
+    <span>
+      {t.home.greeting(name)}
+      {date && <span className="text-faint"> · {date}</span>}
+    </span>
+  );
+}
+
+function Dashboard({ me }: { me: Me }) {
+  const canSeeAgents = me.permissions.includes('agents.view');
   const [summary, setSummary] = useState<Summary | null>(null);
   const [office, setOffice] = useState<OfficeAgent[] | null>(null);
   const [worker, setWorker] = useState<boolean | null>(null);
@@ -69,7 +81,7 @@ function Dashboard({ name, canSeeAgents }: { name: string; canSeeAgents: boolean
   }, [load]);
 
   if (error) return <Alert kind="error">{error}</Alert>;
-  if (!summary) return null;
+  if (!summary) return <DashboardSkeleton />;
   const a = summary.attention;
   const attention = [
     a.heldSync && { text: t.dashboard.held, href: '/integrations/', tone: 'warn' as const },
@@ -84,6 +96,11 @@ function Dashboard({ name, canSeeAgents }: { name: string; canSeeAgents: boolean
       href: '/agents/',
       tone: 'bad' as const,
     },
+    summary.orders.awaitingReview > 0 && {
+      text: `${t.dashboard.ordersReview}: ${summary.orders.awaitingReview}`,
+      href: '/orders/',
+      tone: 'gold' as const,
+    },
     a.unconfirmedPrices > 0 && {
       text: t.dashboard.unconfirmed(a.unconfirmedPrices),
       href: '/catalog/',
@@ -92,146 +109,269 @@ function Dashboard({ name, canSeeAgents }: { name: string; canSeeAgents: boolean
     a.unreadNotifications > 0 && {
       text: t.dashboard.unread(a.unreadNotifications),
       href: '/notifications/',
-      tone: 'gold' as const,
+      tone: 'muted' as const,
     },
-  ].filter(Boolean) as { text: string; href: string; tone: 'warn' | 'bad' | 'gold' }[];
+  ].filter(Boolean) as { text: string; href: string; tone: 'warn' | 'bad' | 'gold' | 'muted' }[];
+  const totalAgents =
+    summary.agents.running +
+    summary.agents.waiting +
+    summary.agents.paused +
+    summary.agents.stopped +
+    summary.agents.disabled +
+    summary.agents.error;
+  const funnel = [
+    { label: t.dashboard.funnelTotal, value: summary.prospects.total, href: '/prospects/' },
+    { label: t.dashboard.funnelReview, value: summary.prospects.needsReview, href: '/prospects/' },
+    { label: t.dashboard.funnelQualified, value: summary.prospects.qualified, href: '/prospects/' },
+    { label: t.dashboard.funnelTalks, value: summary.conversations.active, href: '/outreach/' },
+    { label: t.dashboard.funnelOrders, value: summary.orders.awaitingReview, href: '/orders/' },
+  ];
+  const funnelMax = Math.max(1, ...funnel.map((f) => f.value));
 
   return (
-    <>
-      <p className="-mt-3 mb-5 text-mist">{t.home.greeting(name)}</p>
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <section className="order-2 min-w-0 lg:order-1">
+    <div className="grid gap-6">
+      <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+        <Kpi
+          icon="agents"
+          label={t.dashboard.kpiAgents}
+          value={
+            <>
+              {summary.agents.running}
+              <span className="text-faint"> / {totalAgents}</span>
+            </>
+          }
+          hint={t.dashboard.kpiAgentsHint(summary.agents.paused, summary.agents.error)}
+          tone={summary.agents.error ? 'bad' : summary.agents.running ? 'ok' : undefined}
+          href="/agents/"
+        />
+        <Kpi
+          icon="store"
+          label={t.dashboard.kpiProspects}
+          value={summary.prospects.newToday}
+          hint={t.dashboard.kpiProspectsHint(summary.prospects.total, summary.prospects.qualified)}
+          href="/prospects/"
+        />
+        <Kpi
+          icon="box"
+          label={t.dashboard.kpiOrders}
+          value={summary.orders.awaitingReview}
+          hint={t.dashboard.kpiOrdersHint(somShort(summary.orders.draftValue))}
+          tone={summary.orders.awaitingReview ? 'gold' : undefined}
+          href="/orders/"
+        />
+        <Kpi
+          icon="coin"
+          label={t.dashboard.kpiSales}
+          value={<MoneyValue amount={summary.orders.deliveredValue} />}
+          hint={t.dashboard.kpiSalesHint(somShort(summary.orders.paidSom))}
+          href="/orders/"
+        />
+      </dl>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:grid-rows-[auto_1fr]">
+        <section className="min-w-0 xl:col-start-1 xl:row-span-2 xl:row-start-1">
           {office && (
             <>
-              <div className="mb-3 flex items-end justify-between gap-2">
-                <h2 className="text-sm uppercase tracking-[0.18em] text-gold">{t.dashboard.office}</h2>
-                <p className="hidden text-xs text-mist sm:block">{t.dashboard.officeHint}</p>
+              <div className="mb-3 flex items-end justify-between gap-3">
+                <div>
+                  <h2 className="text-[17px] font-semibold tracking-[-0.015em]">{t.dashboard.office}</h2>
+                  <p className="mt-0.5 text-[13px] text-mist">{t.dashboard.officeHint}</p>
+                </div>
               </div>
               <Office agents={office} workerHealthy={worker} />
             </>
           )}
         </section>
 
-        <aside className="order-1 grid content-start gap-4 lg:order-2">
-          <Card>
-            <h2 className="mb-3 text-sm uppercase tracking-[0.18em] text-gold">{t.dashboard.attention}</h2>
-            {attention.length === 0 ? (
-              <p className="text-sm text-mist">{t.dashboard.allClear}</p>
-            ) : (
-              <ul className="grid gap-2">
-                {attention.map((item) => (
-                  <li key={item.text}>
-                    <Link
-                      href={item.href}
-                      className="flex items-center gap-2 rounded-xl border border-line px-3 py-2 text-sm hover:border-gold/50"
+        <Card className="order-first p-0 xl:order-none xl:col-start-2 xl:row-start-1">
+          <div className="px-5 pt-5">
+            <CardHeader
+              title={t.dashboard.attention}
+              hint={attention.length ? t.dashboard.systemWarn : t.dashboard.systemOk}
+            />
+          </div>
+          {attention.length === 0 ? (
+            <div className="flex items-center gap-3 px-5 pb-5 text-sm text-mist">
+              <span className="grid size-8 place-items-center rounded-full bg-ok/10 text-ok">
+                <Icon name="check" size={16} />
+              </span>
+              {t.dashboard.allClear}
+            </div>
+          ) : (
+            <ul className="divide-y divide-line border-t border-line">
+              {attention.map((item) => (
+                <li key={item.text}>
+                  <Link
+                    href={item.href}
+                    className="flex items-center gap-3 px-5 py-3 text-[14px] transition-colors hover:bg-panel/70"
+                  >
+                    <span
+                      className={`grid size-8 shrink-0 place-items-center rounded-lg ${
+                        item.tone === 'bad'
+                          ? 'bg-bad/10 text-bad'
+                          : item.tone === 'warn'
+                            ? 'bg-warn/10 text-warn'
+                            : item.tone === 'gold'
+                              ? 'bg-gold/10 text-gold'
+                              : 'bg-panel text-mist'
+                      }`}
                     >
-                      <span
-                        className={item.tone === 'bad' ? 'text-bad' : item.tone === 'warn' ? 'text-warn' : 'text-gold'}
-                      >
-                        <Icon name="alert" size={16} />
-                      </span>
-                      {item.text}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
+                      <Icon name={item.tone === 'muted' ? 'bell' : 'alert'} size={16} />
+                    </span>
+                    <span className="min-w-0 flex-1">{item.text}</span>
+                    <Icon name="chevron" size={16} className="text-faint" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        <aside className="grid content-start gap-4 xl:col-start-2 xl:row-start-2">
+          <Card>
+            <CardHeader title={t.dashboard.funnel} hint={t.dashboard.funnelHint} />
+            <ul className="grid gap-3">
+              {funnel.map((f) => (
+                <li key={f.label}>
+                  <Link href={f.href} className="group block">
+                    <div className="mb-1.5 flex items-baseline justify-between gap-2 text-[13px]">
+                      <span className="text-mist group-hover:text-paper">{f.label}</span>
+                      <span className="font-semibold tabular-nums">{f.value}</span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-panel">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${f.value ? Math.max(4, (f.value / funnelMax) * 100) : 0}%`,
+                          backgroundImage: 'var(--gold-gradient)',
+                        }}
+                      />
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </Card>
 
           <Card>
-            <h2 className="mb-3 text-sm uppercase tracking-[0.18em] text-gold">{t.dashboard.agentsTitle}</h2>
-            <dl className="grid grid-cols-2 gap-3">
-              <Stat label={t.dashboard.running} value={summary.agents.running} tone="ok" />
-              <Stat label={t.dashboard.inProgress} value={summary.tasksInProgress} />
-              <Stat
-                label={t.dashboard.paused}
-                value={summary.agents.paused}
-                tone={summary.agents.paused ? 'warn' : undefined}
-              />
-              <Stat
-                label={t.dashboard.errors}
-                value={summary.agents.error}
-                tone={summary.agents.error ? 'bad' : undefined}
-              />
+            <CardHeader title={t.dashboard.money} hint={t.dashboard.ordersNote} />
+            <dl className="grid gap-2.5 text-[14px]">
+              <Money label={t.dashboard.draftValue} value={summary.orders.draftValue} />
+              <Money label={t.dashboard.approvedValue} value={summary.orders.approvedValue} />
+              <Money label={t.dashboard.deliveredValue} value={summary.orders.deliveredValue} />
+              <div className="border-t border-line pt-2.5">
+                <Money label={t.dashboard.paid} value={summary.orders.paidSom} strong />
+              </div>
             </dl>
           </Card>
 
           <Card>
-            <h2 className="mb-3 text-sm uppercase tracking-[0.18em] text-gold">{t.dashboard.integrations}</h2>
-            <ul className="grid gap-2 text-sm">
-              <IntegrationRow label={t.dashboard.website} status={summary.integrations.website} />
-              <IntegrationRow label={t.dashboard.telegramBot} status={summary.integrations.telegram} />
-              <IntegrationRow label={t.dashboard.ai} status={summary.integrations.ai} />
+            <CardHeader title={t.dashboard.integrations} />
+            <ul className="grid gap-3 text-[14px]">
+              <IntegrationRow icon="globe" label={t.dashboard.website} status={summary.integrations.website} />
+              <IntegrationRow icon="send" label={t.dashboard.telegramBot} status={summary.integrations.telegram} />
+              <IntegrationRow icon="spark" label={t.dashboard.ai} status={summary.integrations.ai} />
             </ul>
-            <p className="mt-3 text-xs text-mist">
+            <p className="mt-4 flex items-center gap-1.5 text-xs text-faint">
+              <Icon name="clock" size={13} />
               {t.dashboard.lastSync}: {when(summary.lastSuccessfulSyncAt, t.integrations.never)}
             </p>
           </Card>
-
-          <Card>
-            <h2 className="mb-3 text-sm uppercase tracking-[0.18em] text-gold">{t.dashboard.sales}</h2>
-            <ul className="grid gap-1 text-sm">
-              <Count label={t.dashboard.prospectsTotal} value={summary.prospects.total} href="/prospects/" />
-              <Count label={t.dashboard.prospectsNew} value={summary.prospects.newToday} href="/prospects/" />
-              <Count label={t.dashboard.qualified} value={summary.prospects.qualified} href="/prospects/" />
-              <Count label={t.dashboard.needsReview} value={summary.prospects.needsReview} href="/prospects/" />
-              <Count label={t.dashboard.conversations} value={summary.conversations.active} href="/outreach/" />
-              <Count label={t.dashboard.ordersReview} value={summary.orders.awaitingReview} href="/orders/" />
-            </ul>
-          </Card>
-
-          <Card>
-            <h2 className="mb-3 text-sm uppercase tracking-[0.18em] text-gold">{t.dashboard.orders}</h2>
-            {/* Draft, approved and delivered values are kept apart; only recorded payments are money received. */}
-            <ul className="grid gap-1 text-sm">
-              <Money label={t.dashboard.draftValue} value={summary.orders.draftValue} />
-              <Money label={t.dashboard.approvedValue} value={summary.orders.approvedValue} />
-              <Money label={t.dashboard.deliveredValue} value={summary.orders.deliveredValue} />
-              <Money label={t.dashboard.paid} value={summary.orders.paidSom} />
-            </ul>
-            <p className="mt-3 text-xs text-mist">{t.dashboard.ordersNote}</p>
-          </Card>
         </aside>
       </div>
-    </>
-  );
-}
-
-function Stat({ label, value, tone }: { label: string; value: number; tone?: 'ok' | 'warn' | 'bad' }) {
-  const color = tone === 'ok' ? 'text-ok' : tone === 'warn' ? 'text-warn' : tone === 'bad' ? 'text-bad' : 'text-paper';
-  return (
-    <div className="rounded-xl border border-line px-3 py-2">
-      <dt className="text-xs text-mist">{label}</dt>
-      <dd className={`text-2xl font-semibold tabular-nums ${color}`}>{value}</dd>
     </div>
   );
 }
 
-function IntegrationRow({ label, status }: { label: string; status: IntegrationStatus }) {
+function Kpi({
+  icon,
+  label,
+  value,
+  hint,
+  tone,
+  href,
+}: {
+  icon: IconName;
+  label: string;
+  value: ReactNode;
+  hint: string;
+  tone?: 'ok' | 'bad' | 'gold';
+  href: string;
+}) {
+  const accent =
+    tone === 'ok'
+      ? 'text-ok bg-ok/10'
+      : tone === 'bad'
+        ? 'text-bad bg-bad/10'
+        : tone === 'gold'
+          ? 'text-gold bg-gold/10'
+          : 'text-mist bg-panel';
+  return (
+    <Link
+      href={href}
+      className="surface group relative block overflow-hidden rounded-2xl border border-line p-4 transition-colors hover:border-line-strong sm:p-5"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <dt className="text-[12.5px] font-medium text-mist">{label}</dt>
+        <span className={`grid size-8 place-items-center rounded-lg ${accent}`}>
+          <Icon name={icon} size={16} />
+        </span>
+      </div>
+      <dd className="mt-3 text-[26px] font-semibold leading-none tracking-[-0.03em] tabular-nums sm:text-[30px]">
+        {value}
+      </dd>
+      <p className="mt-2 truncate text-[12.5px] text-faint">{hint}</p>
+    </Link>
+  );
+}
+
+function MoneyValue({ amount }: { amount: number }) {
+  const [num, unit] = somShort(amount).split(/ (?=(?:ming |mln |mlrd )?so'm$)/);
+  return (
+    <>
+      {num}
+      <span className="ml-1 text-[14px] font-medium tracking-normal text-faint">{unit}</span>
+    </>
+  );
+}
+
+function Money({ label, value, strong = false }: { label: string; value: number; strong?: boolean }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <dt className={strong ? 'font-medium' : 'text-mist'}>{label}</dt>
+      <dd className={`whitespace-nowrap tabular-nums ${strong ? 'font-semibold text-gold' : 'font-medium'}`}>
+        {som(value)}
+      </dd>
+    </div>
+  );
+}
+
+function IntegrationRow({ icon, label, status }: { icon: IconName; label: string; status: IntegrationStatus }) {
   return (
     <li className="flex items-center justify-between gap-2">
-      <span>{label}</span>
+      <span className="flex items-center gap-2.5">
+        <span className="grid size-7 place-items-center rounded-lg border border-line bg-panel text-mist">
+          <Icon name={icon} size={14} />
+        </span>
+        {label}
+      </span>
       <Pill tone={TONE[status]}>{t.integrations.status[status]}</Pill>
     </li>
   );
 }
 
-function Count({ label, value, href }: { label: string; value: number; href: string }) {
+function DashboardSkeleton() {
   return (
-    <li>
-      <Link href={href} className="flex items-center justify-between gap-2 hover:text-gold">
-        <span>{label}</span>
-        <span className="tabular-nums">{value}</span>
-      </Link>
-    </li>
-  );
-}
-
-function Money({ label, value }: { label: string; value: number }) {
-  return (
-    <li className="flex items-center justify-between gap-2">
-      <span>{label}</span>
-      <span className="tabular-nums">{som(value)}</span>
-    </li>
+    <div className="grid gap-6" aria-busy="true">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="skeleton h-[118px] rounded-2xl" />
+        ))}
+      </div>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="skeleton h-[420px] rounded-2xl" />
+        <div className="skeleton h-[420px] rounded-2xl" />
+      </div>
+    </div>
   );
 }

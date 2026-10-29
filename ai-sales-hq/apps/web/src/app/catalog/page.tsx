@@ -27,7 +27,11 @@ interface Product {
 }
 
 export default function CatalogPage() {
-  return <AppShell title={t.catalog.title}>{(me) => <Catalog me={me} />}</AppShell>;
+  return (
+    <AppShell title={t.catalog.title} subtitle={t.catalog.intro}>
+      {(me) => <Catalog me={me} />}
+    </AppShell>
+  );
 }
 
 function Catalog({ me }: { me: Me }) {
@@ -61,7 +65,6 @@ function Catalog({ me }: { me: Me }) {
 
   return (
     <>
-      <p className="mb-4 text-sm text-mist">{t.catalog.intro}</p>
       {error && <Alert kind="error">{error}</Alert>}
       <label className="mb-4 flex items-center gap-2 text-sm text-mist">
         <input
@@ -157,7 +160,7 @@ function PriceRow({
           ) : canEdit ? (
             <button
               type="button"
-              className="rounded-full border border-gold/50 px-2 py-0.5 text-xs text-gold hover:bg-gold hover:text-ink"
+              className="rounded-full bg-gold/10 px-2.5 py-0.5 text-xs font-medium text-gold ring-1 ring-gold/25 ring-inset hover:bg-gold/15"
               onClick={() => act(() => api(`/catalog/prices/${price.id}/confirm`, { method: 'POST' }))}
             >
               {t.catalog.confirm}
@@ -185,13 +188,9 @@ function PriceForm({ onSubmit, label }: { onSubmit: (e: FormEvent<HTMLFormElemen
         required
         placeholder={t.catalog.amountPlaceholder}
         aria-label={label}
-        className="min-w-0 flex-1 rounded-xl border border-line bg-ink px-3 py-2 text-sm focus:border-gold/70 focus:outline-none"
+        className="input min-w-0 flex-1"
       />
-      <button
-        type="submit"
-        aria-label={label}
-        className="shrink-0 rounded-xl border border-line px-3 py-2 text-xs hover:border-gold/50"
-      >
+      <button type="submit" aria-label={label} className="btn btn-secondary shrink-0 text-xs">
         {t.agents.save}
       </button>
     </form>

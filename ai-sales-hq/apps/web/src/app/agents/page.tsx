@@ -46,7 +46,11 @@ const TONE: Record<string, 'ok' | 'warn' | 'bad' | 'muted' | 'gold'> = {
 };
 
 export default function AgentsPage() {
-  return <AppShell title={t.agents.title}>{(me) => <Agents me={me} />}</AppShell>;
+  return (
+    <AppShell title={t.agents.title} subtitle={t.agents.intro}>
+      {(me) => <Agents me={me} />}
+    </AppShell>
+  );
 }
 
 function Agents({ me }: { me: Me }) {
@@ -78,7 +82,6 @@ function Agents({ me }: { me: Me }) {
 
   return (
     <div className="grid gap-4">
-      <p className="text-sm text-mist">{t.agents.intro}</p>
       {error && <Alert kind="error">{error}</Alert>}
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -92,7 +95,7 @@ function Agents({ me }: { me: Me }) {
           {canControl && (
             <button
               type="button"
-              className="rounded-xl border border-bad/60 px-4 py-2 text-sm text-bad hover:bg-bad hover:text-ink"
+              className="btn btn-danger px-4"
               onClick={() =>
                 window.confirm(t.agents.stopAllConfirm) && act(() => api('/control/stop-all', { method: 'POST' }))
               }
@@ -184,7 +187,7 @@ function AgentCard({
             <button
               key={action}
               type="button"
-              className={`min-h-10 rounded-xl border px-3 text-sm ${action === 'stop' || action === 'disable' ? 'border-bad/50 text-bad' : 'border-gold/50 text-gold'} hover:bg-panel`}
+              className={`btn ${action === 'stop' || action === 'disable' ? 'btn-danger' : 'btn-gold-soft'}`}
               onClick={() => act(() => api(`/agents/${a.key}/${action}`, { method: 'POST' }))}
             >
               {t.agents.action[action]}
@@ -225,17 +228,12 @@ function AgentCard({
                     type="time"
                     name="startTime"
                     defaultValue={a.schedule.startTime}
-                    className="rounded-lg border border-line bg-ink px-2 py-1"
+                    className="input min-h-9 px-2"
                   />
                 </label>
                 <label>
                   <span className="block text-mist">{t.agents.to}</span>
-                  <input
-                    type="time"
-                    name="endTime"
-                    defaultValue={a.schedule.endTime}
-                    className="rounded-lg border border-line bg-ink px-2 py-1"
-                  />
+                  <input type="time" name="endTime" defaultValue={a.schedule.endTime} className="input min-h-9 px-2" />
                 </label>
                 <label>
                   <span className="block text-mist">{t.agents.limit}</span>
@@ -245,7 +243,7 @@ function AgentCard({
                     min={1}
                     max={10000}
                     defaultValue={a.dailyTaskLimit}
-                    className="w-24 rounded-lg border border-line bg-ink px-2 py-1"
+                    className="input min-h-9 w-24 px-2"
                   />
                 </label>
               </div>

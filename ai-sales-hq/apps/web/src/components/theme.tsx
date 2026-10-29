@@ -32,7 +32,7 @@ export function ThemeToggle({ labels }: { labels: { light: string; dark: string 
       type="button"
       aria-label={next === 'light' ? labels.light : labels.dark}
       title={next === 'light' ? labels.light : labels.dark}
-      className="grid size-10 place-items-center rounded-xl border border-line text-mist hover:border-gold/50 hover:text-paper"
+      className="grid size-9 place-items-center rounded-lg text-mist transition-colors hover:bg-panel hover:text-paper"
       onClick={() => {
         document.documentElement.dataset.theme = next;
         try {

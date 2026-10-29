@@ -74,7 +74,7 @@ export function ConversationPanel({
   const open = messages.find((m) => m.direction === 'OUTBOUND' && (m.status === 'DRAFT' || m.status === 'NEEDS_EDIT'));
   const history = messages.filter((m) => m.status === 'SENT_MANUALLY' || m.status === 'RECEIVED');
   const dnc = prospect.stage === 'DO_NOT_CONTACT';
-  const btn = 'min-h-10 rounded-xl border border-line px-3 text-sm hover:border-gold/50 disabled:opacity-50';
+  const btn = 'btn btn-secondary disabled:opacity-50';
 
   return (
     <Card>
@@ -170,14 +170,10 @@ export function ConversationPanel({
               rows={2}
               placeholder={t.conversation.inboundPlaceholder}
               aria-label={t.conversation.inbound}
-              className="rounded-xl border border-line bg-ink p-3 text-sm"
+              className="input-area"
             />
             <div className="flex gap-2">
-              <select
-                name="channel"
-                aria-label={t.conversation.inboundChannel}
-                className="min-h-10 rounded-xl border border-line bg-ink px-2 text-sm"
-              >
+              <select name="channel" aria-label={t.conversation.inboundChannel} className="input px-2">
                 {Object.entries(t.outreach.channels).map(([k, v]) => (
                   <option key={k} value={k}>
                     {v}

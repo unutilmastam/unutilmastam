@@ -51,7 +51,7 @@ export default function SecurityPage() {
         <Alert kind="info">{t.security.recoveryHint}</Alert>
         <ul className="mb-5 grid grid-cols-2 gap-2 font-mono text-sm">
           {codes.map((c) => (
-            <li key={c} className="rounded-lg border border-line bg-ink px-3 py-2 text-center">
+            <li key={c} className="rounded-lg border border-line bg-panel px-3 py-2 text-center">
               {c}
             </li>
           ))}
@@ -100,7 +100,7 @@ export default function SecurityPage() {
             className="mx-auto mb-4 w-56 rounded-xl bg-white p-3"
           />
           <p className="mb-1 text-xs text-mist">{t.security.manualKey}</p>
-          <p className="mb-4 break-all rounded-lg border border-line bg-ink px-3 py-2 font-mono text-sm">
+          <p className="mb-4 break-all rounded-lg border border-line bg-panel px-3 py-2 font-mono text-sm">
             {setup.secret}
           </p>
           <Field

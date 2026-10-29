@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { ClientBoot } from '@/components/pwa';
 import { t } from '@/lib/strings';
+import '@fontsource-variable/inter';
 import './globals.css';
 
 const THEME_BOOT =
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export const viewport: Viewport = { themeColor: '#0d1015', width: 'device-width', initialScale: 1 };
+export const viewport: Viewport = { themeColor: '#090b0f', width: 'device-width', initialScale: 1 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

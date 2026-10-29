@@ -33,7 +33,11 @@ const DISTRICTS = [
 ];
 
 export default function ProspectsPage() {
-  return <AppShell title={t.prospects.title}>{(me) => <Prospects me={me} />}</AppShell>;
+  return (
+    <AppShell title={t.prospects.title} subtitle={t.prospects.intro}>
+      {(me) => <Prospects me={me} />}
+    </AppShell>
+  );
 }
 
 function Prospects({ me }: { me: Me }) {
@@ -64,22 +68,15 @@ function Prospects({ me }: { me: Me }) {
     return () => clearTimeout(timer);
   }, [load]);
 
-  const select = 'min-h-11 rounded-xl border border-line bg-ink px-3 text-sm';
+  const select = 'input min-h-11';
   return (
     <div className="grid gap-4">
-      <p className="text-sm text-mist">{t.prospects.intro}</p>
       {canEdit && (
         <div className="flex flex-wrap gap-2">
-          <Link
-            href="/prospects/new/"
-            className="rounded-xl bg-gold px-4 py-2.5 text-sm font-medium text-ink hover:bg-gold-soft"
-          >
+          <Link href="/prospects/new/" className="btn btn-primary px-4">
             + {t.prospects.add}
           </Link>
-          <Link
-            href="/prospects/import/"
-            className="rounded-xl border border-line px-4 py-2.5 text-sm hover:border-gold/50"
-          >
+          <Link href="/prospects/import/" className="btn btn-secondary px-4">
             {t.prospects.import}
           </Link>
         </div>
@@ -139,7 +136,7 @@ function Prospects({ me }: { me: Me }) {
           <li key={p.id} className="min-w-0">
             <Link
               href={`/prospects/view/?id=${p.id}`}
-              className="block rounded-2xl border border-line bg-graphite p-4 hover:border-gold/50"
+              className="surface block rounded-2xl border border-line p-4 transition-colors hover:border-line-strong"
               style={{ boxShadow: 'var(--shadow-card)' }}
             >
               <div className="flex items-start justify-between gap-3">
@@ -177,12 +174,7 @@ function Prospects({ me }: { me: Me }) {
       </ul>
       {data && data.total > data.pageSize && (
         <div className="flex items-center justify-between text-sm">
-          <button
-            type="button"
-            disabled={page <= 1}
-            onClick={() => setPage(page - 1)}
-            className="rounded-xl border border-line px-3 py-2 disabled:opacity-40"
-          >
+          <button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)} className="btn btn-secondary">
             {t.prospects.prev}
           </button>
           <span className="text-mist">{t.prospects.total(data.total)}</span>
@@ -190,7 +182,7 @@ function Prospects({ me }: { me: Me }) {
             type="button"
             disabled={page * data.pageSize >= data.total}
             onClick={() => setPage(page + 1)}
-            className="rounded-xl border border-line px-3 py-2 disabled:opacity-40"
+            className="btn btn-secondary"
           >
             {t.prospects.next}
           </button>

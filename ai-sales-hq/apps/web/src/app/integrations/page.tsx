@@ -37,7 +37,11 @@ interface Status {
 const TONE = { NOT_CONFIGURED: 'muted', CONFIGURED: 'warn', CONNECTED: 'ok', ERROR: 'bad' } as const;
 
 export default function IntegrationsPage() {
-  return <AppShell title={t.integrations.title}>{() => <Integrations />}</AppShell>;
+  return (
+    <AppShell title={t.integrations.title} subtitle={t.integrations.intro}>
+      {() => <Integrations />}
+    </AppShell>
+  );
 }
 
 function Integrations() {
@@ -81,7 +85,6 @@ function Integrations() {
 
   return (
     <div className="grid gap-4">
-      <p className="text-sm text-mist">{t.integrations.intro}</p>
       {msg && <Alert kind={msg.kind}>{msg.text}</Alert>}
       <Card>
         <div className="mb-3 flex items-center justify-between">
@@ -188,14 +191,10 @@ function Integrations() {
               min={5}
               max={1440}
               defaultValue={s.settings.intervalMinutes}
-              className="w-28 rounded-xl border border-line bg-ink px-3 py-2"
+              className="input w-28"
             />
           </label>
-          <button
-            type="submit"
-            disabled={busy}
-            className="rounded-xl border border-line px-4 py-2 text-sm hover:border-gold/50"
-          >
+          <button type="submit" disabled={busy} className="btn btn-secondary px-4">
             {t.integrations.save}
           </button>
         </form>
@@ -394,18 +393,14 @@ function AiCard() {
               spellCheck={false}
               required={s.source !== 'app'}
               placeholder={s.source === 'app' ? t.aiProvider.keepKey : 'sk-ant-...'}
-              className="w-full rounded-xl border border-line bg-ink px-3 py-2 font-mono"
+              className="input w-full font-mono"
             />
             <span className="mt-1 block text-xs text-mist">{t.aiProvider.keyHint}</span>
           </label>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="text-sm">
               <span className="mb-1 block text-mist">{t.aiProvider.model}</span>
-              <select
-                name="model"
-                defaultValue={s.model}
-                className="w-full rounded-xl border border-line bg-ink px-3 py-2"
-              >
+              <select name="model" defaultValue={s.model} className="input w-full">
                 {s.models.map((m) => (
                   <option key={m}>{m}</option>
                 ))}
@@ -413,11 +408,7 @@ function AiCard() {
             </label>
             <label className="text-sm">
               <span className="mb-1 block text-mist">{t.aiProvider.strongModel}</span>
-              <select
-                name="strongModel"
-                defaultValue={s.strongModel}
-                className="w-full rounded-xl border border-line bg-ink px-3 py-2"
-              >
+              <select name="strongModel" defaultValue={s.strongModel} className="input w-full">
                 {s.models.map((m) => (
                   <option key={m}>{m}</option>
                 ))}

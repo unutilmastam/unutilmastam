@@ -22,7 +22,7 @@ interface Detail extends Omit<ProspectRow, 'sources'> {
 
 export default function ProspectPage() {
   return (
-    <AppShell title={t.prospects.title}>
+    <AppShell title={t.prospects.title} back={{ href: '/prospects/', label: t.prospects.backLabel }}>
       {(me) => (
         <Suspense>
           <Prospect me={me} />
@@ -77,9 +77,6 @@ function Prospect({ me }: { me: Me }) {
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
       <div className="grid content-start gap-4">
-        <Link href="/prospects/" className="text-sm text-gold">
-          {t.prospects.back}
-        </Link>
         {error && <Alert kind="error">{error}</Alert>}
         <Card>
           <div className="flex items-start justify-between gap-3">
@@ -99,12 +96,7 @@ function Prospect({ me }: { me: Me }) {
           {canEdit && p.stage !== 'DO_NOT_CONTACT' && (
             <div className="mt-4 flex flex-wrap gap-2">
               {(NEXT_STAGES[p.stage] ?? []).map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => move(s)}
-                  className="min-h-10 rounded-xl border border-gold/50 px-3 text-sm text-gold hover:bg-panel"
-                >
+                <button key={s} type="button" onClick={() => move(s)} className="btn btn-gold-soft">
                   → {t.prospects.stage[s]}
                 </button>
               ))}
@@ -137,24 +129,12 @@ function Prospect({ me }: { me: Me }) {
           </ul>
           {canEdit && (
             <form onSubmit={addContact} className="mt-3 flex flex-wrap gap-2">
-              <select
-                name="kind"
-                aria-label={t.prospects.addContact}
-                className="min-h-10 rounded-xl border border-line bg-ink px-2 text-sm"
-              >
+              <select name="kind" aria-label={t.prospects.addContact} className="input px-2">
                 <option value="PHONE">{t.prospects.phone}</option>
                 <option value="TELEGRAM">{t.prospects.telegram}</option>
               </select>
-              <input
-                name="value"
-                required
-                aria-label={t.prospects.addContact}
-                className="min-h-10 min-w-40 flex-1 rounded-xl border border-line bg-ink px-3 text-sm"
-              />
-              <button
-                type="submit"
-                className="min-h-10 rounded-xl border border-line px-3 text-sm hover:border-gold/50"
-              >
+              <input name="value" required aria-label={t.prospects.addContact} className="input min-w-40 flex-1" />
+              <button type="submit" className="btn btn-secondary">
                 {t.prospects.addContact}
               </button>
             </form>
@@ -170,7 +150,7 @@ function Prospect({ me }: { me: Me }) {
               rows={4}
               readOnly={!canEdit}
               aria-label={t.prospects.notes}
-              className="rounded-xl border border-line bg-ink p-3 text-sm"
+              className="input-area"
             />
             {canEdit && (
               <Button variant="ghost" type="submit">
@@ -260,11 +240,7 @@ function DncButton({ onConfirm }: { onConfirm: (reason: string) => void }) {
   const [open, setOpen] = useState(false);
   if (!open) {
     return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="min-h-10 rounded-xl border border-bad/50 px-3 text-sm text-bad hover:bg-panel"
-      >
+      <button type="button" onClick={() => setOpen(true)} className="btn btn-danger">
         {t.prospects.dnc}
       </button>
     );
@@ -283,17 +259,13 @@ function DncButton({ onConfirm }: { onConfirm: (reason: string) => void }) {
         name="reason"
         placeholder={t.prospects.reasonPrompt}
         aria-label={t.prospects.reasonPrompt}
-        className="min-h-10 rounded-xl border border-line bg-ink px-3 text-sm"
+        className="input"
       />
       <div className="flex gap-2">
-        <button type="submit" className="min-h-10 rounded-xl bg-bad px-3 text-sm font-medium text-ink">
+        <button type="submit" className="btn btn-danger-solid">
           {t.prospects.dncYes}
         </button>
-        <button
-          type="button"
-          onClick={() => setOpen(false)}
-          className="min-h-10 rounded-xl border border-line px-3 text-sm"
-        >
+        <button type="button" onClick={() => setOpen(false)} className="btn btn-secondary">
           {t.prospects.cancel}
         </button>
       </div>
@@ -315,7 +287,7 @@ function ContactRow({ c, canEdit, onVerify }: { c: ProspectContact; canEdit: boo
         <button
           type="button"
           onClick={onVerify}
-          className="rounded-full border border-gold/50 px-2 py-0.5 text-xs text-gold hover:bg-panel"
+          className="rounded-full bg-gold/10 px-2.5 py-0.5 text-xs font-medium text-gold ring-1 ring-gold/25 ring-inset hover:bg-gold/15"
         >
           {t.prospects.verify}
         </button>

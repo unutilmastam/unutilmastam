@@ -10,7 +10,11 @@ import { ORDER_FILTERS, ORDER_TONE, type OrderRow } from '@/lib/orders';
 import { t } from '@/lib/strings';
 
 export default function OrdersPage() {
-  return <AppShell title={t.orders.title}>{() => <Orders />}</AppShell>;
+  return (
+    <AppShell title={t.orders.title} subtitle={t.orders.intro}>
+      {() => <Orders />}
+    </AppShell>
+  );
 }
 
 function Orders() {
@@ -27,7 +31,6 @@ function Orders() {
 
   return (
     <div className="grid gap-4">
-      <p className="text-sm text-mist">{t.orders.intro}</p>
       <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
         {ORDER_FILTERS.map((s) => (
           <button
@@ -35,7 +38,7 @@ function Orders() {
             type="button"
             onClick={() => setStatus(s)}
             aria-pressed={status === s}
-            className={`min-h-10 shrink-0 rounded-xl border px-3 text-sm ${status === s ? 'border-gold text-gold' : 'border-line text-mist'}`}
+            className={`btn shrink-0 ${status === s ? 'btn-tab-on' : 'btn-secondary text-mist'}`}
           >
             {s ? t.orders.status[s] : t.orders.all}
           </button>
@@ -47,7 +50,7 @@ function Orders() {
         {rows?.map((o) => (
           <li key={o.id}>
             <Link href={`/orders/view/?id=${o.id}`} className="block">
-              <Card className="hover:border-gold/50">
+              <Card className="hover:border-line-strong">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="font-semibold">{o.prospectName}</div>

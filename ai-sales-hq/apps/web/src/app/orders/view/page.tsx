@@ -12,7 +12,7 @@ import { t } from '@/lib/strings';
 
 export default function OrderPage() {
   return (
-    <AppShell title={t.orders.title}>
+    <AppShell title={t.orders.title} back={{ href: '/orders/', label: t.orders.backLabel }}>
       {(me) => (
         <Suspense>
           <Order me={me} />
@@ -22,7 +22,7 @@ export default function OrderPage() {
   );
 }
 
-const input = 'w-full min-h-10 rounded-xl border border-line bg-ink px-3 text-sm';
+const input = 'w-full input';
 
 function Order({ me }: { me: Me }) {
   const id = useSearchParams().get('id') ?? '';
@@ -58,9 +58,6 @@ function Order({ me }: { me: Me }) {
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
       <div className="grid content-start gap-4">
-        <Link href="/orders/" className="text-sm text-gold">
-          {t.orders.back}
-        </Link>
         {msg && <Alert kind={msg.kind}>{msg.text}</Alert>}
         <Card>
           <div className="flex items-start justify-between gap-3">
@@ -237,7 +234,7 @@ function Items({ order, canEdit, busy, act }: { order: OrderDetail; canEdit: boo
                 <button
                   type="button"
                   onClick={() => setLines((ls) => ls.filter((x) => x.key !== l.key))}
-                  className="min-h-10 rounded-xl border border-line px-3 text-sm text-mist hover:border-bad/50"
+                  className="btn btn-secondary text-mist hover:text-bad"
                 >
                   {t.orders.removeLine}
                 </button>
@@ -327,7 +324,7 @@ function Details({ order, canEdit, act }: { order: OrderDetail; canEdit: boolean
             rows={3}
             defaultValue={order.notes ?? ''}
             readOnly={readOnly}
-            className="w-full rounded-xl border border-line bg-ink p-3"
+            className="input-area w-full"
           />
         </label>
         {!readOnly && (
@@ -362,12 +359,7 @@ function Actions({
   const s = order.status;
 
   const small = (label: string, onClick: () => void, tone = '') => (
-    <button
-      type="button"
-      disabled={busy}
-      onClick={onClick}
-      className={`min-h-10 rounded-xl border border-line px-3 text-sm hover:border-gold/50 ${tone}`}
-    >
+    <button type="button" disabled={busy} onClick={onClick} className={`btn btn-secondary ${tone}`}>
       {label}
     </button>
   );
@@ -406,9 +398,7 @@ function Actions({
       {s === 'CUSTOMER_CONFIRMATION_PENDING' && (
         <div className="grid gap-3">
           <h3 className="font-semibold">{t.orders.confirmationTitle}</h3>
-          <pre className="whitespace-pre-wrap rounded-xl border border-line bg-ink p-3 font-sans text-sm">
-            {order.confirmationText}
-          </pre>
+          <pre className="input-area whitespace-pre-wrap font-sans">{order.confirmationText}</pre>
           <p className="text-xs text-mist">{t.orders.confirmationHint}</p>
           <div className="grid grid-cols-2 gap-2">
             <Button
@@ -423,7 +413,7 @@ function Actions({
             {order.contactPhone && (
               <a
                 href={`sms:${order.contactPhone}?body=${encodeURIComponent(order.confirmationText)}`}
-                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-line px-4 font-medium hover:border-gold/50"
+                className="btn btn-secondary min-h-11 px-4"
               >
                 {t.orders.sms}
               </a>
@@ -438,7 +428,7 @@ function Actions({
                   onChange={(e) => setSaid(e.target.value)}
                   rows={2}
                   maxLength={500}
-                  className="w-full rounded-xl border border-line bg-ink p-3"
+                  className="input-area w-full"
                 />
               </label>
               <Button

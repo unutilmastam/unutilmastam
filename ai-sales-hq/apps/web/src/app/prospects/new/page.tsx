@@ -64,7 +64,7 @@ function NewProspect() {
     }
   }
 
-  const select = 'w-full rounded-xl border border-line bg-ink px-3.5 py-3 text-base';
+  const select = 'input h-12 w-full text-[15px]';
   return (
     <div className="max-w-xl">
       <Link href="/prospects/" className="text-sm text-gold">
@@ -99,7 +99,7 @@ function NewProspect() {
           </label>
           <label className="mb-4 block">
             <span className="mb-1.5 block text-sm text-mist">{t.prospects.form.notes}</span>
-            <textarea name="notes" rows={3} className="w-full rounded-xl border border-line bg-ink p-3 text-base" />
+            <textarea name="notes" rows={3} className="input-area w-full text-base" />
           </label>
           <Button type="submit" disabled={busy}>
             {t.prospects.form.save}

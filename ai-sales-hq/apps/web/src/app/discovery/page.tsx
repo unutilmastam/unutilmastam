@@ -30,7 +30,11 @@ const TONE: Record<string, 'ok' | 'warn' | 'bad' | 'muted'> = {
 };
 
 export default function DiscoveryPage() {
-  return <AppShell title={t.discovery.title}>{(me) => <Discovery me={me} />}</AppShell>;
+  return (
+    <AppShell title={t.discovery.title} subtitle={t.discovery.intro}>
+      {(me) => <Discovery me={me} />}
+    </AppShell>
+  );
 }
 
 function Discovery({ me }: { me: Me }) {
@@ -92,10 +96,9 @@ function Discovery({ me }: { me: Me }) {
     });
   };
 
-  const input = 'rounded-xl border border-line bg-ink px-3 py-2 text-sm';
+  const input = 'input';
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <p className="text-sm text-mist lg:col-span-2">{t.discovery.intro}</p>
       {msg && (
         <div className="lg:col-span-2">
           <Alert kind={msg.kind}>{msg.text}</Alert>
@@ -147,11 +150,7 @@ function Discovery({ me }: { me: Me }) {
                     <option key={d}>{d}</option>
                   ))}
                 </select>
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="rounded-xl bg-gold px-4 py-2 text-sm font-medium text-ink disabled:opacity-60"
-                >
+                <button type="submit" disabled={busy} className="btn btn-primary px-4">
                   {t.discovery.searchNow}
                 </button>
               </form>

@@ -39,7 +39,11 @@ interface Overview {
 }
 
 export default function SitePage() {
-  return <AppShell title={t.site.title}>{() => <Site />}</AppShell>;
+  return (
+    <AppShell title={t.site.title} subtitle={t.site.intro}>
+      {() => <Site />}
+    </AppShell>
+  );
 }
 
 function Site() {
@@ -63,7 +67,6 @@ function Site() {
 
   return (
     <div className="grid gap-4">
-      <p className="text-sm text-mist">{t.site.intro}</p>
       {error && (
         <Alert kind="error">
           {error}{' '}
