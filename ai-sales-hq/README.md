@@ -69,6 +69,11 @@ For UI work: `npm run dev -w @hq/api` (port 3001) and `npm run dev -w @hq/web` (
 | POST | `/api/v1/control/stop-all` | agents.control | kill switch |
 | GET/POST | `/api/v1/integrations/telegram`, `/test`, `/webhook` | integrations.manage | owner bot status, real test message, register webhook |
 | POST | `/api/v1/telegram/webhook` | secret header | owner bot commands `/status`, `/stop_all` |
+| GET | `/api/v1/prospects[?stage&district&q&page]`, `/prospects/:id` | prospects.view | list with score/contacts/sources; detail with history |
+| POST | `/api/v1/prospects`, `/prospects/import/preview`, `/prospects/import` | prospects.edit | manual entry; CSV dry run; CSV import |
+| POST | `/api/v1/prospects/:id/stage` \| `/notes` \| `/contacts` \| `/score`, `/contacts/:id/verify` | prospects.edit | pipeline (A10), notes, contacts, rescore, verify |
+| GET/POST | `/api/v1/discovery`, `/discovery/settings`, `/firestore-import`, `/places-search` | prospects.view / settings.manage | source status, budget, settings, run now |
+| GET/POST | `/api/v1/suppression` | prospects.view / prospects.edit | do-not-contact list |
 
 Background work: cron runs `node apps/api/dist/worker.js --once` every minute (DB lock, ≤ 50 s budget).
 

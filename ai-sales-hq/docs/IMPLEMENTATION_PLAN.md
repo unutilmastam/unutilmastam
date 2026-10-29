@@ -59,7 +59,7 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [ ] AI spend budget → `BUDGET_EXCEEDED` (hook is ready; AI usage arrives with Phase 6)
 - [x] Green CI run ✅ (after the Phase 4 push: a fake test token tripped gitleaks; now built at runtime)
 
-## Phase 4 — Premium interface + virtual office (real data) ✅ (code done; CI pending)
+## Phase 4 — Premium interface + virtual office (real data) ✅
 - [x] Design system: graphite / midnight navy / champagne-gold tokens as CSS variables; dark and light themes (toggle, remembered locally, applied before first paint)
 - [x] Centralized Uzbek Latin strings (`apps/web/src/lib/strings.ts`)
 - [x] Responsive layouts: phone bottom navigation with line icons, desktop/iPad top navigation, dashboard with office-first layout on desktop
@@ -68,16 +68,20 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [x] Dashboard (MASTER_SPEC §17) from DB: agents by state, tasks in progress, attention list, integration status (AI honestly NOT_CONFIGURED), last sync; prospect/order metrics shown as "Phase N", never as fake zeros
 - [x] PWA service worker: hashed static assets cache-first, pages network-first, `/api` never cached
 - [x] Playwright in CI at 375 px and iPad width: setup → login → mandatory 2FA → office → agent start/stop → catalog → integrations; checks for horizontal scroll (found and fixed a 3 px overflow on the catalog)
-- [ ] Green CI run
+- [x] Green CI run ✅
 
-## Phase 5 — Customer discovery
-- [ ] Source 1: existing stores from Firestore (already synced) → prospects/customers with provenance
-- [ ] Source 2: manual mobile form + CSV import with dry run
-- [ ] Source 3: Google Places adapter (server key, budget cap, ToS-compliant caching) + mock
-- [ ] Normalization (phone +998, names, Surxondaryo districts), dedup, provenance, last-verified
-- [ ] Scoring with explanation (Business Analyst role), manual review queue
-- [ ] Suppression / do-not-contact
-- [ ] ⏳ Owner: Google Places API key (only if he wants source 3)
+## Phase 5 — Customer discovery ✅ (code done; CI pending)
+- [x] Source 1: existing stores from Firestore (`app/stores`, store-type `app/users`, order counts from `app/orders`) — business fields only; passwords, photos, IPs and private customers dropped at parse time; the PWA's fake Tashkent fallback coordinates discarded
+- [x] Source 2: manual mobile form + CSV import with dry run (`,`/`;`, quotes, BOM, Uzbek/Russian/English headers, row-by-row verdicts)
+- [x] Source 3: Google Places API (New) Text Search, server key, Surxondaryo location restriction, daily request cap + usage/cost counter, ToS caching (content expires after 30 days → refreshed or redacted, place_id kept)
+- [x] Normalization: phones to +998 E.164, Telegram usernames, business names, Surxondaryo district detection (Latin/Cyrillic/Russian spellings)
+- [x] Dedup by place_id → phone → name + district (last one can be switched off), merge fills gaps only, provenance row per source
+- [x] Deterministic, explained score (Business Analyst) + stage rules: only verified strong prospects auto-qualify, others go to the review queue
+- [x] Pipeline stages (A10) enforced server-side; DO_NOT_CONTACT from any stage, final, suppresses phone/Telegram/place for future imports
+- [x] Agents: Market Researcher (daily store import, rotating Places searches within budget, cache refresh) and Business Analyst (scoring) run in the cron worker
+- [x] UI: prospects list (search, stage/district filters, paging), detail (contacts + verify, explained score, sources with links, history, notes, stage moves, inline DNC confirmation), manual entry, CSV import, discovery settings; phone "More" menu; dashboard prospect counts are real now
+- [x] E2E: manual add → verify phone → qualified → DNC at phone and iPad width (found and fixed: top navigation overflowing at 820 px; native prompt() replaced — unreliable in installed iOS PWAs)
+- [ ] ⏳ Owner: Google Places API key (optional; guide `docs/GOOGLE_PLACES_SETUP_UZ.md`)
 - [ ] Green CI run
 
 ## Phase 6 — Sales workflow (assisted manual) + AI drafting

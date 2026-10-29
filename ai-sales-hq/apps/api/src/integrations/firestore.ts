@@ -21,9 +21,17 @@ export interface CatalogSnapshot {
   categories: FirestoreDocument;
 }
 
+export interface StoreListSnapshot {
+  stores: FirestoreDocument;
+  users: FirestoreDocument;
+  orders: FirestoreDocument;
+}
+
 export interface CatalogSource {
   readonly name: string;
   fetchCatalog(): Promise<CatalogSnapshot>;
+  // Existing store list for discovery (A4 source 1). Same read-only access.
+  fetchStoreList(): Promise<StoreListSnapshot>;
 }
 
 export class FirestoreError extends Error {
@@ -133,6 +141,15 @@ export class FirestoreCatalogSource implements CatalogSource {
     return decodeDocument(await res.json());
   }
 
+  async fetchStoreList(): Promise<StoreListSnapshot> {
+    const [stores, users, orders] = await Promise.all([
+      this.#getDocument('stores'),
+      this.#getDocument('users'),
+      this.#getDocument('orders'),
+    ]);
+    return { stores, users, orders };
+  }
+
   async fetchCatalog(): Promise<CatalogSnapshot> {
     const [products, categories] = await Promise.all([this.#getDocument('products'), this.#getDocument('categories')]);
     if (products.value === null) throw new FirestoreError('Document app/products not found', 'not_found');
@@ -145,5 +162,6 @@ export function firestoreSourceFromFile(path: string, fetchFn: FetchFn = fetch):
   return {
     name: 'firestore',
     fetchCatalog: () => new FirestoreCatalogSource(loadServiceAccount(path), fetchFn).fetchCatalog(),
+    fetchStoreList: () => new FirestoreCatalogSource(loadServiceAccount(path), fetchFn).fetchStoreList(),
   };
 }

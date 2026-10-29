@@ -371,3 +371,155 @@ model WorkerRun {
   @@index([startedAt])
   @@map("worker_runs")
 }
+
+// ---------------------------------------------------------------------------
+// Phase 5 — prospects, sources, contacts, suppression, provider usage
+// ---------------------------------------------------------------------------
+
+enum ProspectStage {
+  NEW
+  NEEDS_VERIFICATION
+  QUALIFIED
+  CONTACT_PENDING
+  CONTACTED
+  INTERESTED
+  NEGOTIATION
+  WON
+  LOST
+  DO_NOT_CONTACT
+}
+
+enum ProspectCategory {
+  SUPERMARKET
+  MINIMARKET
+  GROCERY
+  WHOLESALE
+  FOOD_RETAIL
+  OTHER
+}
+
+enum LocationQuality {
+  EXACT
+  APPROXIMATE
+  UNKNOWN
+}
+
+model Prospect {
+  id                 String           @id @default(uuid()) @db.Char(36)
+  name               String           @db.VarChar(200)
+  normalizedName     String           @map("normalized_name") @db.VarChar(200)
+  category           ProspectCategory @default(OTHER)
+  region             String           @default("Surxondaryo") @db.VarChar(60)
+  district           String?          @db.VarChar(60)
+  address            String?          @db.VarChar(300)
+  // Person's name (owner of the shop): personal data, masked before any AI call (A6).
+  contactPersonName  String?          @map("contact_person_name") @db.VarChar(120)
+  lat                Decimal?         @db.Decimal(9, 6)
+  lng                Decimal?         @db.Decimal(9, 6)
+  locationQuality    LocationQuality  @default(UNKNOWN) @map("location_quality")
+  googlePlaceId      String?          @unique @map("google_place_id") @db.VarChar(200)
+  rating             Decimal?         @db.Decimal(2, 1)
+  ratingCount        Int?             @map("rating_count")
+  stage              ProspectStage    @default(NEW)
+  isExistingCustomer Boolean          @default(false) @map("is_existing_customer")
+  score              Int?
+  scoreReasons       Json?            @map("score_reasons")
+  scoredAt           DateTime?        @map("scored_at")
+  assignedAgentKey   String?          @map("assigned_agent_key") @db.VarChar(40)
+  notes              String?          @db.Text
+  discoveredAt       DateTime         @map("discovered_at")
+  lastVerifiedAt     DateTime?        @map("last_verified_at")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  sources            ProspectSource[]
+  contacts           ContactPoint[]
+
+  @@index([stage])
+  @@index([district, normalizedName])
+  @@index([score])
+  @@map("prospects")
+}
+
+enum SourceType {
+  FIRESTORE_STORE
+  MANUAL
+  CSV
+  GOOGLE_PLACES
+}
+
+// Provenance of every piece of prospect data (MASTER_SPEC §10).
+model ProspectSource {
+  id          String     @id @default(uuid()) @db.Char(36)
+  prospectId  String     @map("prospect_id") @db.Char(36)
+  prospect    Prospect   @relation(fields: [prospectId], references: [id], onDelete: Restrict)
+  sourceType  SourceType @map("source_type")
+  externalId  String?    @map("external_id") @db.VarChar(200)
+  sourceUrl   String?    @map("source_url") @db.VarChar(500)
+  observedAt  DateTime   @map("observed_at")
+  // Google Places content may be cached only for a limited time (ToS); place_id is kept.
+  expiresAt   DateTime?  @map("expires_at")
+  evidence    Json?
+  createdById String?    @map("created_by_id") @db.Char(36)
+
+  @@unique([sourceType, externalId])
+  @@index([prospectId])
+  @@index([expiresAt])
+  @@map("prospect_sources")
+}
+
+enum ContactKind {
+  PHONE
+  TELEGRAM
+  EMAIL
+  WEBSITE
+}
+
+model ContactPoint {
+  id           String      @id @default(uuid()) @db.Char(36)
+  prospectId   String      @map("prospect_id") @db.Char(36)
+  prospect     Prospect    @relation(fields: [prospectId], references: [id], onDelete: Restrict)
+  kind         ContactKind
+  value        String      @db.VarChar(200)
+  sourceType   SourceType  @map("source_type")
+  isVerified   Boolean     @default(false) @map("is_verified")
+  verifiedAt   DateTime?   @map("verified_at")
+  verifiedById String?     @map("verified_by_id") @db.Char(36)
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  @@unique([prospectId, kind, value])
+  @@index([kind, value])
+  @@map("contact_points")
+}
+
+enum SuppressionKind {
+  PHONE
+  TELEGRAM
+  PLACE
+  PROSPECT
+}
+
+// Do-not-contact list; checked before any outreach on every channel (A9).
+model SuppressionRecord {
+  id          String          @id @default(uuid()) @db.Char(36)
+  kind        SuppressionKind
+  value       String          @db.VarChar(200)
+  reason      String          @db.VarChar(300)
+  createdById String?         @map("created_by_id") @db.Char(36)
+  createdAt   DateTime        @map("created_at")
+
+  @@unique([kind, value])
+  @@map("suppression_records")
+}
+
+// Paid external calls per provider and Tashkent day (budget caps, MASTER_SPEC §16/A4).
+model ProviderUsage {
+  id                String   @id @default(uuid()) @db.Char(36)
+  provider          String   @db.VarChar(40)
+  day               String   @db.Char(10)
+  requests          Int      @default(0)
+  estimatedMicroUsd BigInt   @default(0) @map("estimated_micro_usd")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@unique([provider, day])
+  @@map("provider_usage")
+}

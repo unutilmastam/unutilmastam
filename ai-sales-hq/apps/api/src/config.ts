@@ -36,6 +36,11 @@ const schema = z
       .string()
       .regex(/^-?\d+(,\s*-?\d+)*$/, 'TELEGRAM_OWNER_CHAT_IDS must be numeric ids separated by commas')
       .optional(),
+    // Google Places API (New) key, server-side only; restrict it to the Places API in Google Cloud.
+    GOOGLE_PLACES_API_KEY: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{20,100}$/, 'GOOGLE_PLACES_API_KEY has the wrong format')
+      .optional(),
     TELEGRAM_WEBHOOK_SECRET: z
       .string()
       .regex(/^[A-Za-z0-9_-]{24,256}$/)

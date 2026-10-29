@@ -34,6 +34,12 @@ export class DashboardService {
         this.db.integration.findUnique({ where: { key: 'telegram' }, select: { status: true } }),
         this.db.notification.count({ where: { readAt: null } }),
       ]);
+    const [prospectsToday, qualified, needsReview, prospectsTotal] = await Promise.all([
+      this.db.prospect.count({ where: { discoveredAt: { gte: dayStart } } }),
+      this.db.prospect.count({ where: { stage: 'QUALIFIED' } }),
+      this.db.prospect.count({ where: { stage: 'NEEDS_VERIFICATION' } }),
+      this.db.prospect.count(),
+    ]);
     const count = (states: string[]) => agents.filter((a) => states.includes(a.state)).length;
     return {
       agents: {
@@ -59,8 +65,8 @@ export class DashboardService {
         ai: 'NOT_CONFIGURED' as const,
       },
       lastSuccessfulSyncAt: lastSync?.finishedAt ?? null,
-      // Modules that arrive later (Phases 5–7): not available rather than a fake 0.
-      prospects: { newToday: null, qualified: null },
+      prospects: { newToday: prospectsToday, qualified, needsReview, total: prospectsTotal },
+      // Modules that arrive later (Phases 6–7): not available rather than a fake 0.
       conversations: { active: null },
       orders: { awaitingReview: null, draftValue: null, approvedValue: null, deliveredValue: null },
     };

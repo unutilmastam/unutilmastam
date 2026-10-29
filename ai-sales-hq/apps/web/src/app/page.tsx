@@ -23,6 +23,7 @@ interface Summary {
   };
   integrations: { website: IntegrationStatus; telegram: IntegrationStatus; ai: IntegrationStatus };
   lastSuccessfulSyncAt: string | null;
+  prospects: { newToday: number; qualified: number; needsReview: number; total: number };
 }
 
 const TONE = { NOT_CONFIGURED: 'muted', CONFIGURED: 'warn', CONNECTED: 'ok', ERROR: 'bad' } as const;
@@ -157,8 +158,10 @@ function Dashboard({ name, canSeeAgents }: { name: string; canSeeAgents: boolean
             <h2 className="mb-3 text-sm uppercase tracking-[0.18em] text-gold">{t.dashboard.sales}</h2>
             {/* These modules arrive in later phases; no number is shown until real data exists. */}
             <ul className="grid gap-1 text-sm">
-              <Later label={t.dashboard.prospectsNew} phase={5} />
-              <Later label={t.dashboard.qualified} phase={5} />
+              <Count label={t.dashboard.prospectsTotal} value={summary.prospects.total} href="/prospects/" />
+              <Count label={t.dashboard.prospectsNew} value={summary.prospects.newToday} href="/prospects/" />
+              <Count label={t.dashboard.qualified} value={summary.prospects.qualified} href="/prospects/" />
+              <Count label={t.dashboard.needsReview} value={summary.prospects.needsReview} href="/prospects/" />
               <Later label={t.dashboard.conversations} phase={6} />
               <Later label={t.dashboard.ordersReview} phase={7} />
             </ul>
@@ -184,6 +187,17 @@ function IntegrationRow({ label, status }: { label: string; status: IntegrationS
     <li className="flex items-center justify-between gap-2">
       <span>{label}</span>
       <Pill tone={TONE[status]}>{t.integrations.status[status]}</Pill>
+    </li>
+  );
+}
+
+function Count({ label, value, href }: { label: string; value: number; href: string }) {
+  return (
+    <li>
+      <Link href={href} className="flex items-center justify-between gap-2 hover:text-gold">
+        <span>{label}</span>
+        <span className="tabular-nums">{value}</span>
+      </Link>
     </li>
   );
 }

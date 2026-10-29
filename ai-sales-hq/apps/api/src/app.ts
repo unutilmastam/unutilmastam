@@ -7,6 +7,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import type { Config } from './config';
 import { makeGuard } from './http/guard';
 import { type CatalogSource, firestoreSourceFromFile } from './integrations/firestore';
+import { type PlacesClient, placesClient } from './integrations/places';
 import type { Db } from './lib/db';
 import { AppError } from './lib/errors';
 import { loggerOptions } from './lib/logger';
@@ -19,8 +20,11 @@ import { CatalogService } from './modules/catalog/service';
 import { CatalogSyncService } from './modules/catalog/sync';
 import { dashboardRoutes } from './modules/dashboard/routes';
 import { DashboardService } from './modules/dashboard/service';
+import { DiscoveryService, matchSettingsFrom } from './modules/discovery/service';
 import { IntegrationService } from './modules/integrations/service';
 import { notificationRoutes } from './modules/notifications/routes';
+import { prospectRoutes } from './modules/prospects/routes';
+import { ProspectService } from './modules/prospects/service';
 import { systemRoutes } from './modules/system/routes';
 import { type TelegramApi, telegramApi } from './modules/telegram/client';
 import { telegramRoutes } from './modules/telegram/routes';
@@ -37,6 +41,13 @@ export interface AppDeps {
   catalogSource?: CatalogSource | null;
   // Test override for the Telegram Bot API.
   telegramApi?: TelegramApi | null;
+  // Test override for Google Places; null = not configured.
+  places?: PlacesClient | null;
+}
+
+export function placesFor(deps: Pick<AppDeps, 'config' | 'places'>): PlacesClient | null {
+  if (deps.places !== undefined) return deps.places;
+  return deps.config.GOOGLE_PLACES_API_KEY ? placesClient(deps.config.GOOGLE_PLACES_API_KEY) : null;
 }
 
 export function catalogSourceFor(deps: AppDeps): () => CatalogSource | null {
@@ -122,6 +133,8 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
         ? telegramApi(config.TELEGRAM_BOT_TOKEN)
         : null;
   const telegram = new TelegramService(db, config, tgApi, agents, now);
+  const prospects = new ProspectService(db, now, matchSettingsFrom(db));
+  const discovery = new DiscoveryService(db, prospects, getSource, placesFor(deps), now);
 
   await app.register(
     async (api) => {
@@ -133,6 +146,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
       agentRoutes(api, { db, agents, now });
       dashboardRoutes(api, { dashboard: new DashboardService(db, now), agents });
       telegramRoutes(api, { telegram, config });
+      prospectRoutes(api, { db, prospects, discovery, now });
       api.setNotFoundHandler((req, reply) =>
         reply.code(404).send({ error: { code: 'not_found', message: 'Topilmadi', requestId: req.id } }),
       );

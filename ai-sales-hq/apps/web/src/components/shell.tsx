@@ -10,13 +10,21 @@ import { api, type Me } from '@/lib/api';
 import { useSession } from '@/lib/session';
 import { t } from '@/lib/strings';
 
-const NAV: { href: string; label: string; short?: string; icon: IconName; permission?: string }[] = [
+// `phone: false` items live under "Ko'proq" on phones (the bottom bar holds five).
+const NAV: { href: string; label: string; short?: string; icon: IconName; permission?: string; phone?: boolean }[] = [
   { href: '/', label: t.nav.home, icon: 'home' },
   { href: '/agents/', label: t.nav.agents, icon: 'agents', permission: 'agents.view' },
+  { href: '/prospects/', label: t.nav.prospects, icon: 'store', permission: 'prospects.view' },
   { href: '/catalog/', label: t.nav.catalog, icon: 'catalog' },
-  { href: '/integrations/', label: t.nav.integrations, icon: 'link', permission: 'integrations.manage' },
-  { href: '/notifications/', label: t.nav.notifications, short: t.nav.notificationsShort, icon: 'bell' },
+  { href: '/discovery/', label: t.nav.discovery, icon: 'search', permission: 'prospects.view', phone: false },
+  { href: '/integrations/', label: t.nav.integrations, icon: 'link', permission: 'integrations.manage', phone: false },
+  { href: '/notifications/', label: t.nav.notifications, short: t.nav.notificationsShort, icon: 'bell', phone: false },
+  { href: '/more/', label: t.nav.more, icon: 'more' },
 ];
+
+export function navItems(permissions: string[]) {
+  return NAV.filter((n) => !n.permission || permissions.includes(n.permission));
+}
 
 /** Authenticated page frame: top bar on desktop, bottom navigation on phones. */
 export function AppShell({ title, children }: { title: string; children: (me: Me) => ReactNode }) {
@@ -43,16 +51,19 @@ export function AppShell({ title, children }: { title: string; children: (me: Me
       </main>
     );
   if (!me) return <Spinner />;
-  const items = NAV.filter((n) => !n.permission || me.permissions.includes(n.permission));
+  const items = navItems(me.permissions);
+  const desktop = items.filter((n) => n.href !== '/more/');
+  const phone = items.filter((n) => n.phone !== false);
+  const active = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
 
   return (
-    <div className="min-h-dvh pb-20 md:pb-0">
+    <div className="min-h-dvh pb-20 lg:pb-0">
       <header className="sticky top-0 z-10 border-b border-line bg-ink/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
           <Brand />
-          <nav className="hidden gap-1 md:flex" aria-label="Asosiy menyu">
-            {items.map((n) => (
-              <NavLink key={n.href} {...n} active={path === n.href} badge={n.href === '/notifications/' ? unread : 0} />
+          <nav className="hidden gap-1 lg:flex" aria-label="Asosiy menyu">
+            {desktop.map((n) => (
+              <NavLink key={n.href} {...n} active={active(n.href)} badge={n.href === '/notifications/' ? unread : 0} />
             ))}
           </nav>
           <div className="flex items-center gap-2">
@@ -69,26 +80,24 @@ export function AppShell({ title, children }: { title: string; children: (me: Me
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6">
+      <main className="mx-auto max-w-7xl px-4 py-6">
         <h1 className="mb-5 text-2xl font-semibold tracking-tight">{title}</h1>
         {children(me)}
       </main>
       <nav
-        className="fixed inset-x-0 bottom-0 z-10 grid border-t border-line bg-graphite/95 backdrop-blur md:hidden"
-        style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
+        className="fixed inset-x-0 bottom-0 z-10 grid border-t border-line bg-graphite/95 backdrop-blur lg:hidden"
+        style={{ gridTemplateColumns: `repeat(${phone.length}, minmax(0, 1fr))` }}
         aria-label="Asosiy menyu"
       >
-        {items.map((n) => (
+        {phone.map((n) => (
           <Link
             key={n.href}
             href={n.href}
-            className={`relative flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] ${path === n.href ? 'text-gold' : 'text-mist'}`}
+            className={`relative flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] ${active(n.href) ? 'text-gold' : 'text-mist'}`}
           >
             <Icon name={n.icon} size={20} />
             {n.short ?? n.label}
-            {n.href === '/notifications/' && unread > 0 && (
-              <Badge n={unread} className="absolute top-1.5 right-[28%]" />
-            )}
+            {n.href === '/more/' && unread > 0 && <Badge n={unread} className="absolute top-1.5 right-[28%]" />}
           </Link>
         ))}
       </nav>

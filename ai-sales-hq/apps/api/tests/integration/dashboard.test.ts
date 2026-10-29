@@ -27,7 +27,7 @@ describe.skipIf(!hasDb)('dashboard + office (MySQL)', () => {
     expect(d.attention).toMatchObject({ unconfirmedPrices: 1, heldSync: false, failedJobsToday: 0 });
     expect(d.integrations).toEqual({ website: 'CONNECTED', telegram: 'NOT_CONFIGURED', ai: 'NOT_CONFIGURED' });
     expect(d.lastSuccessfulSyncAt).not.toBeNull();
-    expect(d.prospects.newToday).toBeNull();
+    expect(d.prospects).toEqual({ newToday: 0, qualified: 0, needsReview: 0, total: 0 });
     expect(d.orders.awaitingReview).toBeNull();
   });
 

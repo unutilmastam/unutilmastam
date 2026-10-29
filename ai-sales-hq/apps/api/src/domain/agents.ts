@@ -40,7 +40,7 @@ export const AGENT_DEFINITIONS: readonly AgentDefinition[] = [
     name: 'Bozor tadqiqotchisi',
     role: "Ruxsat etilgan manbalardan do'kon va supermarketlarni topadi",
     room: 'research',
-    jobTypes: [],
+    jobTypes: ['discovery.firestore_stores', 'discovery.places_search', 'discovery.places_refresh'],
     availableFromPhase: 5,
     defaultDailyTaskLimit: 200,
   },
@@ -49,9 +49,9 @@ export const AGENT_DEFINITIONS: readonly AgentDefinition[] = [
     name: 'Biznes tahlilchi',
     role: 'Mijozlarni baholaydi va nima uchun shunday baho berganini tushuntiradi',
     room: 'research',
-    jobTypes: [],
+    jobTypes: ['prospects.score'],
     availableFromPhase: 5,
-    defaultDailyTaskLimit: 200,
+    defaultDailyTaskLimit: 1000,
   },
   {
     key: 'sales',
@@ -82,7 +82,7 @@ export const AGENT_DEFINITIONS: readonly AgentDefinition[] = [
   },
 ];
 
-export const CURRENT_PHASE = 3;
+export const CURRENT_PHASE = 5;
 
 export function definitionFor(key: string): AgentDefinition | undefined {
   return AGENT_DEFINITIONS.find((d) => d.key === key);

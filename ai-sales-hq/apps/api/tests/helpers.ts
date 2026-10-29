@@ -11,6 +11,11 @@ export const ORIGIN = 'http://localhost:3000';
  * the pool may run the two statements on different connections.)
  */
 export async function resetDb(db: Db): Promise<void> {
+  await db.contactPoint.deleteMany();
+  await db.prospectSource.deleteMany();
+  await db.prospect.deleteMany();
+  await db.suppressionRecord.deleteMany();
+  await db.providerUsage.deleteMany();
   await db.jobEvent.deleteMany();
   await db.job.deleteMany();
   await db.workerRun.deleteMany();
@@ -32,7 +37,7 @@ export async function resetDb(db: Db): Promise<void> {
 export async function makeApp(
   overrides: Record<string, string> = {},
   now?: () => Date,
-  extra: Partial<Pick<AppDeps, 'catalogSource' | 'telegramApi'>> = {},
+  extra: Partial<Pick<AppDeps, 'catalogSource' | 'telegramApi' | 'places'>> = {},
 ) {
   const config = loadConfig({ ...process.env, ...overrides });
   const db = createDb(config.DATABASE_URL);
@@ -109,6 +114,9 @@ export class FakeCatalogSource {
   readonly name = 'fake';
   products: unknown[] = [];
   categories: unknown[] = [];
+  stores: unknown[] = [];
+  users: unknown[] = [];
+  orders: unknown[] = [];
   failWith: Error | null = null;
   calls = 0;
 
@@ -120,6 +128,12 @@ export class FakeCatalogSource {
       categories: { value: JSON.stringify(this.categories), updatedAtMs: null },
     };
   }
+
+  async fetchStoreList() {
+    if (this.failWith) throw this.failWith;
+    const doc = (v: unknown[]) => ({ value: JSON.stringify(v), updatedAtMs: null });
+    return { stores: doc(this.stores), users: doc(this.users), orders: doc(this.orders) };
+  }
 }
 
 /** Records Telegram Bot API calls instead of sending them. */
@@ -130,5 +144,19 @@ export class FakeTelegram {
     if (this.failWith) throw this.failWith;
     this.calls.push({ method, body: body as Record<string, unknown> });
     return (method === 'getMe' ? { username: 'ut_shtab_bot' } : true) as T;
+  }
+}
+
+/** Stand-in for Google Places: returns canned results and counts calls. */
+export class FakePlaces {
+  results: import('../src/integrations/places').PlaceResult[] = [];
+  details_: Map<string, import('../src/integrations/places').PlaceResult> = new Map();
+  searches: string[] = [];
+  async searchText(query: string) {
+    this.searches.push(query);
+    return { places: this.results, nextPageToken: null };
+  }
+  async details(placeId: string) {
+    return this.details_.get(placeId) ?? null;
   }
 }

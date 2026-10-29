@@ -18,6 +18,7 @@ Status values: **Accepted** · **Proposed** (default we will use unless the owne
 | D-012 | Firestore read via REST + service-account JWT instead of the `firebase-admin` package | Accepted |
 | D-013 | Catalog sync safety: price versions, mass-change hold, seed retired by live data | Accepted |
 | D-014 | Worker, lifecycle and budget semantics (Phase 3) | Accepted |
+| D-015 | Discovery sources, dedup, scoring and data handling (Phase 5) | Accepted |
 
 ---
 
@@ -137,3 +138,14 @@ A3 asks for "server-side Firebase Admin SDK with a read-only service account". W
 - **System jobs.** Owner notification delivery (`notify.telegram`) belongs to no agent, so it keeps working after `/stop_all`.
 - **Unavailable agents.** Agents whose capabilities arrive in later phases exist as DRAFT and refuse `activate`/`start`, so the office never shows an agent "working" without real work (A13).
 - **Owner bot replies** are returned inside the webhook response (no outbound call needed); notifications use `sendMessage` from the worker.
+
+## D-015 — Discovery sources, dedup, scoring, data handling (Accepted, Phase 5)
+
+- **Sources (A4), in priority order:** existing stores from the PWA's Firestore (read-only), manual entry/CSV, Google Places API (New). No HTML scraping of any map service, no Instagram, no Telegram userbots. Yandex/2GIS are not integrated (their terms for storing results were not confirmed).
+- **Places terms.** Only `place_id` is stored indefinitely; other Places content carries `expiresAt = observed + 30 days`. A daily job refreshes expired records via Place Details (within the budget) or redacts them (rating, address, unverified Places phones); the business name is kept so the owner can still recognise the record.
+- **Budget.** Every Places request is counted per Tashkent day in `provider_usage` with an estimated list-price cost; requests stop at the owner's daily cap (default 50).
+- **Dedup.** `place_id` → normalized phone → normalized name + district (switchable). A merge only fills empty fields, so owner edits are never overwritten by automatic sources; each source adds a provenance row.
+- **Scoring is deterministic** (category, district in the delivery region, contact, verification, past orders, Google rating, location certainty), with the points and reasons stored next to the score. No LLM is involved in Phase 5; AI drafting arrives in Phase 6.
+- **Qualification.** Automatic `QUALIFIED` only when a contact is verified and the score reaches the threshold (default 45); everything else waits in `NEEDS_VERIFICATION` — public visibility does not authorise messaging (MASTER_SPEC §10).
+- **Do-not-contact** is reachable from every stage and final. It writes suppression records for the prospect, its phones/Telegram and its place_id; future imports of those contacts start in `DO_NOT_CONTACT`.
+- **Personal data.** Store owner names and phones are personal data: stored only in the MySQL database on hostmaster.uz (A9) and masked before any future AI call (`formatPhone(…, masked)`). Private customers of the PWA (`userType: customer`) are never imported.

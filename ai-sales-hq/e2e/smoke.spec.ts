@@ -120,6 +120,40 @@ test.describe
       await noHorizontalScroll(page);
     });
 
+    test('prospects: add by hand, verify the phone, explained score, do-not-contact', async ({ page }, info) => {
+      test.skip(secret === null, 'needs the enrolled owner');
+      await login(page);
+      await page.goto('/prospects/new/');
+      const name = `Baraka ${info.project.name}`;
+      await page.fill('input[name=name]', name);
+      // Different phone per viewport project so the two runs do not merge into one prospect.
+      await page.fill('input[name=phone]', info.project.name === 'phone' ? '90 111 22 33' : '91 444 55 66');
+      await page.fill('input[name=address]', 'Termiz, Navoiy 5');
+      await page.selectOption('select[name=category]', 'SUPERMARKET');
+      await page.getByRole('button', { name: 'Saqlash' }).click();
+      await page.waitForURL(/\/prospects\/view\/\?id=/);
+      await expect(page.getByRole('heading', { name })).toBeVisible();
+      await expect(page.getByText('(tasdiqlanmagan)')).toBeVisible();
+      await noHorizontalScroll(page);
+
+      await page.getByRole('button', { name: 'Tasdiqlash' }).click();
+      await expect(page.getByText('(tasdiqlangan)')).toBeVisible();
+      await expect(page.getByText('Tasdiqlangan aloqa mavjud')).toBeVisible();
+      await expect(page.getByText('Saralangan', { exact: true })).toBeVisible();
+
+      await page.getByRole('button', { name: "Bog'lanmaslik ro'yxatiga" }).click();
+
+      await page.getByRole('textbox', { name: 'Sabab (ixtiyoriy)' }).fill('Mijoz so‘radi');
+
+      await page.getByRole('button', { name: "Ha, ro'yxatga qo'shish" }).click();
+      await expect(page.getByText("Bog'lanmaslik", { exact: true })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Tasdiqlash' })).toHaveCount(0);
+
+      await page.goto('/prospects/');
+      await expect(page.getByText(name)).toBeVisible();
+      await noHorizontalScroll(page);
+    });
+
     test('integrations report NOT_CONFIGURED honestly and theme toggle works', async ({ page }) => {
       test.skip(secret === null, 'needs the enrolled owner');
       await login(page);
