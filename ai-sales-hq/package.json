@@ -1,0 +1,22 @@
+{
+  "name": "ai-sales-hq",
+  "private": true,
+  "description": "Unutilmas Ta'm AI Sales Headquarters",
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "engines": {
+    "node": ">=20.9"
+  },
+  "scripts": {
+    "check": "biome ci --error-on-warnings .",
+    "format": "biome format --write .",
+    "typecheck": "npm run typecheck --workspaces",
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.4"
+  }
+}

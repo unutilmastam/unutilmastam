@@ -4,8 +4,8 @@ Status values: **Accepted** · **Proposed** (default we will use unless the owne
 
 | ID | Decision | Status |
 |---|---|---|
-| D-001 | Runtime stack depends on the hosting answer: Node/TS if "Setup Node.js App" ≥ 20 exists, otherwise Python (Smyagent stack) | **Pending** (hosting checklist §1) |
-| D-002 | Reuse Smyagent designs everywhere; reuse its code only if D-001 resolves to Python | Proposed |
+| D-001 | Node.js/TypeScript stack as in A2 (Fastify API + Next.js static export + Prisma 7/MySQL) | **Accepted** 2026-10-29 (owner: build what the spec says) |
+| D-002 | Reuse Smyagent designs (queue, kill switch, auth, office mapping), not its Python code | Accepted |
 | D-003 | Separate application on its own subdomain `agent.unutilmastam.uz` | Proposed |
 | D-004 | Firestore integration = server-side Admin SDK, read-only service account, cron sync | Accepted (A3) |
 | D-005 | Wholesale prices are unconfigured; the PWA has only one price | Accepted (finding) |
@@ -18,7 +18,13 @@ Status values: **Accepted** · **Proposed** (default we will use unless the owne
 
 ---
 
-## D-001 — Runtime stack (Pending)
+## D-001 — Runtime stack (Accepted 2026-10-29)
+
+**Decision.** The owner asked to build exactly what the specification describes, so we use the A2 default: Node.js 22 + TypeScript, Fastify API, Next.js static export served by the same Node process (one Passenger app, one origin), Prisma 7 with the pure-JS query compiler and the `@prisma/adapter-mariadb` driver (no native query engine binary — removes the CloudLinux OpenSSL risk below). Python is not used.
+
+**Remaining risk.** "Setup Node.js App" on the owner's cPanel is still unverified. If it is missing, the API cannot run on hostmaster.uz; the fallback is to ask hostmaster.uz to enable Node.js for the account. The hosting checklist §1 answers this before Phase 10 (deployment).
+
+### Original analysis (Phase 0)
 
 **Context.** SPEC_AMENDMENTS A2 prescribes Next.js static export + a Node.js API on cPanel "Setup Node.js App" + Prisma/MySQL. Smyagent's environment check on the same provider (hosting1.hostmaster.uz, 2026-10-25) found **no `node`/`npm` on the shell PATH** and verified Setup **Python** App 3.10–3.13. The check did not query the Node.js selector, so Node.js App support is unknown.
 

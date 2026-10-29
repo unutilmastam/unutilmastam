@@ -14,19 +14,20 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [x] Secrets + security review of the root PWA (S1–S10)
 - [x] Inspect `unutilmastam/Smyagent`; reuse decision (D-002)
 - [x] Docs: PROJECT_AUDIT, IMPLEMENTATION_PLAN, ARCHITECTURE, DECISIONS, HOSTING_CHECKLIST_UZ
-- [ ] ⏳ Owner answers `HOSTING_CHECKLIST_UZ.md` → update PROJECT_AUDIT §6 and finalize D-001 (stack)
+- [x] D-001 decided: Node/TS per A2 (owner: "build what the spec says")
+- [ ] ⏳ Owner answers `HOSTING_CHECKLIST_UZ.md` (needed before Phase 10 deployment)
 - [ ] ⏳ Owner answers questions Q1–Q6 (PR description)
 
-## Phase 1 — Foundation + auth + CI
-- [ ] Project skeleton per final stack (D-001), strict typing, lint, formatter
-- [ ] Config validation (fail fast in production), `.env.example`, `.gitignore`
-- [ ] Structured JSON logging with secret redaction, correlation IDs
-- [ ] Error envelope; `/api/v1/health`, `/api/v1/ready` (DB ping)
-- [ ] DB connection layer (MySQL 8), first migration (users, sessions, audit_log, login_attempts)
-- [ ] Owner bootstrap (one-time, no public sign-up), password (Argon2id) + TOTP 2FA, recovery codes
-- [ ] Sessions: httpOnly, Secure, SameSite=Strict, same origin as API; CSRF; login rate limit
-- [ ] RBAC foundation (OWNER, STAFF), server-side checks only
-- [ ] GitHub Actions `ai-sales-hq.yml` (`paths: ['ai-sales-hq/**']`, `working-directory: ai-sales-hq`): install, typecheck, lint, unit tests, integration tests with **MySQL 8 service container**, build, dependency audit, secret scan
+## Phase 1 — Foundation + auth + CI ✅ (code done; CI pending)
+- [x] npm workspaces `apps/api` (Fastify, Prisma 7) + `apps/web` (Next.js static export, Tailwind 4), strict TS, Biome lint/format
+- [x] Config validation (fail fast in production), `.env.example`, `.gitignore`
+- [x] Structured JSON logging with secret redaction, correlation IDs
+- [x] Error envelope; `/api/v1/health`, `/api/v1/ready` (DB ping)
+- [x] DB connection layer (MySQL 8), first migration (users, sessions, audit_log, login_attempts)
+- [x] Owner bootstrap via `/setup` + one-time `SETUP_TOKEN` from the phone (no terminal; no public sign-up), password (Argon2id) + TOTP 2FA, recovery codes
+- [x] Sessions: httpOnly, Secure, SameSite=Strict, same origin as API; CSRF; login rate limit
+- [x] RBAC foundation (OWNER, STAFF), server-side checks only
+- [x] GitHub Actions `ai-sales-hq.yml` (`paths: ['ai-sales-hq/**']`, `working-directory: ai-sales-hq`): install, typecheck, lint, unit tests, integration tests with **MySQL 8 service container**, build, dependency audit, secret scan
 - [ ] Green CI run
 
 ## Phase 2 — Database schema + Firestore product sync

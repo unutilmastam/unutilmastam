@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/* Design tokens: deep graphite, midnight navy, restrained champagne gold (MASTER_SPEC §6). */
+@theme {
+  --color-ink: #0e1116;
+  --color-graphite: #161a21;
+  --color-panel: #1c212a;
+  --color-line: #2a313c;
+  --color-navy: #13203a;
+  --color-mist: #9aa4b2;
+  --color-paper: #eef1f5;
+  --color-gold: #c9a96a;
+  --color-gold-soft: #e3cf9f;
+  --color-ok: #4fb286;
+  --color-warn: #d6a54a;
+  --color-bad: #d9675d;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
