@@ -306,8 +306,12 @@ function TelegramCard() {
 
 interface AiStatus {
   status: 'NOT_CONFIGURED' | 'CONFIGURED' | 'CONNECTED' | 'ERROR';
+  source: 'app' | 'env' | 'none' | 'unreadable';
+  keyLast4: string | null;
+  savedAt: string | null;
   model: string;
   strongModel: string;
+  models: string[];
   lastSuccessAt: string | null;
   lastError: string | null;
   spentTodayUsd: number;
@@ -317,11 +321,49 @@ interface AiStatus {
 function AiCard() {
   const [s, setS] = useState<AiStatus | null>(null);
   const [msg, setMsg] = useState<{ kind: 'error' | 'ok'; text: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
   const load = useCallback(() => api<AiStatus>('/integrations/ai').then(setS), []);
   useEffect(() => {
     void load().catch(() => undefined);
   }, [load]);
+  const run = async (fn: () => Promise<string>) => {
+    setMsg(null);
+    setBusy(true);
+    try {
+      setMsg({ kind: 'ok', text: await fn() });
+    } catch (e) {
+      setMsg({ kind: 'error', text: (e as Error).message });
+    } finally {
+      setBusy(false);
+    }
+    await load().catch(() => undefined);
+  };
   if (!s) return null;
+  const hasKey = s.source === 'app' || s.source === 'env';
+  const showForm = !hasKey || editing;
+
+  const save = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const f = new FormData(form);
+    const apiKey = String(f.get('apiKey') ?? '').trim();
+    void run(async () => {
+      await api('/integrations/ai/key', {
+        method: 'POST',
+        body: {
+          ...(apiKey ? { apiKey } : {}),
+          model: f.get('model'),
+          strongModel: f.get('strongModel'),
+        },
+      });
+      form.reset();
+      setEditing(false);
+      return t.aiProvider.saved;
+    });
+  };
+
   return (
     <Card>
       <div className="mb-2 flex items-center justify-between">
@@ -330,32 +372,108 @@ function AiCard() {
       </div>
       <p className="mb-3 text-sm text-mist">{t.aiProvider.intro}</p>
       {msg && <Alert kind={msg.kind}>{msg.text}</Alert>}
-      {s.status === 'NOT_CONFIGURED' ? (
-        <Alert kind="info">{t.aiProvider.notConfigured}</Alert>
+      {s.source === 'none' && <Alert kind="info">{t.aiProvider.notConfigured}</Alert>}
+      {s.source === 'unreadable' && <Alert kind="error">{t.aiProvider.unreadable}</Alert>}
+      {hasKey && (
+        <dl className="mb-3 grid gap-1 text-sm">
+          <Row k={t.aiProvider.key} v={t.aiProvider.keyValue(s.keyLast4 ?? '????', s.source === 'env')} />
+          <Row k={t.aiProvider.models(s.model, s.strongModel)} v="" />
+          <Row k={t.integrations.lastSuccess} v={when(s.lastSuccessAt, t.integrations.never)} />
+          <Row k={t.outreach.ai(s.spentTodayUsd, s.budgetUsd)} v="" />
+          {s.lastError && <Row k={t.integrations.lastError} v={s.lastError} bad />}
+        </dl>
+      )}
+      {showForm ? (
+        <form onSubmit={save} className="grid gap-3">
+          <label className="text-sm">
+            <span className="mb-1 block text-mist">{t.aiProvider.keyLabel}</span>
+            <input
+              type="password"
+              name="apiKey"
+              autoComplete="off"
+              spellCheck={false}
+              required={s.source !== 'app'}
+              placeholder={s.source === 'app' ? t.aiProvider.keepKey : 'sk-ant-...'}
+              className="w-full rounded-xl border border-line bg-ink px-3 py-2 font-mono"
+            />
+            <span className="mt-1 block text-xs text-mist">{t.aiProvider.keyHint}</span>
+          </label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="text-sm">
+              <span className="mb-1 block text-mist">{t.aiProvider.model}</span>
+              <select
+                name="model"
+                defaultValue={s.model}
+                className="w-full rounded-xl border border-line bg-ink px-3 py-2"
+              >
+                {s.models.map((m) => (
+                  <option key={m}>{m}</option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-mist">{t.aiProvider.strongModel}</span>
+              <select
+                name="strongModel"
+                defaultValue={s.strongModel}
+                className="w-full rounded-xl border border-line bg-ink px-3 py-2"
+              >
+                {s.models.map((m) => (
+                  <option key={m}>{m}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Button type="submit" disabled={busy}>
+              {busy ? t.aiProvider.checking : t.aiProvider.save}
+            </Button>
+            {editing && (
+              <Button type="button" variant="ghost" onClick={() => setEditing(false)}>
+                {t.aiProvider.cancel}
+              </Button>
+            )}
+          </div>
+        </form>
       ) : (
-        <>
-          <dl className="mb-3 grid gap-1 text-sm">
-            <Row k={t.aiProvider.models(s.model, s.strongModel)} v="" />
-            <Row k={t.integrations.lastSuccess} v={when(s.lastSuccessAt, t.integrations.never)} />
-            <Row k={t.outreach.ai(s.spentTodayUsd, s.budgetUsd)} v="" />
-            {s.lastError && <Row k={t.integrations.lastError} v={s.lastError} bad />}
-          </dl>
+        <div className="grid gap-2 sm:grid-cols-3">
           <Button
             variant="ghost"
-            onClick={async () => {
-              setMsg(null);
-              try {
+            disabled={busy}
+            onClick={() =>
+              run(async () => {
                 await api('/integrations/ai/test', { method: 'POST' });
-                setMsg({ kind: 'ok', text: t.aiProvider.ok });
-              } catch (e) {
-                setMsg({ kind: 'error', text: (e as Error).message });
-              }
-              await load().catch(() => undefined);
-            }}
+                return t.aiProvider.ok;
+              })
+            }
           >
             {t.aiProvider.test}
           </Button>
-        </>
+          <Button variant="ghost" onClick={() => setEditing(true)}>
+            {t.aiProvider.change}
+          </Button>
+          {s.source === 'app' &&
+            (confirmRemove ? (
+              <Button
+                variant="ghost"
+                className="text-bad"
+                disabled={busy}
+                onClick={() =>
+                  run(async () => {
+                    await api('/integrations/ai/key/remove', { method: 'POST' });
+                    setConfirmRemove(false);
+                    return t.aiProvider.removed;
+                  })
+                }
+              >
+                {t.aiProvider.removeConfirm}
+              </Button>
+            ) : (
+              <Button variant="ghost" onClick={() => setConfirmRemove(true)}>
+                {t.aiProvider.remove}
+              </Button>
+            ))}
+        </div>
       )}
     </Card>
   );

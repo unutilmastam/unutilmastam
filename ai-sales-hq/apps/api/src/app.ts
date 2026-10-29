@@ -6,7 +6,7 @@ import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { Config } from './config';
 import { makeGuard } from './http/guard';
-import { type AiDrafter, AnthropicDrafter } from './integrations/ai';
+import type { AiDrafter } from './integrations/ai';
 import { type CatalogSource, firestoreSourceFromFile } from './integrations/firestore';
 import { type PlacesClient, placesClient } from './integrations/places';
 import type { Db } from './lib/db';
@@ -26,6 +26,7 @@ import { IntegrationService } from './modules/integrations/service';
 import { notificationRoutes } from './modules/notifications/routes';
 import { prospectRoutes } from './modules/prospects/routes';
 import { ProspectService } from './modules/prospects/service';
+import { type AiPing, AiProviderService, type DrafterFactory } from './modules/sales/ai-provider';
 import { salesRoutes } from './modules/sales/routes';
 import { SalesService } from './modules/sales/service';
 import { systemRoutes } from './modules/system/routes';
@@ -48,20 +49,12 @@ export interface AppDeps {
   places?: PlacesClient | null;
   // Test override for the AI drafters; null = not configured (templates are used).
   drafters?: { fast: AiDrafter | null; strong: AiDrafter | null };
+  // Test override for the key check and the drafter built from a key saved in the app.
+  ai?: { ping?: AiPing; factory?: DrafterFactory };
 }
 
-export function draftersFor(deps: Pick<AppDeps, 'config' | 'drafters'>): {
-  fast: AiDrafter | null;
-  strong: AiDrafter | null;
-} {
-  if (deps.drafters) return deps.drafters;
-  const key = deps.config.ANTHROPIC_API_KEY;
-  return key
-    ? {
-        fast: new AnthropicDrafter(key, deps.config.AI_MODEL),
-        strong: new AnthropicDrafter(key, deps.config.AI_MODEL_STRONG),
-      }
-    : { fast: null, strong: null };
+export function aiProviderFor(deps: Pick<AppDeps, 'config' | 'db' | 'drafters' | 'ai'>, now: () => Date) {
+  return new AiProviderService(deps.db, deps.config, now, { ...deps.ai, fixed: deps.drafters });
 }
 
 export function placesFor(deps: Pick<AppDeps, 'config' | 'places'>): PlacesClient | null {
@@ -154,7 +147,8 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   const telegram = new TelegramService(db, config, tgApi, agents, now);
   const prospects = new ProspectService(db, now, matchSettingsFrom(db));
   const discovery = new DiscoveryService(db, prospects, getSource, placesFor(deps), now);
-  const sales = new SalesService(db, prospects, draftersFor(deps), now);
+  const ai = aiProviderFor(deps, now);
+  const sales = new SalesService(db, prospects, () => ai.drafters(), now);
 
   await app.register(
     async (api) => {
@@ -164,10 +158,10 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
       catalogRoutes(api, { catalog, sync, integrations });
       notificationRoutes(api, { db, now });
       agentRoutes(api, { db, agents, now });
-      dashboardRoutes(api, { dashboard: new DashboardService(db, now, () => !!draftersFor(deps).fast), agents });
+      dashboardRoutes(api, { dashboard: new DashboardService(db, now, () => ai.configured()), agents });
       telegramRoutes(api, { telegram, config });
       prospectRoutes(api, { db, prospects, discovery, now });
-      salesRoutes(api, { db, sales, config, now });
+      salesRoutes(api, { sales, ai });
       api.setNotFoundHandler((req, reply) =>
         reply.code(404).send({ error: { code: 'not_found', message: 'Topilmadi', requestId: req.id } }),
       );

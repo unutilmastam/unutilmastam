@@ -14,7 +14,7 @@ import {
 } from '../../domain/sales';
 import { startOfTashkentDay } from '../../domain/schedule';
 import type { Channel, ContactOutcome } from '../../generated/prisma/enums';
-import { type AiDrafter, AiRefusedError, type DraftRequest } from '../../integrations/ai';
+import { AiRefusedError, type DraftRequest } from '../../integrations/ai';
 import type { Db } from '../../lib/db';
 import { AppError, badRequest, conflict, notFound } from '../../lib/errors';
 import { redactText } from '../../lib/logger';
@@ -23,7 +23,9 @@ import { markIntegration } from '../integrations/service';
 import { notify } from '../notifications/service';
 import type { ProspectService } from '../prospects/service';
 
-export const INTEGRATION_AI = 'ai';
+import { type Drafters, INTEGRATION_AI } from './ai-provider';
+
+export { INTEGRATION_AI };
 
 export const salesSettingsSchema = z.object({
   cooldownDays: z.number().int().min(1).max(90),
@@ -52,7 +54,8 @@ export class SalesService {
   constructor(
     private readonly db: Db,
     private readonly prospects: ProspectService,
-    private readonly drafters: { fast: AiDrafter | null; strong: AiDrafter | null },
+    // Resolved per call: a key saved in the app takes effect without a restart (D-017).
+    private readonly drafters: () => Promise<Drafters>,
     private readonly now: () => Date = () => new Date(),
   ) {}
 
@@ -103,7 +106,8 @@ export class SalesService {
   /** AI phrasing with budget and usage accounting; null means "use the template". */
   async #aiText(req: DraftRequest, opts: { strong?: boolean; agentKey: string | null; jobId?: string }) {
     const s = await this.settings();
-    const drafter = opts.strong ? this.drafters.strong : this.drafters.fast;
+    const drafters = await this.drafters();
+    const drafter = opts.strong ? drafters.strong : drafters.fast;
     if (!drafter || !s.aiEnabled) return null;
     if ((await this.aiSpentTodayMicroUsd()) >= BigInt(Math.round(s.aiDailyBudgetUsd * 1_000_000))) {
       throw new AiBudgetExceededError(`Bugungi AI byudjeti tugadi (${s.aiDailyBudgetUsd} $)`);
@@ -480,7 +484,7 @@ export class SalesService {
       followUps: followUps.map((c) => ({ followUpAt: c.followUpAt, prospect: card(c.prospectId) })),
       needsOwner: needsOwner.map((c) => ({ why: c.needsOwnerWhy, prospect: card(c.prospectId) })),
       ai: {
-        configured: !!this.drafters.fast,
+        configured: !!(await this.drafters()).fast,
         enabled: s.aiEnabled,
         spentTodayUsd: Number(spent) / 1_000_000,
         budgetUsd: s.aiDailyBudgetUsd,

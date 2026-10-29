@@ -160,3 +160,13 @@ A3 asks for "server-side Firebase Admin SDK with a read-only service account". W
 - **Budget.** Every call is recorded with tokens and list-price cost (no prompt or message text stored). When today's spend reaches the owner's daily budget (default 1 $), the Communication agent goes `PAUSED` with `BUDGET_EXCEEDED` and resumes after Tashkent midnight (D-014).
 - **Privacy (A6/A9).** The prompt contains the business name, category, district, product lines and, for replies, the conversation with phone numbers masked. Owner/contact person names and phone numbers are never sent.
 - **Limits.** Default cooldown of 7 days between first contacts of the same business, daily draft limit 20, both owner-editable.
+
+## D-017 — AI key entered in the app (Accepted, Phase 6)
+
+- **Why.** The owner works from a phone; pasting a key into the app is simpler than cPanel environment variables plus a restart.
+- **Where it lives.** `system_settings` row `ai.provider`: the key sealed with AES-256-GCM (key derived from `APP_SECRET_KEY` via HKDF, purpose `ai-api-key`), its last 4 characters, the two models and the save time. The key is never returned by any endpoint, never logged (`apiKey` is a redacted log path, `sk-…` is redacted in text) and not written to the audit log (only last 4 + models).
+- **Saving = testing.** `POST /integrations/ai/key` makes a real minimal call with the new key and model first; on failure nothing is stored and a working key is kept. Models are limited to those with known prices so every call can be costed. Models can change without re-entering the key.
+- **Precedence.** A key saved in the app wins over `ANTHROPIC_API_KEY`; the env variable remains a fallback. Drafters are resolved per call (cached by key + models), so a saved, changed or removed key takes effect immediately in the API and in the next worker run — no restart.
+- **Rotation of `APP_SECRET_KEY`.** The sealed key can no longer be opened; status becomes `ERROR` ("kalitni qayta kiriting"), drafting falls back to templates, nothing crashes.
+- **Access.** `integrations.manage` (owner) only; save, rejected attempt, model change, removal and test are audit-logged.
+

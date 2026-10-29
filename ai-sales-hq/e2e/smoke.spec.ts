@@ -171,6 +171,13 @@ test.describe
       await login(page);
       await page.goto('/integrations/');
       await expect(page.getByText('Sozlanmagan').first()).toBeVisible();
+      // AI key is entered in the app; a malformed key is refused and nothing is stored (no network in CI).
+      await expect(page.getByText('Hali ulanmagan')).toBeVisible();
+      await page.getByLabel('Anthropic API kaliti').fill('sk-ant-short');
+      await page.getByRole('button', { name: 'Tekshirish va saqlash' }).click();
+      await expect(page.getByRole('alert').filter({ hasText: /sk-ant/ })).toBeVisible();
+      await expect(page.getByText('Hali ulanmagan')).toBeVisible();
+      await noHorizontalScroll(page);
       const before = await page.evaluate(() => document.documentElement.dataset.theme);
       await page.getByRole('button', { name: /mavzuga o'tish/ }).click();
       const after = await page.evaluate(() => document.documentElement.dataset.theme);

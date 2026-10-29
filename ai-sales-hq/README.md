@@ -78,7 +78,8 @@ For UI work: `npm run dev -w @hq/api` (port 3001) and `npm run dev -w @hq/web` (
 | POST | `/api/v1/prospects/:id/draft` \| `/reply-draft` \| `/inbound` \| `/outcome` \| `/owner-resolved` | prospects.edit | assisted-manual workflow |
 | POST | `/api/v1/messages/:id/edit` \| `/sent` \| `/discard` | prospects.edit | edit (re-checked), confirm sent with channel, discard |
 | POST | `/api/v1/sales/settings` | settings.manage | cooldown, daily limit, signature, language, AI on/off and budget |
-| GET/POST | `/api/v1/integrations/ai`, `/integrations/ai/test` | integrations.manage | AI status, spend, real test call |
+| GET/POST | `/api/v1/integrations/ai`, `/integrations/ai/test` | integrations.manage | AI status (key source, last 4 only), spend, real test call |
+| POST | `/api/v1/integrations/ai/key` `{apiKey?, model, strongModel}`, `/integrations/ai/key/remove` | integrations.manage | save key in the app after a real test (sealed), change models, remove |
 
 Background work: cron runs `node apps/api/dist/worker.js --once` every minute (DB lock, ≤ 50 s budget).
 

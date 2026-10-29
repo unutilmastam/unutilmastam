@@ -11,7 +11,7 @@ export class DashboardService {
   constructor(
     private readonly db: Db,
     private readonly now: () => Date = () => new Date(),
-    private readonly aiConfigured: () => boolean = () => false,
+    private readonly aiConfigured: () => Promise<boolean> = async () => false,
   ) {}
 
   async summary() {
@@ -70,7 +70,7 @@ export class DashboardService {
       integrations: {
         website: firestore?.status ?? 'NOT_CONFIGURED',
         telegram: telegram?.status ?? 'NOT_CONFIGURED',
-        ai: !this.aiConfigured() ? 'NOT_CONFIGURED' : (ai?.status ?? 'CONFIGURED'),
+        ai: !(await this.aiConfigured()) ? 'NOT_CONFIGURED' : (ai?.status ?? 'CONFIGURED'),
       },
       lastSuccessfulSyncAt: lastSync?.finishedAt ?? null,
       prospects: { newToday: prospectsToday, qualified, needsReview, total: prospectsTotal },

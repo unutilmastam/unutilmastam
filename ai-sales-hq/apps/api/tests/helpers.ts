@@ -40,7 +40,7 @@ export async function resetDb(db: Db): Promise<void> {
 export async function makeApp(
   overrides: Record<string, string> = {},
   now?: () => Date,
-  extra: Partial<Pick<AppDeps, 'catalogSource' | 'telegramApi' | 'places' | 'drafters'>> = {},
+  extra: Partial<Pick<AppDeps, 'catalogSource' | 'telegramApi' | 'places' | 'drafters' | 'ai'>> = {},
 ) {
   const config = loadConfig({ ...process.env, ...overrides });
   const db = createDb(config.DATABASE_URL);

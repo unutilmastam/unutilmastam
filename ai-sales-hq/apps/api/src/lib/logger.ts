@@ -12,6 +12,8 @@ export const REDACT_PATHS = [
   '*.token',
   'setupToken',
   '*.setupToken',
+  'apiKey',
+  '*.apiKey',
   'req.headers.cookie',
   'req.headers.authorization',
   'req.headers["x-csrf-token"]',

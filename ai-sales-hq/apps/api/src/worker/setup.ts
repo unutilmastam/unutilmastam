@@ -1,4 +1,4 @@
-import { draftersFor, placesFor } from '../app';
+import { aiProviderFor, placesFor } from '../app';
 import type { Config } from '../config';
 import { STATE_REASONS } from '../domain/agent-lifecycle';
 import { startOfTashkentDay, toTashkent } from '../domain/schedule';
@@ -41,12 +41,8 @@ export function createWorker(deps: WorkerDeps, extraHandlers: Record<string, Job
   const places = placesFor({ config: deps.config, places: deps.places });
   const discovery = new DiscoveryService(deps.db, prospects, deps.getSource, places, now);
   const agentActor = (key: string) => ({ type: 'worker' as const, id: key });
-  const sales = new SalesService(
-    deps.db,
-    prospects,
-    draftersFor({ config: deps.config, drafters: deps.drafters }),
-    now,
-  );
+  const ai = aiProviderFor({ db: deps.db, config: deps.config, drafters: deps.drafters }, now);
+  const sales = new SalesService(deps.db, prospects, () => ai.drafters(), now);
   const agents = new AgentService(deps.db, now);
 
   const handlers = new Map<string, JobHandler>(

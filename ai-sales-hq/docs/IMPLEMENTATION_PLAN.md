@@ -84,7 +84,7 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [ ] ⏳ Owner: Google Places API key (optional; guide `docs/GOOGLE_PLACES_SETUP_UZ.md`)
 - [x] Green CI run ✅
 
-## Phase 6 — Sales workflow (assisted manual) + AI drafting ✅ (code done; CI pending)
+## Phase 6 — Sales workflow (assisted manual) + AI drafting ✅
 - [x] Opportunity stages (A10) driven by real events: draft → CONTACT_PENDING, owner confirms sending → CONTACTED, outcomes → INTERESTED / LOST / DO_NOT_CONTACT, follow-up dates
 - [x] AI provider interface; Anthropic via the official `@anthropic-ai/sdk` with structured output (`messages.parse` + zod), low effort, refusal handling; cheap model `claude-haiku-5-5` for drafts, `claude-opus-5-5` only when the owner asks for a better draft; both via env (D-016)
 - [x] Every AI call recorded (`ai_usage_records`: tokens, list-price cost, no text); daily AI budget → Communication agent `PAUSED / BUDGET_EXCEEDED`, job waits unharmed
@@ -96,8 +96,9 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [x] Agents: Communication drafts for qualified prospects; Sales sends the morning follow-up reminder; Director's end-of-day report (numbers computed in code)
 - [x] UI: "Murojaatlar" desk (owner decisions, drafts, follow-ups, settings), conversation panel on the prospect page, AI provider card, dashboard counts
 - [x] E2E: verify → draft → mark sent by SMS → contacted → customer asks for wholesale price → owner-decision banner (phone + iPad)
-- [ ] ⏳ Owner: Anthropic API key (optional; guide `docs/AI_SETUP_UZ.md`)
-- [ ] Green CI run
+- [x] AI key entered in the app (Integratsiya → AI provayder): real test call before saving, stored sealed with `APP_SECRET_KEY` (AES-256-GCM), only the last 4 characters shown, change models / remove key, audit log; takes effect without a restart; env `ANTHROPIC_API_KEY` stays a fallback (D-017)
+- [x] Green CI run ✅
+- [ ] ⏳ Owner: Anthropic API key (optional; guide `docs/AI_SETUP_UZ.md`) — until then templates are used
 
 ## Phase 7 — Order preparation + owner handoff + notifications (MVP complete)
 - [ ] Order statuses (A10) + separate payment status UNPAID/PARTIAL/PAID (owner-only)

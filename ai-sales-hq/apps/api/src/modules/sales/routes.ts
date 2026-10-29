@@ -1,24 +1,15 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import type { Config } from '../../config';
 import { parseBody, requireAuth } from '../../http/guard';
-import { pingAnthropic } from '../../integrations/ai';
-import type { Db } from '../../lib/db';
-import { AppError } from '../../lib/errors';
-import { redactText } from '../../lib/logger';
-import { writeAudit } from '../audit';
-import { markIntegration } from '../integrations/service';
-import { INTEGRATION_AI, type SalesService, salesSettingsSchema } from './service';
+import { type AiProviderService, aiKeyInputSchema } from './ai-provider';
+import { type SalesService, salesSettingsSchema } from './service';
 
 const prospectParam = z.object({ id: z.uuid() });
 const messageParam = z.object({ id: z.uuid() });
 const CHANNELS = ['PHONE_CALL', 'SMS', 'TELEGRAM', 'IN_PERSON'] as const;
 
-export function salesRoutes(
-  app: FastifyInstance,
-  deps: { db: Db; sales: SalesService; config: Config; now: () => Date },
-) {
-  const { sales, db, config } = deps;
+export function salesRoutes(app: FastifyInstance, deps: { sales: SalesService; ai: AiProviderService }) {
+  const { sales, ai } = deps;
   const actorOf = (req: Parameters<typeof requireAuth>[0]) => ({ type: 'user' as const, id: requireAuth(req).user.id });
 
   app.get('/outreach', { config: { access: 'prospects.view' } }, async () => sales.desk());
@@ -84,36 +75,22 @@ export function salesRoutes(
     return { ok: true };
   });
 
-  // ---- AI provider status ----
+  // ---- AI provider: status, key saved in the app (D-017), real test ----
 
   app.get('/integrations/ai', { config: { access: 'integrations.manage' } }, async () => {
-    const row = await db.integration.findUnique({ where: { key: INTEGRATION_AI } });
-    const configured = !!config.ANTHROPIC_API_KEY;
-    const s = await sales.settings();
-    return {
-      provider: 'anthropic',
-      model: config.AI_MODEL,
-      strongModel: config.AI_MODEL_STRONG,
-      status: !configured ? 'NOT_CONFIGURED' : row && row.status !== 'NOT_CONFIGURED' ? row.status : 'CONFIGURED',
-      lastSuccessAt: row?.lastSuccessAt ?? null,
-      lastError: row?.lastError ?? null,
-      spentTodayUsd: Number(await sales.aiSpentTodayMicroUsd()) / 1_000_000,
-      budgetUsd: s.aiDailyBudgetUsd,
-      enabled: s.aiEnabled,
-    };
+    const [status, s, spent] = await Promise.all([ai.status(), sales.settings(), sales.aiSpentTodayMicroUsd()]);
+    return { ...status, spentTodayUsd: Number(spent) / 1_000_000, budgetUsd: s.aiDailyBudgetUsd, enabled: s.aiEnabled };
   });
 
-  app.post('/integrations/ai/test', { config: { access: 'integrations.manage' } }, async (req) => {
-    if (!config.ANTHROPIC_API_KEY) throw new AppError(409, 'not_configured', 'AI provayder sozlanmagan');
-    try {
-      const usage = await pingAnthropic(config.ANTHROPIC_API_KEY, config.AI_MODEL);
-      await markIntegration(db, INTEGRATION_AI, { ok: true, at: deps.now() });
-      await writeAudit(db, { actor: actorOf(req), action: 'integration.ai_tested' });
-      return { ok: true, model: config.AI_MODEL, ...usage };
-    } catch (err) {
-      const message = redactText(err instanceof Error ? err.message : String(err)).slice(0, 300);
-      await markIntegration(db, INTEGRATION_AI, { ok: false, error: message, at: deps.now() });
-      throw new AppError(502, 'ai_failed', message);
-    }
-  });
+  app.post('/integrations/ai/key', { config: { access: 'integrations.manage' } }, async (req) =>
+    ai.save(parseBody(aiKeyInputSchema, req.body), requireAuth(req).user.id),
+  );
+
+  app.post('/integrations/ai/key/remove', { config: { access: 'integrations.manage' } }, async (req) =>
+    ai.remove(requireAuth(req).user.id),
+  );
+
+  app.post('/integrations/ai/test', { config: { access: 'integrations.manage' } }, async (req) =>
+    ai.test(requireAuth(req).user.id),
+  );
 }
