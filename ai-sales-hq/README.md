@@ -74,6 +74,11 @@ For UI work: `npm run dev -w @hq/api` (port 3001) and `npm run dev -w @hq/web` (
 | POST | `/api/v1/prospects/:id/stage` \| `/notes` \| `/contacts` \| `/score`, `/contacts/:id/verify` | prospects.edit | pipeline (A10), notes, contacts, rescore, verify |
 | GET/POST | `/api/v1/discovery`, `/discovery/settings`, `/firestore-import`, `/places-search` | prospects.view / settings.manage | source status, budget, settings, run now |
 | GET/POST | `/api/v1/suppression` | prospects.view / prospects.edit | do-not-contact list |
+| GET | `/api/v1/outreach`, `/prospects/:id/conversation` | prospects.view | owner desk (decisions, drafts, follow-ups); conversation |
+| POST | `/api/v1/prospects/:id/draft` \| `/reply-draft` \| `/inbound` \| `/outcome` \| `/owner-resolved` | prospects.edit | assisted-manual workflow |
+| POST | `/api/v1/messages/:id/edit` \| `/sent` \| `/discard` | prospects.edit | edit (re-checked), confirm sent with channel, discard |
+| POST | `/api/v1/sales/settings` | settings.manage | cooldown, daily limit, signature, language, AI on/off and budget |
+| GET/POST | `/api/v1/integrations/ai`, `/integrations/ai/test` | integrations.manage | AI status, spend, real test call |
 
 Background work: cron runs `node apps/api/dist/worker.js --once` every minute (DB lock, ≤ 50 s budget).
 

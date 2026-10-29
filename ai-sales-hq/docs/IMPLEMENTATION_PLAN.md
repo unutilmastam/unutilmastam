@@ -70,7 +70,7 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [x] Playwright in CI at 375 px and iPad width: setup → login → mandatory 2FA → office → agent start/stop → catalog → integrations; checks for horizontal scroll (found and fixed a 3 px overflow on the catalog)
 - [x] Green CI run ✅
 
-## Phase 5 — Customer discovery ✅ (code done; CI pending)
+## Phase 5 — Customer discovery ✅
 - [x] Source 1: existing stores from Firestore (`app/stores`, store-type `app/users`, order counts from `app/orders`) — business fields only; passwords, photos, IPs and private customers dropped at parse time; the PWA's fake Tashkent fallback coordinates discarded
 - [x] Source 2: manual mobile form + CSV import with dry run (`,`/`;`, quotes, BOM, Uzbek/Russian/English headers, row-by-row verdicts)
 - [x] Source 3: Google Places API (New) Text Search, server key, Surxondaryo location restriction, daily request cap + usage/cost counter, ToS caching (content expires after 30 days → refreshed or redacted, place_id kept)
@@ -82,16 +82,21 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [x] UI: prospects list (search, stage/district filters, paging), detail (contacts + verify, explained score, sources with links, history, notes, stage moves, inline DNC confirmation), manual entry, CSV import, discovery settings; phone "More" menu; dashboard prospect counts are real now
 - [x] E2E: manual add → verify phone → qualified → DNC at phone and iPad width (found and fixed: top navigation overflowing at 820 px; native prompt() replaced — unreliable in installed iOS PWAs)
 - [ ] ⏳ Owner: Google Places API key (optional; guide `docs/GOOGLE_PLACES_SETUP_UZ.md`)
-- [ ] Green CI run
+- [x] Green CI run ✅
 
-## Phase 6 — Sales workflow (assisted manual) + AI drafting
-- [ ] Opportunity stages (A10) with transition rules
-- [ ] AI provider interface, structured outputs, schema validation, timeouts, budgets, usage records, mock in CI
-- [ ] Draft messages (Uzbek Latin default, Russian optional) from verified catalog only
-- [ ] Assisted-manual buttons: `tel:`, `https://t.me/<username>`, `sms:` with prefilled text; outcome recording
-- [ ] Hidden for suppressed contacts; contact frequency limits
-- [ ] Price negotiation / special terms → escalate to owner
-- [ ] ⏳ Owner: AI provider API key
+## Phase 6 — Sales workflow (assisted manual) + AI drafting ✅ (code done; CI pending)
+- [x] Opportunity stages (A10) driven by real events: draft → CONTACT_PENDING, owner confirms sending → CONTACTED, outcomes → INTERESTED / LOST / DO_NOT_CONTACT, follow-up dates
+- [x] AI provider interface; Anthropic via the official `@anthropic-ai/sdk` with structured output (`messages.parse` + zod), low effort, refusal handling; cheap model `claude-haiku-5-5` for drafts, `claude-opus-5-5` only when the owner asks for a better draft; both via env (D-016)
+- [x] Every AI call recorded (`ai_usage_records`: tokens, list-price cost, no text); daily AI budget → Communication agent `PAUSED / BUDGET_EXCEEDED`, job waits unharmed
+- [x] Drafts only from confirmed catalog prices; deterministic quality gate (unknown prices, discounts/free, promises, links, phone numbers, length) → `NEEDS_EDIT` until the owner fixes it; template drafts when no AI is configured or it fails
+- [x] Assisted-manual buttons: `tel:`, `sms:` with prefilled text, `https://t.me/<username>` with the text copied; the owner confirms the channel; nothing is ever sent by the server
+- [x] Suppressed contacts: no draft, no "sent" (A9); contact cooldown (default 7 days) and daily draft limit
+- [x] Price / discount / credit / delivery-term questions from customers → conversation flagged "owner decides", warning notification; reply drafts never negotiate (escalation template)
+- [x] Personal data masked before AI calls (phone numbers; owner names never sent)
+- [x] Agents: Communication drafts for qualified prospects; Sales sends the morning follow-up reminder; Director's end-of-day report (numbers computed in code)
+- [x] UI: "Murojaatlar" desk (owner decisions, drafts, follow-ups, settings), conversation panel on the prospect page, AI provider card, dashboard counts
+- [x] E2E: verify → draft → mark sent by SMS → contacted → customer asks for wholesale price → owner-decision banner (phone + iPad)
+- [ ] ⏳ Owner: Anthropic API key (optional; guide `docs/AI_SETUP_UZ.md`)
 - [ ] Green CI run
 
 ## Phase 7 — Order preparation + owner handoff + notifications (MVP complete)

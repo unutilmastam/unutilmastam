@@ -19,10 +19,12 @@ interface Summary {
     unconfirmedPrices: number;
     heldSync: boolean;
     agentErrors: number;
+    conversationsNeedOwner: number;
     unreadNotifications: number;
   };
   integrations: { website: IntegrationStatus; telegram: IntegrationStatus; ai: IntegrationStatus };
   lastSuccessfulSyncAt: string | null;
+  conversations: { active: number; needsOwner: number };
   prospects: { newToday: number; qualified: number; needsReview: number; total: number };
 }
 
@@ -64,6 +66,11 @@ function Dashboard({ name, canSeeAgents }: { name: string; canSeeAgents: boolean
   const a = summary.attention;
   const attention = [
     a.heldSync && { text: t.dashboard.held, href: '/integrations/', tone: 'warn' as const },
+    a.conversationsNeedOwner > 0 && {
+      text: t.dashboard.needOwner(a.conversationsNeedOwner),
+      href: '/outreach/',
+      tone: 'warn' as const,
+    },
     a.agentErrors > 0 && { text: t.dashboard.agentErrors(a.agentErrors), href: '/agents/', tone: 'bad' as const },
     a.failedJobsToday > 0 && {
       text: t.dashboard.failedJobs(a.failedJobsToday),
@@ -162,7 +169,7 @@ function Dashboard({ name, canSeeAgents }: { name: string; canSeeAgents: boolean
               <Count label={t.dashboard.prospectsNew} value={summary.prospects.newToday} href="/prospects/" />
               <Count label={t.dashboard.qualified} value={summary.prospects.qualified} href="/prospects/" />
               <Count label={t.dashboard.needsReview} value={summary.prospects.needsReview} href="/prospects/" />
-              <Later label={t.dashboard.conversations} phase={6} />
+              <Count label={t.dashboard.conversations} value={summary.conversations.active} href="/outreach/" />
               <Later label={t.dashboard.ordersReview} phase={7} />
             </ul>
           </Card>

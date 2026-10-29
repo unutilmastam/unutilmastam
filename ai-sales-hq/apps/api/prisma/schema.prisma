@@ -523,3 +523,96 @@ model ProviderUsage {
   @@unique([provider, day])
   @@map("provider_usage")
 }
+
+// ---------------------------------------------------------------------------
+// Phase 6 — conversations, messages (assisted manual outreach), AI usage
+// ---------------------------------------------------------------------------
+
+enum Channel {
+  PHONE_CALL
+  SMS
+  TELEGRAM
+  IN_PERSON
+}
+
+enum MessageDirection {
+  OUTBOUND
+  INBOUND
+}
+
+enum MessageStatus {
+  DRAFT // prepared by the Communication agent or the owner
+  NEEDS_EDIT // failed the quality gate; owner must edit before use
+  SENT_MANUALLY // the owner opened tel:/sms:/t.me and confirmed it went out
+  RECEIVED // an inbound reply the owner recorded
+  DISCARDED
+}
+
+enum ContactOutcome {
+  INTERESTED
+  NO_ANSWER
+  CALL_BACK
+  NOT_INTERESTED
+  DO_NOT_CONTACT
+}
+
+model Conversation {
+  id            String    @id @default(uuid()) @db.Char(36)
+  prospectId    String    @unique @map("prospect_id") @db.Char(36)
+  // Owner's follow-up reminder (Tashkent date shown in the UI).
+  followUpAt    DateTime? @map("follow_up_at")
+  needsOwner    Boolean   @default(false) @map("needs_owner")
+  needsOwnerWhy String?   @map("needs_owner_why") @db.VarChar(300)
+  lastContactAt DateTime? @map("last_contact_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  messages      Message[]
+
+  @@index([needsOwner])
+  @@index([followUpAt])
+  @@map("conversations")
+}
+
+model Message {
+  id             String           @id @default(uuid()) @db.Char(36)
+  conversationId String           @map("conversation_id") @db.Char(36)
+  conversation   Conversation     @relation(fields: [conversationId], references: [id], onDelete: Restrict)
+  direction      MessageDirection
+  channel        Channel?
+  body           String           @db.Text
+  language       String           @default("uz") @db.VarChar(5)
+  status         MessageStatus
+  // Quality-gate findings (unknown prices, discounts, promises) shown to the owner.
+  checks         Json?
+  outcome        ContactOutcome?
+  agentKey       String?          @map("agent_key") @db.VarChar(40)
+  generatedBy    String?          @map("generated_by") @db.VarChar(60)
+  createdById    String?          @map("created_by_id") @db.Char(36)
+  approvedById   String?          @map("approved_by_id") @db.Char(36)
+  sentAt         DateTime?        @map("sent_at")
+  createdAt      DateTime         @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  @@index([conversationId, createdAt])
+  @@index([status, createdAt])
+  @@map("messages")
+}
+
+// One row per AI call: no prompt or message text, only accounting (MASTER_SPEC §16).
+model AiUsageRecord {
+  id           String   @id @default(uuid()) @db.Char(36)
+  provider     String   @db.VarChar(40)
+  model        String   @db.VarChar(60)
+  purpose      String   @db.VarChar(60)
+  agentKey     String?  @map("agent_key") @db.VarChar(40)
+  jobId        String?  @map("job_id") @db.Char(36)
+  inputTokens  Int      @map("input_tokens")
+  outputTokens Int      @map("output_tokens")
+  costMicroUsd BigInt   @map("cost_micro_usd")
+  ok           Boolean
+  error        String?  @db.VarChar(300)
+  createdAt    DateTime @map("created_at")
+
+  @@index([createdAt])
+  @@map("ai_usage_records")
+}

@@ -11,6 +11,9 @@ export const ORIGIN = 'http://localhost:3000';
  * the pool may run the two statements on different connections.)
  */
 export async function resetDb(db: Db): Promise<void> {
+  await db.message.deleteMany();
+  await db.conversation.deleteMany();
+  await db.aiUsageRecord.deleteMany();
   await db.contactPoint.deleteMany();
   await db.prospectSource.deleteMany();
   await db.prospect.deleteMany();
@@ -37,7 +40,7 @@ export async function resetDb(db: Db): Promise<void> {
 export async function makeApp(
   overrides: Record<string, string> = {},
   now?: () => Date,
-  extra: Partial<Pick<AppDeps, 'catalogSource' | 'telegramApi' | 'places'>> = {},
+  extra: Partial<Pick<AppDeps, 'catalogSource' | 'telegramApi' | 'places' | 'drafters'>> = {},
 ) {
   const config = loadConfig({ ...process.env, ...overrides });
   const db = createDb(config.DATABASE_URL);
@@ -158,5 +161,19 @@ export class FakePlaces {
   }
   async details(placeId: string) {
     return this.details_.get(placeId) ?? null;
+  }
+}
+
+/** Deterministic stand-in for the AI drafter; `next` is what the "model" writes. */
+export class FakeDrafter {
+  readonly provider = 'fake';
+  readonly model = 'claude-haiku-5-5';
+  next = "Assalomu alaykum! Chuchvara 500 g — 25 000 so'm. Hurmat bilan, Unutilmas Ta'm";
+  calls: import('../src/integrations/ai').DraftRequest[] = [];
+  failWith: Error | null = null;
+  async draft(req: import('../src/integrations/ai').DraftRequest) {
+    this.calls.push(req);
+    if (this.failWith) throw this.failWith;
+    return { text: this.next, language: 'uz' as const, model: this.model, inputTokens: 1000, outputTokens: 200 };
   }
 }

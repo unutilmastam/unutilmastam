@@ -141,6 +141,18 @@ test.describe
       await expect(page.getByText('Tasdiqlangan aloqa mavjud')).toBeVisible();
       await expect(page.getByText('Saralangan', { exact: true })).toBeVisible();
 
+      // Assisted-manual outreach: draft (template, no AI in CI), owner "sends" it, records the reply.
+      await page.getByRole('button', { name: 'Xabar loyihasini tayyorlash' }).click();
+      await expect(page.getByRole('button', { name: 'Yuborildi deb belgilash' })).toBeVisible();
+      await expect(page.getByRole('link', { name: /^SMS$/ })).toHaveAttribute('href', /^sms:\+998/);
+      await page.getByRole('combobox', { name: 'Qaysi yo‘l bilan', exact: true }).selectOption('SMS');
+      await page.getByRole('button', { name: 'Yuborildi deb belgilash' }).click();
+      await expect(page.getByText("Bog'lanildi", { exact: true })).toBeVisible();
+      await page.getByRole('textbox', { name: 'Mijoz javobini kiritish' }).fill('Optom narxi qancha bo‘ladi?');
+      await page.getByRole('button', { name: "Qo'shish", exact: true }).click();
+      await expect(page.getByText("Mijoz narx yoki shartlar haqida so'radi")).toBeVisible();
+      await noHorizontalScroll(page);
+
       await page.getByRole('button', { name: "Bog'lanmaslik ro'yxatiga" }).click();
 
       await page.getByRole('textbox', { name: 'Sabab (ixtiyoriy)' }).fill('Mijoz so‘radi');

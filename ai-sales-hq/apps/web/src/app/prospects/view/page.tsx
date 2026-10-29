@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { type FormEvent, Suspense, useCallback, useEffect, useState } from 'react';
+import { ConversationPanel } from '@/components/conversation';
 import { AppShell, Card, Pill } from '@/components/shell';
 import { Alert, Button } from '@/components/ui';
 import { api, type Me } from '@/lib/api';
@@ -110,6 +111,8 @@ function Prospect({ me }: { me: Me }) {
             </div>
           )}
         </Card>
+
+        <ConversationPanel prospect={p} canEdit={canEdit} onStageChange={() => void load().catch(() => undefined)} />
 
         <Card>
           <h3 className="mb-3 font-semibold">{t.prospects.contacts}</h3>

@@ -16,6 +16,7 @@ const paths: Record<string, string> = {
     'M4 9.5 5.5 4h13L20 9.5M4 9.5h16M4 9.5V20h16V9.5M9 20v-5h6v5M4 9.5a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0',
   search: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM20 20l-4-4',
   more: 'M5 12h.01M12 12h.01M19 12h.01',
+  send: 'M21 3 3 10.5l7 2.5 2.5 7zM10 13l4.5-4.5',
 };
 
 export type IconName = keyof typeof paths;

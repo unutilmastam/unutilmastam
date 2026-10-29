@@ -1,9 +1,13 @@
-import { placesFor } from '../app';
+import { draftersFor, placesFor } from '../app';
 import type { Config } from '../config';
-import { toTashkent } from '../domain/schedule';
+import { STATE_REASONS } from '../domain/agent-lifecycle';
+import { startOfTashkentDay, toTashkent } from '../domain/schedule';
+import type { AiDrafter } from '../integrations/ai';
 import type { CatalogSource } from '../integrations/firestore';
 import type { PlacesClient } from '../integrations/places';
 import type { Db } from '../lib/db';
+import { AppError } from '../lib/errors';
+import { AgentService } from '../modules/agents/service';
 import { CatalogSyncService } from '../modules/catalog/sync';
 import { DiscoveryService, matchSettingsFrom } from '../modules/discovery/service';
 import {
@@ -12,9 +16,12 @@ import {
   INTEGRATION_FIRESTORE,
 } from '../modules/integrations/service';
 import { enqueue } from '../modules/jobs/queue';
+import { notify } from '../modules/notifications/service';
 import { ProspectService } from '../modules/prospects/service';
+import { dailyReport } from '../modules/sales/report';
+import { AiBudgetExceededError, SalesService } from '../modules/sales/service';
 import type { TelegramService } from '../modules/telegram/service';
-import { type JobHandler, type Planner, Worker } from './runner';
+import { AgentHaltedError, type JobHandler, type Planner, Worker } from './runner';
 
 export interface WorkerDeps {
   db: Db;
@@ -22,6 +29,7 @@ export interface WorkerDeps {
   getSource: () => CatalogSource | null;
   telegram: TelegramService;
   places?: PlacesClient | null;
+  drafters?: { fast: AiDrafter | null; strong: AiDrafter | null };
   now?: () => Date;
 }
 
@@ -33,6 +41,13 @@ export function createWorker(deps: WorkerDeps, extraHandlers: Record<string, Job
   const places = placesFor({ config: deps.config, places: deps.places });
   const discovery = new DiscoveryService(deps.db, prospects, deps.getSource, places, now);
   const agentActor = (key: string) => ({ type: 'worker' as const, id: key });
+  const sales = new SalesService(
+    deps.db,
+    prospects,
+    draftersFor({ config: deps.config, drafters: deps.drafters }),
+    now,
+  );
+  const agents = new AgentService(deps.db, now);
 
   const handlers = new Map<string, JobHandler>(
     Object.entries({
@@ -57,6 +72,51 @@ export function createWorker(deps: WorkerDeps, extraHandlers: Record<string, Job
         return { ...next, ...result };
       },
       'discovery.places_refresh': async () => discovery.refreshExpiredPlaces(agentActor('market_research')),
+      'outreach.draft': async (ctx) => {
+        const { prospectId } = ctx.payload as { prospectId: string };
+        try {
+          const m = await sales.draftOutreach(prospectId, agentActor('communication'), { jobId: ctx.job.id });
+          return { messageId: m.id, status: m.status, generatedBy: m.generatedBy };
+        } catch (err) {
+          if (err instanceof AiBudgetExceededError) {
+            // A6: budget hit -> PAUSED with BUDGET_EXCEEDED; the job waits in the queue unharmed.
+            const agent = await deps.db.agent.findUniqueOrThrow({ where: { key: 'communication' } });
+            if (agent.state === 'RUNNING') {
+              await agents.transition(
+                agent.id,
+                'RUNNING',
+                'PAUSING',
+                STATE_REASONS.BUDGET_EXCEEDED,
+                agentActor('communication'),
+              );
+            }
+            throw new AgentHaltedError(err.message);
+          }
+          // Business refusals (cooldown, daily limit, suppressed, no contact) are outcomes, not failures.
+          if (err instanceof AppError && (err.statusCode === 409 || err.statusCode === 429))
+            return { skipped: err.code };
+          throw err;
+        }
+      },
+      'sales.followups': async () => {
+        const due = await deps.db.conversation.count({ where: { followUpAt: { lte: now() } } });
+        if (due > 0) {
+          await notify(
+            deps.db,
+            {
+              kind: 'sales.followups',
+              severity: 'INFO',
+              title: `Bugun ${due} ta mijozga qayta murojaat`,
+              body: "Murojaatlar sahifasida ro'yxat bor.",
+              link: '/outreach/',
+              dedupeKey: 'sales-followups',
+            },
+            now(),
+          );
+        }
+        return { due };
+      },
+      'director.daily_report': async () => dailyReport(deps.db, now()),
       ...extraHandlers,
     }),
   );
@@ -108,6 +168,45 @@ export function createWorker(deps: WorkerDeps, extraHandlers: Record<string, Job
             at,
           );
         }
+      }
+    },
+    // Communication: drafts for qualified prospects, within the daily limit (owner sends them himself).
+    async (at) => {
+      const agent = await deps.db.agent.findUnique({ where: { key: 'communication' } });
+      if (agent?.state !== 'RUNNING') return;
+      const s = await sales.settings();
+      const today = await deps.db.message.count({
+        where: { direction: 'OUTBOUND', createdAt: { gte: startOfTashkentDay(at) } },
+      });
+      const room = Math.min(5, s.dailyDraftLimit - today);
+      if (room <= 0) return;
+      const candidates = await deps.db.prospect.findMany({
+        where: {
+          stage: 'QUALIFIED',
+          contacts: { some: { kind: { in: ['PHONE', 'TELEGRAM'] } } },
+        },
+        orderBy: { score: 'desc' },
+        take: room,
+      });
+      const day = toTashkent(at).date;
+      for (const p of candidates) {
+        await enqueue(
+          deps.db,
+          { type: 'outreach.draft', payload: { prospectId: p.id }, idempotencyKey: `outreach.draft:${p.id}:${day}` },
+          at,
+        );
+      }
+    },
+    // Sales: morning reminder of follow-ups; Director: report after 18:00 Tashkent.
+    async (at) => {
+      const local = toTashkent(at);
+      const sales_ = await deps.db.agent.findUnique({ where: { key: 'sales' } });
+      if (sales_?.state === 'RUNNING') {
+        await enqueue(deps.db, { type: 'sales.followups', idempotencyKey: `sales.followups:${local.date}` }, at);
+      }
+      const director = await deps.db.agent.findUnique({ where: { key: 'director' } });
+      if (director?.state === 'RUNNING' && local.minutes >= 18 * 60) {
+        await enqueue(deps.db, { type: 'director.daily_report', idempotencyKey: `director.report:${local.date}` }, at);
       }
     },
     // Owner notifications go out within a minute, whatever the agents are doing.

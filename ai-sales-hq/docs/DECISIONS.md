@@ -19,6 +19,7 @@ Status values: **Accepted** · **Proposed** (default we will use unless the owne
 | D-013 | Catalog sync safety: price versions, mass-change hold, seed retired by live data | Accepted |
 | D-014 | Worker, lifecycle and budget semantics (Phase 3) | Accepted |
 | D-015 | Discovery sources, dedup, scoring and data handling (Phase 5) | Accepted |
+| D-016 | AI drafting: provider, models, quality gate, budget, privacy (Phase 6) | Accepted |
 
 ---
 
@@ -149,3 +150,13 @@ A3 asks for "server-side Firebase Admin SDK with a read-only service account". W
 - **Qualification.** Automatic `QUALIFIED` only when a contact is verified and the score reaches the threshold (default 45); everything else waits in `NEEDS_VERIFICATION` — public visibility does not authorise messaging (MASTER_SPEC §10).
 - **Do-not-contact** is reachable from every stage and final. It writes suppression records for the prospect, its phones/Telegram and its place_id; future imports of those contacts start in `DO_NOT_CONTACT`.
 - **Personal data.** Store owner names and phones are personal data: stored only in the MySQL database on hostmaster.uz (A9) and masked before any future AI call (`formatPhone(…, masked)`). Private customers of the PWA (`userType: customer`) are never imported.
+
+## D-016 — AI drafting (Accepted, Phase 6)
+
+- **What the AI does.** Only phrases a short message (first offer or a reply). Orchestration, prices, stages, limits and every decision are code (A6). The owner reads every message and sends it himself (A5 assisted manual); the server never contacts a customer.
+- **Provider and models.** Anthropic through the official TypeScript SDK (`messages.parse` with a zod schema → validated JSON, `output_config.effort: "low"`, `stop_reason: "refusal"` checked). Models are configuration, not code: `AI_MODEL` defaults to `claude-haiku-5-5` (A6: one cheap model for drafting), `AI_MODEL_STRONG` to `claude-opus-5-5`, used only when the owner presses "Kuchliroq model bilan". Haiku 5.5 has no server-side refusal fallback; a refusal or any API error falls back to the deterministic template, so drafting never stops.
+- **Quality gate** (deterministic, `domain/sales.ts`): any price that is not a currently **confirmed** catalog price, any discount/free/percent wording, promises (delivery dates, guarantees, credit), links, phone numbers or excessive length mark the draft `NEEDS_EDIT`; it cannot be marked as sent until the owner edits it and it passes.
+- **Escalation.** Customer messages about price, discount, wholesale, credit or delivery terms flag the conversation for the owner; the reply draft for such messages is a fixed template ("the manager will contact you") — the AI is not even called.
+- **Budget.** Every call is recorded with tokens and list-price cost (no prompt or message text stored). When today's spend reaches the owner's daily budget (default 1 $), the Communication agent goes `PAUSED` with `BUDGET_EXCEEDED` and resumes after Tashkent midnight (D-014).
+- **Privacy (A6/A9).** The prompt contains the business name, category, district, product lines and, for replies, the conversation with phone numbers masked. Owner/contact person names and phone numbers are never sent.
+- **Limits.** Default cooldown of 7 days between first contacts of the same business, daily draft limit 20, both owner-editable.

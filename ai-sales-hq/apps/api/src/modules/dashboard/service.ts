@@ -11,6 +11,7 @@ export class DashboardService {
   constructor(
     private readonly db: Db,
     private readonly now: () => Date = () => new Date(),
+    private readonly aiConfigured: () => boolean = () => false,
   ) {}
 
   async summary() {
@@ -34,6 +35,13 @@ export class DashboardService {
         this.db.integration.findUnique({ where: { key: 'telegram' }, select: { status: true } }),
         this.db.notification.count({ where: { readAt: null } }),
       ]);
+    const [ai, activeConversations, needsOwner] = await Promise.all([
+      this.db.integration.findUnique({ where: { key: 'ai' }, select: { status: true } }),
+      this.db.conversation.count({
+        where: { lastContactAt: { gte: new Date(now.getTime() - 30 * 86_400_000) } },
+      }),
+      this.db.conversation.count({ where: { needsOwner: true } }),
+    ]);
     const [prospectsToday, qualified, needsReview, prospectsTotal] = await Promise.all([
       this.db.prospect.count({ where: { discoveredAt: { gte: dayStart } } }),
       this.db.prospect.count({ where: { stage: 'QUALIFIED' } }),
@@ -56,18 +64,18 @@ export class DashboardService {
         unconfirmedPrices,
         heldSync: heldRun?.status === 'HELD',
         agentErrors: count(['ERROR']),
+        conversationsNeedOwner: needsOwner,
         unreadNotifications: unread,
       },
       integrations: {
         website: firestore?.status ?? 'NOT_CONFIGURED',
         telegram: telegram?.status ?? 'NOT_CONFIGURED',
-        // The AI provider arrives in Phase 6; until then it is honestly not configured.
-        ai: 'NOT_CONFIGURED' as const,
+        ai: !this.aiConfigured() ? 'NOT_CONFIGURED' : (ai?.status ?? 'CONFIGURED'),
       },
       lastSuccessfulSyncAt: lastSync?.finishedAt ?? null,
       prospects: { newToday: prospectsToday, qualified, needsReview, total: prospectsTotal },
       // Modules that arrive later (Phases 6–7): not available rather than a fake 0.
-      conversations: { active: null },
+      conversations: { active: activeConversations, needsOwner },
       orders: { awaitingReview: null, draftValue: null, approvedValue: null, deliveredValue: null },
     };
   }

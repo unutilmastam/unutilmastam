@@ -169,6 +169,8 @@ function Integrations() {
         </Card>
       )}
 
+      <AiCard />
+
       <TelegramCard />
 
       <Card>
@@ -296,6 +298,63 @@ function TelegramCard() {
               </Button>
             )}
           </div>
+        </>
+      )}
+    </Card>
+  );
+}
+
+interface AiStatus {
+  status: 'NOT_CONFIGURED' | 'CONFIGURED' | 'CONNECTED' | 'ERROR';
+  model: string;
+  strongModel: string;
+  lastSuccessAt: string | null;
+  lastError: string | null;
+  spentTodayUsd: number;
+  budgetUsd: number;
+}
+
+function AiCard() {
+  const [s, setS] = useState<AiStatus | null>(null);
+  const [msg, setMsg] = useState<{ kind: 'error' | 'ok'; text: string } | null>(null);
+  const load = useCallback(() => api<AiStatus>('/integrations/ai').then(setS), []);
+  useEffect(() => {
+    void load().catch(() => undefined);
+  }, [load]);
+  if (!s) return null;
+  return (
+    <Card>
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="font-semibold">{t.aiProvider.title}</h2>
+        <Pill tone={TONE[s.status]}>{t.integrations.status[s.status]}</Pill>
+      </div>
+      <p className="mb-3 text-sm text-mist">{t.aiProvider.intro}</p>
+      {msg && <Alert kind={msg.kind}>{msg.text}</Alert>}
+      {s.status === 'NOT_CONFIGURED' ? (
+        <Alert kind="info">{t.aiProvider.notConfigured}</Alert>
+      ) : (
+        <>
+          <dl className="mb-3 grid gap-1 text-sm">
+            <Row k={t.aiProvider.models(s.model, s.strongModel)} v="" />
+            <Row k={t.integrations.lastSuccess} v={when(s.lastSuccessAt, t.integrations.never)} />
+            <Row k={t.outreach.ai(s.spentTodayUsd, s.budgetUsd)} v="" />
+            {s.lastError && <Row k={t.integrations.lastError} v={s.lastError} bad />}
+          </dl>
+          <Button
+            variant="ghost"
+            onClick={async () => {
+              setMsg(null);
+              try {
+                await api('/integrations/ai/test', { method: 'POST' });
+                setMsg({ kind: 'ok', text: t.aiProvider.ok });
+              } catch (e) {
+                setMsg({ kind: 'error', text: (e as Error).message });
+              }
+              await load().catch(() => undefined);
+            }}
+          >
+            {t.aiProvider.test}
+          </Button>
         </>
       )}
     </Card>

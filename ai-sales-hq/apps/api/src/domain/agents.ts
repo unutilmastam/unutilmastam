@@ -31,7 +31,7 @@ export const AGENT_DEFINITIONS: readonly AgentDefinition[] = [
     name: 'Direktor',
     role: 'Ishni muvofiqlashtiradi, katalogni yangilab turadi, egaga hisobot beradi',
     room: 'director',
-    jobTypes: ['catalog.sync'],
+    jobTypes: ['catalog.sync', 'director.daily_report'],
     availableFromPhase: 3,
     defaultDailyTaskLimit: 500,
   },
@@ -58,7 +58,7 @@ export const AGENT_DEFINITIONS: readonly AgentDefinition[] = [
     name: 'Sotuv menejeri',
     role: 'Tasdiqlangan narxlar asosida taklif tayyorlaydi',
     room: 'sales',
-    jobTypes: [],
+    jobTypes: ['sales.followups'],
     availableFromPhase: 6,
     defaultDailyTaskLimit: 100,
   },
@@ -67,7 +67,7 @@ export const AGENT_DEFINITIONS: readonly AgentDefinition[] = [
     name: 'Muloqot mutaxassisi',
     role: 'Xabar loyihalarini tayyorlaydi; egasi tasdiqlab yuboradi',
     room: 'communication',
-    jobTypes: [],
+    jobTypes: ['outreach.draft'],
     availableFromPhase: 6,
     defaultDailyTaskLimit: 100,
   },
@@ -82,7 +82,7 @@ export const AGENT_DEFINITIONS: readonly AgentDefinition[] = [
   },
 ];
 
-export const CURRENT_PHASE = 5;
+export const CURRENT_PHASE = 6;
 
 export function definitionFor(key: string): AgentDefinition | undefined {
   return AGENT_DEFINITIONS.find((d) => d.key === key);

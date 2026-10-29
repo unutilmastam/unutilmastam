@@ -41,6 +41,14 @@ const schema = z
       .string()
       .regex(/^[A-Za-z0-9_-]{20,100}$/, 'GOOGLE_PLACES_API_KEY has the wrong format')
       .optional(),
+    // AI provider for drafting (A6). Without a key, drafts come from deterministic templates.
+    ANTHROPIC_API_KEY: z
+      .string()
+      .regex(/^sk-ant-[A-Za-z0-9_-]{20,}$/, 'ANTHROPIC_API_KEY has the wrong format')
+      .optional(),
+    // Cheap model for routine drafts; the stronger one only when the owner asks for a better draft.
+    AI_MODEL: z.string().min(3).max(60).default('claude-haiku-5-5'),
+    AI_MODEL_STRONG: z.string().min(3).max(60).default('claude-opus-5-5'),
     TELEGRAM_WEBHOOK_SECRET: z
       .string()
       .regex(/^[A-Za-z0-9_-]{24,256}$/)

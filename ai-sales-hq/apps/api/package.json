@@ -13,6 +13,7 @@
     "worker": "node dist/worker.js --once"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
     "@fastify/cookie": "^11.1.5",
     "@fastify/helmet": "^13.2.0",
     "@fastify/static": "^10.1.8",
