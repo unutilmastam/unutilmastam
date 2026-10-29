@@ -15,6 +15,8 @@ DB_HOST=localhost
 DB_NAME=
 DB_USER=
 DB_PASSWORD=""
+# Faqat "connect ECONNREFUSED" xatosi chiqsa, boshidagi # ni olib tashlang (MySQL socket orqali ulanish):
+# DB_SOCKET=/var/lib/mysql/mysql.sock
 
 # Sayt (Firestore) uchun kalit fayli - yuklagandan keyin boshidagi # ni olib tashlang:
 # FIREBASE_SERVICE_ACCOUNT_FILE=${home}/ai-sales-hq-data/firebase-sa.json

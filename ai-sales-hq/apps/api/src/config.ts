@@ -78,7 +78,12 @@ export function withDatabaseUrl(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const e = encodeURIComponent;
   const host = env.DB_HOST || 'localhost';
   const port = env.DB_PORT || '3306';
-  return { ...env, DATABASE_URL: `mysql://${e(env.DB_USER)}:${e(env.DB_PASSWORD)}@${host}:${port}/${e(env.DB_NAME)}` };
+  // DB_SOCKET: connect through the MySQL UNIX socket when TCP to localhost is not allowed.
+  const socket = env.DB_SOCKET ? `?socketPath=${e(env.DB_SOCKET)}` : '';
+  return {
+    ...env,
+    DATABASE_URL: `mysql://${e(env.DB_USER)}:${e(env.DB_PASSWORD)}@${host}:${port}/${e(env.DB_NAME)}${socket}`,
+  };
 }
 
 /** Parses the environment. The error lists variable names only, never values. */

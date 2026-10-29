@@ -7,7 +7,7 @@ Kompyuter, Terminal va `npm install` kerak emas. GitHub tayyor paketni o'zi yig'
 > Telefonda cPanel menyusi yashirin bo'lsa — yuqori chapdagi **☰**. Har bir bo'limni yuqoridagi **Search** ga nomini yozib topsa bo'ladi.
 > **Parol, kalit va `hq.env` ichidagi narsalarni hech kimga (Claude'ga ham) yubormang.**
 
-Hali tekshirilmagan narsalar (hostmaster.uz tarifiga bog'liq): Node.js versiyasi (22 yoki 20.19+ kerak), cron har 1 daqiqada ishlay olishi, `mysqldump` mavjudligi. Biror qadamda shu haqida xato chiqsa, xabarni menga yozing.
+Hostingda tekshirilgan (2026-10-29, ega skrinshotlari): Node.js 22.22.0 bor, cron har 1 daqiqada ishlaydi, MySQL 8.0.44, subdomen yaratish mumkin. Hali tekshirilmagan: `mysqldump` va Git Version Control mavjudligi — biror qadamda xato chiqsa, xabarni menga yozing.
 
 ---
 
@@ -28,7 +28,7 @@ Hali tekshirilmagan narsalar (hostmaster.uz tarifiga bog'liq): Node.js versiyasi
 
 1. **Setup Node.js App** → **+ CREATE APPLICATION**.
 2. To'ldiring:
-   - **Node.js version:** ro'yxatdagi eng yuqori versiya (22.x; kamida 20.19)
+   - **Node.js version:** `22.22.0` (ro'yxatda "recommended" deb 20.20.0 turgan bo'lsa ham, 22.22.0 ni tanlang — ilova shu versiyada sinovdan o'tgan)
    - **Application mode:** `Production`
    - **Application root:** `ai-sales-hq-app`
    - **Application URL:** `agent.unutilmastam.uz`
@@ -111,6 +111,7 @@ Deploy har safar avval zaxira nusxa oladi va oldingi versiyani `ai-sales-hq-prev
 | Sahifa ochilmaydi / 503 | **Setup Node.js App → RESTART**. Keyin `ai-sales-hq-app` papkasidagi `stderr.log` (bo'lsa) faylining oxirini menga yuboring |
 | Deploy logida `Node.js topilmadi` yoki `Node ... eski` | 3-bo'lim: ilova nomi aynan `ai-sales-hq-app`, versiya 22 yoki 20.19+ bo'lsin |
 | `Invalid configuration: DATABASE_URL` | `hq.env` dagi `DB_NAME`, `DB_USER`, `DB_PASSWORD` ni tekshiring |
+| `connect ECONNREFUSED` | `hq.env` da `# DB_SOCKET=...` qatorining boshidagi `#` ni olib tashlang va qayta Deploy qiling |
 | `Access denied for user` | Parol yoki foydalanuvchi noto'g'ri, yoki 2-bo'lim 4-qadamdagi ruxsat berilmagan |
 | Agentlar sahifasida "Cron ishlamayapti" | 8-bo'limdagi birinchi cron qatorini tekshiring. Log: `ai-sales-hq-data/logs/worker.log` |
 | Yangi versiyadan keyin nimadir buzildi | Terminal bo'lsa: `bash ~/ai-sales-hq-app/deploy/rollback.sh`. Aks holda menga yozing — eski versiyani GitHub orqali qaytaraman |

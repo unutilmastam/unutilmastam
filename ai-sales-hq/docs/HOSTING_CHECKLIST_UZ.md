@@ -1,5 +1,7 @@
 # Hosting tekshiruvi — telefondan, cPanel (hostmaster.uz)
 
+> **Javoblar olindi (2026-10-29):** Node.js 22.22.0 bor · cron har daqiqa · MySQL 8.0.44 · subdomen yaratish mumkin. Qolgan: Git Version Control bormi.
+
 Bu ro'yxat AI Sales HQ qaysi texnologiyada qurilishini hal qiladi. Hech narsani o'zgartirmaysiz, faqat **ko'rib, javobni yozib yuborasiz**. Taxminan 15 daqiqa.
 
 **Javobni qanday yuborish:** har bir bo'lim oxiridagi "Javob" qatorini to'ldiring yoki ekranni rasmga oling (skrinshot). Hammasini bitta xabarda Claude'ga yuboring.

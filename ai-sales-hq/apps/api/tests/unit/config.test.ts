@@ -43,5 +43,13 @@ describe('config', () => {
     const parsed = new URL(c.DATABASE_URL);
     expect(decodeURIComponent(parsed.password)).toBe('p@ss#w0rd&x/1');
     expect(() => loadConfig({ ...rest })).toThrow(/DB_NAME, DB_USER and DB_PASSWORD/);
+    const viaSocket = loadConfig({
+      ...rest,
+      DB_NAME: 'd',
+      DB_USER: 'u',
+      DB_PASSWORD: 'p',
+      DB_SOCKET: '/var/lib/mysql/mysql.sock',
+    });
+    expect(new URL(viaSocket.DATABASE_URL).searchParams.get('socketPath')).toBe('/var/lib/mysql/mysql.sock');
   });
 });

@@ -43,8 +43,16 @@ idempotent third run → server start from the app root → cron run → backup 
 Code: `deploy/rollback.sh` (Terminal) or revert on `main` (a new release is published). Data:
 migrations only add tables/columns; to undo a deploy completely, restore its `*-pre-deploy` backup.
 
-## Not verified on the real plan yet (HOSTING_CHECKLIST_UZ.md)
+## Verified on the real plan (2026-10-29, owner's screenshots)
 
-Node version list, cron minimum interval, `mysqldump`/`rsync`/`curl` availability for cron and
-deployment tasks, Passenger request timeout, outbound HTTPS to Google/Telegram/Anthropic, memory
-limits. The scripts fail with an explicit message where they depend on these.
+- cPanel 138.0.19 on hosting1.hostmaster.uz, CloudLinux (MySQL build `8.0.44-cll-lve`).
+- Setup Node.js App: Node 6 … 24 offered, incl. **22.22.0** (used; CI runs Node 22) and 20.20.0.
+- Cron: "Once Per Minute" available.
+- MySQL 8.0.44, utf8mb4, phpMyAdmin connects via UNIX socket (`localhost:3306` shown). The app uses TCP to `localhost`; `DB_SOCKET` switches to the socket if TCP is refused.
+- Domains: "Create A New Domain" available (an existing subdomain `qarz.unutilmastam.uz` shows subdomains work).
+
+## Not verified yet
+
+Git Version Control availability, `mysqldump`/`rsync`/`curl` for cron and deployment tasks,
+Passenger request timeout, outbound HTTPS to Google/Telegram/Anthropic, memory limits. The scripts
+fail with an explicit message where they depend on these.
