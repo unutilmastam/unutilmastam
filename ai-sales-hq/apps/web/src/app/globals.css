@@ -309,6 +309,25 @@ select {
 .office-alert {
   animation: office-pulse 1.4s ease-in-out infinite;
 }
+@keyframes office-scroll {
+  to {
+    transform: translateY(-56px);
+  }
+}
+.office-scroll {
+  animation: office-scroll 7s linear infinite;
+}
+@keyframes office-meter {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+.office-meter {
+  animation: office-meter 1.8s linear infinite;
+}
 .office-typing {
   animation: office-type 0.9s ease-in-out infinite;
   transform-box: fill-box;

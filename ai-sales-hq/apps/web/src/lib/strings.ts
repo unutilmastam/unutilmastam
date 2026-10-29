@@ -565,7 +565,8 @@ export const t = {
   dashboard: {
     title: 'Shtab',
     office: 'Virtual ofis',
-    officeHint: "Har bir xona — haqiqiy agent. Xonani bosing: agent boshqaruviga o'tasiz.",
+    officeHint:
+      "Har bir xodim — haqiqiy agent: ishlamasa, stuli bo'sh turadi. Yorliqni bosing — agent boshqaruviga o'tasiz.",
     agentsTitle: 'Agentlar',
     running: 'Ishlayapti',
     waiting: 'Ish vaqtini kutmoqda',
@@ -673,6 +674,23 @@ export const t = {
       'orders.check_prices': 'buyurtma narxlarini tekshiryapti',
     } as Record<string, string>,
     agentsLive: (running: number, total: number) => `${running} / ${total} agent faol`,
+    jobDone: {
+      'catalog.sync': 'katalogni yangiladi',
+      'notify.telegram': 'Telegramga xabar yubordi',
+      'prospects.score': 'mijozni baholadi',
+      'discovery.firestore_stores': "saytdagi do'konlarni o'qidi",
+      'discovery.places_search': 'Google xaritadan qidirdi',
+      'discovery.places_refresh': "ma'lumotlarni yangiladi",
+      'outreach.draft': 'xabar loyihasini yozdi',
+      'sales.followups': "qayta murojaatlarni ko'rib chiqdi",
+      'director.daily_report': 'kunlik hisobot tayyorladi',
+      'orders.check_prices': 'buyurtma narxlarini tekshirdi',
+    } as Record<string, string>,
+    screenTitle: 'Agentlar ofisi',
+    screenAllOk: 'Barcha tizimlar ishlayapti',
+    screenActivity: "So'nggi faoliyat",
+    screenNoActivity: "Hali bajarilgan vazifa yo'q",
+    sign: 'AI SOTUV SHTABI',
   },
   notifications: {
     title: 'Bildirishnomalar',

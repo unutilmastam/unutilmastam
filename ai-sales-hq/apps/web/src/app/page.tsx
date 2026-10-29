@@ -168,22 +168,22 @@ function Dashboard({ me }: { me: Me }) {
         />
       </dl>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:grid-rows-[auto_1fr]">
-        <section className="min-w-0 xl:col-start-1 xl:row-span-2 xl:row-start-1">
-          {office && (
-            <>
-              <div className="mb-3 flex items-end justify-between gap-3">
-                <div>
-                  <h2 className="text-[17px] font-semibold tracking-[-0.015em]">{t.dashboard.office}</h2>
-                  <p className="mt-0.5 text-[13px] text-mist">{t.dashboard.officeHint}</p>
-                </div>
+      <section className="min-w-0">
+        {office && (
+          <>
+            <div className="mb-3 flex items-end justify-between gap-3">
+              <div>
+                <h2 className="text-[17px] font-semibold tracking-[-0.015em]">{t.dashboard.office}</h2>
+                <p className="mt-0.5 text-[13px] text-mist">{t.dashboard.officeHint}</p>
               </div>
-              <Office agents={office} workerHealthy={worker} />
-            </>
-          )}
-        </section>
+            </div>
+            <Office agents={office} workerHealthy={worker} />
+          </>
+        )}
+      </section>
 
-        <Card className="order-first p-0 xl:order-none xl:col-start-2 xl:row-start-1">
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <Card className="p-0">
           <div className="px-5 pt-5">
             <CardHeader
               title={t.dashboard.attention}
@@ -227,7 +227,7 @@ function Dashboard({ me }: { me: Me }) {
           )}
         </Card>
 
-        <aside className="grid content-start gap-4 xl:col-start-2 xl:row-start-2">
+        <aside className="contents">
           <Card>
             <CardHeader title={t.dashboard.funnel} hint={t.dashboard.funnelHint} />
             <ul className="grid gap-3">
