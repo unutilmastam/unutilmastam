@@ -11,9 +11,10 @@ import type { AuthContext, AuthService, ClientInfo } from '../modules/auth/servi
  * (secure by default).
  *   'public'  — no session needed (health, login, setup)
  *   'session' — any signed-in user
+ *   'webhook' — machine callers (Telegram); the route verifies its own shared secret
  *   Permission — signed-in user whose role has that permission
  */
-export type Access = 'public' | 'session' | Permission;
+export type Access = 'public' | 'session' | 'webhook' | Permission;
 
 declare module 'fastify' {
   interface FastifyContextConfig {
@@ -47,6 +48,7 @@ export function makeGuard(config: Config, auth: AuthService) {
   return async function guard(req: FastifyRequest, _reply: FastifyReply): Promise<void> {
     req.auth = null;
     const access = req.routeOptions.config?.access ?? 'session';
+    if (access === 'webhook') return;
     const mutating = !SAFE_METHODS.has(req.method);
 
     // CSRF layer 1: a browser always sends Origin on cross-site POSTs; refuse foreign ones.

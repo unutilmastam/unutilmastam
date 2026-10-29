@@ -235,16 +235,18 @@ enum NotificationSeverity {
 }
 
 model Notification {
-  id        String               @id @default(uuid()) @db.Char(36)
-  kind      String               @db.VarChar(60)
-  severity  NotificationSeverity
-  title     String               @db.VarChar(200)
-  body      String               @db.Text
-  link      String?              @db.VarChar(255)
+  id             String               @id @default(uuid()) @db.Char(36)
+  kind           String               @db.VarChar(60)
+  severity       NotificationSeverity
+  title          String               @db.VarChar(200)
+  body           String               @db.Text
+  link           String?              @db.VarChar(255)
   // Same key while unread => no duplicate notification (e.g. repeated sync failures).
-  dedupeKey String?              @map("dedupe_key") @db.VarChar(120)
-  readAt    DateTime?            @map("read_at")
-  createdAt DateTime             @default(now()) @map("created_at")
+  dedupeKey      String?              @map("dedupe_key") @db.VarChar(120)
+  readAt         DateTime?            @map("read_at")
+  // Delivery to the owner Telegram bot (null = not sent yet).
+  telegramSentAt DateTime?            @map("telegram_sent_at")
+  createdAt      DateTime             @default(now()) @map("created_at")
 
   @@index([readAt, createdAt])
   @@index([dedupeKey])
@@ -268,4 +270,104 @@ model Lock {
   acquiredAt  DateTime @map("acquired_at")
 
   @@map("locks")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 3 — agents, lifecycle, jobs, cron worker
+// ---------------------------------------------------------------------------
+
+enum AgentState {
+  DRAFT
+  STOPPED
+  SCHEDULED
+  RUNNING
+  PAUSING
+  PAUSED
+  STOPPING
+  ERROR
+  DISABLED
+}
+
+model Agent {
+  id             String     @id @default(uuid()) @db.Char(36)
+  key            String     @unique @db.VarChar(40)
+  name           String     @db.VarChar(80)
+  state          AgentState @default(DRAFT)
+  stateReason    String?    @map("state_reason") @db.VarChar(40)
+  stateChangedAt DateTime   @map("state_changed_at")
+  errorMessage   String?    @map("error_message") @db.VarChar(500)
+  // Working days (ISO 1..7) and local Tashkent times.
+  workingDays    Json       @map("working_days")
+  startTime      String     @map("start_time") @db.Char(5)
+  endTime        String     @map("end_time") @db.Char(5)
+  dailyTaskLimit Int        @map("daily_task_limit")
+  // Permitted responsibilities / communication permissions (validated in code).
+  permissions    Json?
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+  jobs           Job[]
+
+  @@map("agents")
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  DEAD
+  CANCELLED
+}
+
+model Job {
+  id                String     @id @default(uuid()) @db.Char(36)
+  type              String     @db.VarChar(60)
+  agentId           String?    @map("agent_id") @db.Char(36)
+  agent             Agent?     @relation(fields: [agentId], references: [id], onDelete: Restrict)
+  status            JobStatus  @default(QUEUED)
+  payload           Json?
+  result            Json?
+  idempotencyKey    String?    @unique @map("idempotency_key") @db.VarChar(160)
+  runAt             DateTime   @map("run_at")
+  lockedUntil       DateTime?  @map("locked_until")
+  lockedBy          String?    @map("locked_by") @db.VarChar(80)
+  attempts          Int        @default(0)
+  maxAttempts       Int        @default(5) @map("max_attempts")
+  lastError         String?    @map("last_error") @db.VarChar(1000)
+  cancelRequestedAt DateTime?  @map("cancel_requested_at")
+  createdAt         DateTime   @map("created_at")
+  startedAt         DateTime?  @map("started_at")
+  finishedAt        DateTime?  @map("finished_at")
+  events            JobEvent[]
+
+  @@index([status, runAt])
+  @@index([agentId, status])
+  @@index([agentId, startedAt])
+  @@map("jobs")
+}
+
+model JobEvent {
+  id        BigInt   @id @default(autoincrement())
+  jobId     String   @map("job_id") @db.Char(36)
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  level     String   @db.VarChar(10)
+  message   String   @db.VarChar(1000)
+  createdAt DateTime @map("created_at")
+
+  @@index([jobId])
+  @@map("job_events")
+}
+
+// One row per cron invocation: liveness for the dashboard ("is cron running?").
+model WorkerRun {
+  id            String    @id @default(uuid()) @db.Char(36)
+  startedAt     DateTime  @map("started_at")
+  finishedAt    DateTime? @map("finished_at")
+  status        String    @db.VarChar(20)
+  jobsProcessed Int       @default(0) @map("jobs_processed")
+  transitions   Int       @default(0)
+  error         String?   @db.VarChar(1000)
+
+  @@index([startedAt])
+  @@map("worker_runs")
 }

@@ -11,6 +11,10 @@ export const ORIGIN = 'http://localhost:3000';
  * the pool may run the two statements on different connections.)
  */
 export async function resetDb(db: Db): Promise<void> {
+  await db.jobEvent.deleteMany();
+  await db.job.deleteMany();
+  await db.workerRun.deleteMany();
+  await db.agent.deleteMany();
   await db.productPrice.deleteMany();
   await db.product.deleteMany();
   await db.productSyncRun.deleteMany();
@@ -28,7 +32,7 @@ export async function resetDb(db: Db): Promise<void> {
 export async function makeApp(
   overrides: Record<string, string> = {},
   now?: () => Date,
-  extra: Partial<Pick<AppDeps, 'catalogSource'>> = {},
+  extra: Partial<Pick<AppDeps, 'catalogSource' | 'telegramApi'>> = {},
 ) {
   const config = loadConfig({ ...process.env, ...overrides });
   const db = createDb(config.DATABASE_URL);
@@ -115,5 +119,16 @@ export class FakeCatalogSource {
       products: { value: JSON.stringify(this.products), updatedAtMs: 1_761_700_000_000 },
       categories: { value: JSON.stringify(this.categories), updatedAtMs: null },
     };
+  }
+}
+
+/** Records Telegram Bot API calls instead of sending them. */
+export class FakeTelegram {
+  calls: { method: string; body: Record<string, unknown> }[] = [];
+  failWith: Error | null = null;
+  async call<T>(method: string, body: object): Promise<T> {
+    if (this.failWith) throw this.failWith;
+    this.calls.push({ method, body: body as Record<string, unknown> });
+    return (method === 'getMe' ? { username: 'ut_shtab_bot' } : true) as T;
   }
 }

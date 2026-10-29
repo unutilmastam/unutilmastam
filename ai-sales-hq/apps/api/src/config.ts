@@ -26,6 +26,20 @@ const schema = z
     // Google service account JSON (role: Cloud Datastore Viewer) for the read-only catalog sync.
     // Kept outside public_html with permissions 600. Absent = integration NOT_CONFIGURED.
     FIREBASE_SERVICE_ACCOUNT_FILE: z.string().min(1).optional(),
+    // Separate owner-only bot (A5); never the customer bot's token.
+    TELEGRAM_BOT_TOKEN: z
+      .string()
+      .regex(/^\d{6,12}:[A-Za-z0-9_-]{30,}$/, 'TELEGRAM_BOT_TOKEN has the wrong format')
+      .optional(),
+    // Comma-separated numeric chat ids allowed to use the bot.
+    TELEGRAM_OWNER_CHAT_IDS: z
+      .string()
+      .regex(/^-?\d+(,\s*-?\d+)*$/, 'TELEGRAM_OWNER_CHAT_IDS must be numeric ids separated by commas')
+      .optional(),
+    TELEGRAM_WEBHOOK_SECRET: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{24,256}$/)
+      .optional(),
   })
   .transform((c) => ({ ...c, TOTP_REQUIRED: c.TOTP_REQUIRED ?? c.NODE_ENV === 'production' }))
   .superRefine((c, ctx) => {

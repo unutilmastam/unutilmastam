@@ -62,6 +62,15 @@ For UI work: `npm run dev -w @hq/api` (port 3001) and `npm run dev -w @hq/web` (
 | POST | `/api/v1/integrations/firestore/test` \| `/sync` \| `/settings` | integrations.manage | real connection test, manual sync, schedule |
 | POST | `/api/v1/integrations/firestore/runs/:id/apply` | integrations.manage | apply the latest held sync |
 | GET/POST | `/api/v1/notifications`, `/:id/read`, `/read-all` | system.view | in-app notifications |
+| GET | `/api/v1/control/overview` | agents.view | agents (state, reason, current job, limits, allowed actions), worker liveness, queue |
+| POST | `/api/v1/agents/:key/:action` | agents.control | activate, start, pause, resume, stop, disable, enable, acknowledge |
+| POST | `/api/v1/agents/:key/settings` | agents.control | working days/hours (Tashkent), daily task limit |
+| GET | `/api/v1/agents/:key/history`, `/api/v1/jobs[?status=]` | agents.view | transition history, recent jobs with events |
+| POST | `/api/v1/control/stop-all` | agents.control | kill switch |
+| GET/POST | `/api/v1/integrations/telegram`, `/test`, `/webhook` | integrations.manage | owner bot status, real test message, register webhook |
+| POST | `/api/v1/telegram/webhook` | secret header | owner bot commands `/status`, `/stop_all` |
+
+Background work: cron runs `node apps/api/dist/worker.js --once` every minute (DB lock, ≤ 50 s budget).
 
 Errors: `{"error": {"code", "message" (Uzbek), "details"?, "requestId"}}`; every response carries `X-Request-ID`.
 

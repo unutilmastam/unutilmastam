@@ -17,6 +17,7 @@ Status values: **Accepted** · **Proposed** (default we will use unless the owne
 | D-011 | Virtual office in SVG + CSS (A13), mapping logic ported from Smyagent | Proposed |
 | D-012 | Firestore read via REST + service-account JWT instead of the `firebase-admin` package | Accepted |
 | D-013 | Catalog sync safety: price versions, mass-change hold, seed retired by live data | Accepted |
+| D-014 | Worker, lifecycle and budget semantics (Phase 3) | Accepted |
 
 ---
 
@@ -125,3 +126,14 @@ A3 asks for "server-side Firebase Admin SDK with a read-only service account". W
 - Seed products (owner list, MASTER_SPEC §5) are retired automatically when a live product with the same normalized name and weight appears.
 - Sync runs are serialized with a MySQL lease lock (`locks` table) shared with the future cron worker.
 - Scheduled sync (every `intervalMinutes`) is executed by the Phase 3 cron worker; Phase 2 provides manual sync and stores the schedule setting.
+
+## D-014 — Worker, lifecycle and budget semantics (Accepted, Phase 3)
+
+- **Who settles transitional states.** `PAUSING → PAUSED` and `STOPPING → STOPPED` happen immediately when the agent has no running job (in the same request), otherwise at the job's next checkpoint or at the end of the worker run. The UI shows the transitional state until then — it never pretends.
+- **Job interrupted by pause/stop.** A job halted at a checkpoint because its agent left RUNNING goes back to the queue without spending an attempt; a stop additionally cancels queued jobs of that agent.
+- **Disable requires stop.** A7 has no `RUNNING → DISABLED`; the UI offers *Stop* first.
+- **Daily task limit.** Counts jobs started since Tashkent midnight. Hitting it moves the agent `RUNNING → PAUSING → PAUSED` with reason `BUDGET_EXCEEDED` (A6) and notifies the owner. Such a pause is lifted by the worker after midnight (`PAUSED → RUNNING/SCHEDULED`, reason `BUDGET_RESET`); owner pauses are never lifted automatically. Rationale: A6 says "PAUSED", and making the owner resume every morning would defeat a daily limit.
+- **Dead job → agent ERROR.** A job that exhausts its retries puts a RUNNING agent into ERROR (A7: manual acknowledge required) and raises a critical notification.
+- **System jobs.** Owner notification delivery (`notify.telegram`) belongs to no agent, so it keeps working after `/stop_all`.
+- **Unavailable agents.** Agents whose capabilities arrive in later phases exist as DRAFT and refuse `activate`/`start`, so the office never shows an agent "working" without real work (A13).
+- **Owner bot replies** are returned inside the webhook response (no outbound call needed); notifications use `sendMessage` from the worker.

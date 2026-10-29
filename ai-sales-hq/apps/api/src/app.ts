@@ -10,6 +10,8 @@ import { type CatalogSource, firestoreSourceFromFile } from './integrations/fire
 import type { Db } from './lib/db';
 import { AppError } from './lib/errors';
 import { loggerOptions } from './lib/logger';
+import { agentRoutes } from './modules/agents/routes';
+import { AgentService } from './modules/agents/service';
 import { authRoutes } from './modules/auth/routes';
 import { AuthService } from './modules/auth/service';
 import { catalogRoutes } from './modules/catalog/routes';
@@ -18,6 +20,9 @@ import { CatalogSyncService } from './modules/catalog/sync';
 import { IntegrationService } from './modules/integrations/service';
 import { notificationRoutes } from './modules/notifications/routes';
 import { systemRoutes } from './modules/system/routes';
+import { type TelegramApi, telegramApi } from './modules/telegram/client';
+import { telegramRoutes } from './modules/telegram/routes';
+import { TelegramService } from './modules/telegram/service';
 
 export interface AppDeps {
   config: Config;
@@ -28,6 +33,8 @@ export interface AppDeps {
   logger?: boolean;
   // Test/dev override for the Firestore catalog source; null = not configured.
   catalogSource?: CatalogSource | null;
+  // Test override for the Telegram Bot API.
+  telegramApi?: TelegramApi | null;
 }
 
 export function catalogSourceFor(deps: AppDeps): () => CatalogSource | null {
@@ -105,6 +112,14 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   const sync = new CatalogSyncService(db, getSource, now);
   const catalog = new CatalogService(db, now);
   const integrations = new IntegrationService(db, getSource, () => getSource() !== null, now);
+  const agents = new AgentService(db, now);
+  const tgApi =
+    deps.telegramApi !== undefined
+      ? deps.telegramApi
+      : config.TELEGRAM_BOT_TOKEN
+        ? telegramApi(config.TELEGRAM_BOT_TOKEN)
+        : null;
+  const telegram = new TelegramService(db, config, tgApi, agents, now);
 
   await app.register(
     async (api) => {
@@ -113,6 +128,8 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
       authRoutes(api, { auth, config });
       catalogRoutes(api, { catalog, sync, integrations });
       notificationRoutes(api, { db, now });
+      agentRoutes(api, { db, agents, now });
+      telegramRoutes(api, { telegram, config });
       api.setNotFoundHandler((req, reply) =>
         reply.code(404).send({ error: { code: 'not_found', message: 'Topilmadi', requestId: req.id } }),
       );

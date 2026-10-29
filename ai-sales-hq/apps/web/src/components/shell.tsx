@@ -8,11 +8,12 @@ import { api, type Me } from '@/lib/api';
 import { useSession } from '@/lib/session';
 import { t } from '@/lib/strings';
 
-const NAV = [
+const NAV: { href: string; label: string; short?: string; icon: string; permission?: string }[] = [
   { href: '/', label: t.nav.home, icon: '◇' },
+  { href: '/agents/', label: t.nav.agents, icon: '◎', permission: 'agents.view' },
   { href: '/catalog/', label: t.nav.catalog, icon: '▤' },
   { href: '/integrations/', label: t.nav.integrations, icon: '⇄', permission: 'integrations.manage' },
-  { href: '/notifications/', label: t.nav.notifications, icon: '◉' },
+  { href: '/notifications/', label: t.nav.notifications, short: t.nav.notificationsShort, icon: '◉' },
 ];
 
 /** Authenticated page frame: top bar on desktop, bottom navigation on phones. */

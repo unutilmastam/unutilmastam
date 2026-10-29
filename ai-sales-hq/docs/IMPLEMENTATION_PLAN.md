@@ -30,7 +30,7 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [x] GitHub Actions `ai-sales-hq.yml` (`paths: ['ai-sales-hq/**']`, `working-directory: ai-sales-hq`): install, typecheck, lint, unit tests, integration tests with **MySQL 8 service container**, build, dependency audit, secret scan
 - [x] Green CI run ✅
 
-## Phase 2 — Database schema + Firestore product sync ✅ (code done; CI pending)
+## Phase 2 — Database schema + Firestore product sync ✅
 - [x] Schema: Product, ProductPrice (versions), ProductSyncRun, Integration, Notification, SystemSetting, Lock (prospects/orders tables come with Phases 5 and 7)
 - [x] Money as integer so'm (`BigInt`); UTC timestamps; UI shows Asia/Tashkent
 - [x] Firestore adapter over REST with service-account JWT, read-only (D-012) + fake source for tests
@@ -42,18 +42,21 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [x] Catalog page (confirm prices, set wholesale), in-app notifications (sync failed/held, prices to confirm)
 - [x] Owner guide `docs/FIRESTORE_SETUP_UZ.md` (service account with Cloud Datastore Viewer only)
 - [ ] ⏳ Owner creates the read-only service account (only needed after deployment)
-- [ ] Green CI run
+- [x] Green CI run ✅
 
-## Phase 3 — Director Control Center + agent lifecycle + cron worker
-- [ ] A7 state machine (9 states incl. STOPPING) in one domain module with a full transition-table test
-- [ ] AuditLog row on every transition (actor, from, to, reason, time)
-- [ ] Job table with leases (`locked_until`, `attempts`, `run_at`, `idempotency_key`), backoff, dead-letter view
-- [ ] `worker --once`: DB lock, ≤ 50 s budget, state check before each job and between steps
-- [ ] Scheduled catalog sync job (interval from the integration settings)
-- [ ] Schedules (working days/hours, Asia/Tashkent), per-agent daily task limit, AI budget → `PAUSED / BUDGET_EXCEEDED`
-- [ ] Control Center UI (functional, mobile): list, details, start/pause/resume/stop/disable/re-enable, history, failures
-- [ ] Polling 5–10 s; UI shows only persisted state
-- [ ] Owner Telegram bot (new token): notifications + `/status`, `/stop_all`
+## Phase 3 — Director Control Center + agent lifecycle + cron worker ✅ (code done; CI pending)
+- [x] A7 state machine (9 states incl. STOPPING) in `domain/agent-lifecycle.ts`; test covers all 81 state pairs
+- [x] AuditLog row on every transition (actor, from, to, reason); conditional updates prevent races
+- [x] Six agents (MASTER_SPEC §9); each may run only its own job types; agents of later phases stay DRAFT and cannot start
+- [x] Job table with leases, idempotency keys, exponential backoff, DEAD after max attempts, stale-lease recovery, job events
+- [x] `node dist/worker.js --once --max-seconds 50`: DB lock (no overlap), agent state checked before each job and at checkpoints, worker runs recorded for liveness
+- [x] Pause/stop: queued work cancelled on stop, running job re-queued unharmed at its checkpoint, PAUSING/STOPPING settle when idle
+- [x] Schedules (working days/hours, Asia/Tashkent, overnight windows), per-agent daily task limit → PAUSED `BUDGET_EXCEEDED`, lifted at Tashkent midnight (owner pauses never auto-lift)
+- [x] Dead job on a RUNNING agent → ERROR + critical notification; owner must acknowledge
+- [x] Scheduled catalog sync job (Director, interval from the integration settings)
+- [x] Control Center UI: worker liveness, queue, per-agent state/reason/current job/limits/schedule, allowed actions only, stop-all; 5 s polling
+- [x] Owner Telegram bot (separate token): notification delivery as a system job (works even when agents are stopped), webhook with secret header + chat allow-list, `/status`, `/stop_all`; CONNECTED only after a real call
+- [ ] AI spend budget → `BUDGET_EXCEEDED` (hook is ready; AI usage arrives with Phase 6)
 - [ ] Green CI run
 
 ## Phase 4 — Premium interface + virtual office (real data)

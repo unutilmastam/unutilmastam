@@ -169,6 +169,8 @@ function Integrations() {
         </Card>
       )}
 
+      <TelegramCard />
+
       <Card>
         <h2 className="mb-3 font-semibold">{t.integrations.settings}</h2>
         <form onSubmit={saveSettings} className="flex flex-wrap items-end gap-3">
@@ -224,5 +226,78 @@ function Row({ k, v, bad }: { k: string; v: string; bad?: boolean }) {
       <dt className="text-mist">{k}</dt>
       <dd className={bad ? 'text-bad' : ''}>{v}</dd>
     </div>
+  );
+}
+
+interface TgStatus {
+  status: 'NOT_CONFIGURED' | 'CONFIGURED' | 'CONNECTED' | 'ERROR';
+  lastSuccessAt: string | null;
+  lastError: string | null;
+  webhookReady: boolean;
+}
+
+function TelegramCard() {
+  const [s, setS] = useState<TgStatus | null>(null);
+  const [msg, setMsg] = useState<{ kind: 'error' | 'ok'; text: string } | null>(null);
+  const load = useCallback(() => api<TgStatus>('/integrations/telegram').then(setS), []);
+  useEffect(() => {
+    void load().catch(() => undefined);
+  }, [load]);
+  const run = async (fn: () => Promise<string>) => {
+    setMsg(null);
+    try {
+      setMsg({ kind: 'ok', text: await fn() });
+    } catch (e) {
+      setMsg({ kind: 'error', text: (e as Error).message });
+    }
+    await load().catch(() => undefined);
+  };
+  if (!s) return null;
+  return (
+    <Card>
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="font-semibold">{t.telegram.title}</h2>
+        <Pill tone={TONE[s.status]}>{t.integrations.status[s.status]}</Pill>
+      </div>
+      <p className="mb-3 text-sm text-mist">{t.telegram.intro}</p>
+      {msg && <Alert kind={msg.kind}>{msg.text}</Alert>}
+      {s.status === 'NOT_CONFIGURED' ? (
+        <Alert kind="info">{t.telegram.notConfigured}</Alert>
+      ) : (
+        <>
+          <dl className="mb-3 grid gap-1 text-sm">
+            <Row k={t.integrations.lastSuccess} v={when(s.lastSuccessAt, t.integrations.never)} />
+            {s.lastError && <Row k={t.integrations.lastError} v={s.lastError} bad />}
+          </dl>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Button
+              variant="ghost"
+              onClick={() =>
+                run(async () =>
+                  t.telegram.testOk(
+                    (await api<{ bot: string }>('/integrations/telegram/test', { method: 'POST' })).bot,
+                  ),
+                )
+              }
+            >
+              {t.telegram.test}
+            </Button>
+            {s.webhookReady && (
+              <Button
+                variant="ghost"
+                onClick={() =>
+                  run(async () => {
+                    await api('/integrations/telegram/webhook', { method: 'POST' });
+                    return t.telegram.webhookOk;
+                  })
+                }
+              >
+                {t.telegram.webhook}
+              </Button>
+            )}
+          </div>
+        </>
+      )}
+    </Card>
   );
 }
