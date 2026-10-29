@@ -15,6 +15,8 @@ Status values: **Accepted** · **Proposed** (default we will use unless the owne
 | D-009 | Separate owner notification bot; never share `@UnutilmasTamBot`'s token | Accepted (A5) |
 | D-010 | Root PWA security issues are reported, not fixed, in this project | Accepted |
 | D-011 | Virtual office in SVG + CSS (A13), mapping logic ported from Smyagent | Proposed |
+| D-012 | Firestore read via REST + service-account JWT instead of the `firebase-admin` package | Accepted |
+| D-013 | Catalog sync safety: price versions, mass-change hold, seed retired by live data | Accepted |
 
 ---
 
@@ -105,3 +107,21 @@ CLAUDE.md forbids changes outside `ai-sales-hq/`. Findings S1–S9 are reported 
 ## D-011 — Virtual office SVG + CSS (Proposed)
 
 A13: SVG + CSS, no 3D, no Canvas game loop. Smyagent's tested pure mapping (`character_state`) is ported; figures show only persisted state.
+
+## D-012 — Firestore over REST, not `firebase-admin` (Accepted, Phase 2)
+
+A3 asks for "server-side Firebase Admin SDK with a read-only service account". We keep the substance (server-side, service account, IAM role **Cloud Datastore Viewer**, key file outside `public_html`) but call the Firestore REST API directly with a self-signed RS256 JWT (`src/integrations/firestore.ts`, ~150 lines, only `GET`):
+
+- `firebase-admin` pulls in gRPC and ~100 MB of resident memory; CloudLinux LVE memory limits on shared hosting are tight (hosting checklist §4).
+- We read exactly two documents (`app/products`, `app/categories`); the REST surface is enough and fully unit-tested with a fake `fetch`.
+- The code physically cannot write: there is no write method, and the IAM role would refuse it anyway.
+
+## D-013 — Catalog sync safety (Accepted, Phase 2)
+
+- Prices are versioned rows (`product_prices`): a change supersedes the previous row (`validTo`), never updates it. Synced retail prices start `OWNER_UNCONFIRMED`; the owner confirms each once (A3). Owner-entered wholesale prices are `CONFIRMED` immediately.
+- Retail prices of `FIRESTORE` products cannot be overridden in this app — the website is authoritative (MASTER_SPEC §4/§5).
+- Mass-change guard (D-006): if more than 30 % of existing active products change price or disappear, or the source suddenly has zero valid products, the run is `HELD`. The owner sees the diff and can apply it (a fresh read applied without the guard, audit-logged).
+- Products missing from the source are deactivated, never deleted.
+- Seed products (owner list, MASTER_SPEC §5) are retired automatically when a live product with the same normalized name and weight appears.
+- Sync runs are serialized with a MySQL lease lock (`locks` table) shared with the future cron worker.
+- Scheduled sync (every `intervalMinutes`) is executed by the Phase 3 cron worker; Phase 2 provides manual sync and stores the schedule setting.

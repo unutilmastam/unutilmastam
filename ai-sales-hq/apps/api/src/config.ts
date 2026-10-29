@@ -23,6 +23,9 @@ const schema = z
     TRUST_PROXY: bool.default(true),
     // In production every owner must enrol TOTP before using the app (SPEC_AMENDMENTS A11).
     TOTP_REQUIRED: bool.optional(),
+    // Google service account JSON (role: Cloud Datastore Viewer) for the read-only catalog sync.
+    // Kept outside public_html with permissions 600. Absent = integration NOT_CONFIGURED.
+    FIREBASE_SERVICE_ACCOUNT_FILE: z.string().min(1).optional(),
   })
   .transform((c) => ({ ...c, TOTP_REQUIRED: c.TOTP_REQUIRED ?? c.NODE_ENV === 'production' }))
   .superRefine((c, ctx) => {

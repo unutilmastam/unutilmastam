@@ -6,11 +6,17 @@ import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { Config } from './config';
 import { makeGuard } from './http/guard';
+import { type CatalogSource, firestoreSourceFromFile } from './integrations/firestore';
 import type { Db } from './lib/db';
 import { AppError } from './lib/errors';
 import { loggerOptions } from './lib/logger';
 import { authRoutes } from './modules/auth/routes';
 import { AuthService } from './modules/auth/service';
+import { catalogRoutes } from './modules/catalog/routes';
+import { CatalogService } from './modules/catalog/service';
+import { CatalogSyncService } from './modules/catalog/sync';
+import { IntegrationService } from './modules/integrations/service';
+import { notificationRoutes } from './modules/notifications/routes';
 import { systemRoutes } from './modules/system/routes';
 
 export interface AppDeps {
@@ -20,6 +26,15 @@ export interface AppDeps {
   // Directory with the static PWA build (apps/web/out). Served at "/" when present.
   webDir?: string;
   logger?: boolean;
+  // Test/dev override for the Firestore catalog source; null = not configured.
+  catalogSource?: CatalogSource | null;
+}
+
+export function catalogSourceFor(deps: AppDeps): () => CatalogSource | null {
+  if (deps.catalogSource !== undefined) return () => deps.catalogSource ?? null;
+  const file = deps.config.FIREBASE_SERVICE_ACCOUNT_FILE;
+  const source = file ? firestoreSourceFromFile(file) : null;
+  return () => source;
 }
 
 const REQUEST_ID = /^[A-Za-z0-9._-]{8,64}$/;
@@ -84,13 +99,20 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     });
   });
 
-  const auth = new AuthService(db, config, deps.now);
+  const now = deps.now ?? (() => new Date());
+  const auth = new AuthService(db, config, now);
+  const getSource = catalogSourceFor(deps);
+  const sync = new CatalogSyncService(db, getSource, now);
+  const catalog = new CatalogService(db, now);
+  const integrations = new IntegrationService(db, getSource, () => getSource() !== null, now);
 
   await app.register(
     async (api) => {
       api.addHook('preHandler', makeGuard(config, auth));
       systemRoutes(api, { db });
       authRoutes(api, { auth, config });
+      catalogRoutes(api, { catalog, sync, integrations });
+      notificationRoutes(api, { db, now });
       api.setNotFoundHandler((req, reply) =>
         reply.code(404).send({ error: { code: 'not_found', message: 'Topilmadi', requestId: req.id } }),
       );

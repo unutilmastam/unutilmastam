@@ -32,6 +32,7 @@ npm run test:integration -w @hq/api
 
 ```bash
 cp apps/api/.env.example apps/api/.env   # fill DATABASE_URL, APP_ORIGIN=http://127.0.0.1:3001, APP_SECRET_KEY, SETUP_TOKEN
+                                         # optional: FIREBASE_SERVICE_ACCOUNT_FILE (docs/FIRESTORE_SETUP_UZ.md)
 (cd apps/api && npx prisma migrate deploy)
 NODE_ENV=production npm run build
 node apps/api/dist/server.js             # http://127.0.0.1:3001 -> /setup creates the owner, then 2FA enrolment
@@ -53,6 +54,14 @@ For UI work: `npm run dev -w @hq/api` (port 3001) and `npm run dev -w @hq/web` (
 | POST | `/api/v1/auth/logout` | session | revoke session |
 | POST | `/api/v1/auth/password` | session | change password, logs out other devices |
 | POST | `/api/v1/auth/totp/setup` / `confirm` | session | enrol 2FA, returns 10 one-time recovery codes |
+| GET | `/api/v1/catalog/products[?inactive=1]`, `/catalog/products/:id` | catalog.view | products with current retail/wholesale price and status; detail with price history |
+| POST | `/api/v1/catalog/seed` | prices.confirm | load the owner's initial list into an empty catalog |
+| POST | `/api/v1/catalog/prices/:id/confirm` | prices.confirm | confirm a current price |
+| POST | `/api/v1/catalog/products/:id/price` `{type, amount}` | prices.confirm | owner price (wholesale; retail only for non-website products) |
+| GET | `/api/v1/integrations/firestore` | integrations.manage | status, settings, last 10 sync runs |
+| POST | `/api/v1/integrations/firestore/test` \| `/sync` \| `/settings` | integrations.manage | real connection test, manual sync, schedule |
+| POST | `/api/v1/integrations/firestore/runs/:id/apply` | integrations.manage | apply the latest held sync |
+| GET/POST | `/api/v1/notifications`, `/:id/read`, `/read-all` | system.view | in-app notifications |
 
 Errors: `{"error": {"code", "message" (Uzbek), "details"?, "requestId"}}`; every response carries `X-Request-ID`.
 

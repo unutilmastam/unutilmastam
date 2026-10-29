@@ -17,36 +17,36 @@ enum Role {
 }
 
 model User {
-  id                 String              @id @default(uuid()) @db.Char(36)
-  username           String              @unique @db.VarChar(64)
-  displayName        String              @map("display_name") @db.VarChar(120)
-  passwordHash       String              @map("password_hash") @db.VarChar(255)
-  role               Role
-  isActive           Boolean             @default(true) @map("is_active")
-  totpSecretEnc      String?             @map("totp_secret_enc") @db.VarChar(255)
-  totpPendingEnc     String?             @map("totp_pending_enc") @db.VarChar(255)
-  totpEnabledAt      DateTime?           @map("totp_enabled_at")
-  totpLastStep       BigInt?             @map("totp_last_step")
-  createdAt          DateTime            @default(now()) @map("created_at")
-  updatedAt          DateTime            @updatedAt @map("updated_at")
-  sessions           Session[]
-  totpRecoveryCodes  TotpRecoveryCode[]
+  id                String             @id @default(uuid()) @db.Char(36)
+  username          String             @unique @db.VarChar(64)
+  displayName       String             @map("display_name") @db.VarChar(120)
+  passwordHash      String             @map("password_hash") @db.VarChar(255)
+  role              Role
+  isActive          Boolean            @default(true) @map("is_active")
+  totpSecretEnc     String?            @map("totp_secret_enc") @db.VarChar(255)
+  totpPendingEnc    String?            @map("totp_pending_enc") @db.VarChar(255)
+  totpEnabledAt     DateTime?          @map("totp_enabled_at")
+  totpLastStep      BigInt?            @map("totp_last_step")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  sessions          Session[]
+  totpRecoveryCodes TotpRecoveryCode[]
 
   @@map("users")
 }
 
 model Session {
-  id          String    @id @default(uuid()) @db.Char(36)
-  tokenHash   String    @unique @map("token_hash") @db.Char(64)
-  userId      String    @map("user_id") @db.Char(36)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Restrict)
-  csrfToken   String    @map("csrf_token") @db.Char(43)
-  ipAddress   String?   @map("ip_address") @db.VarChar(45)
-  userAgent   String?   @map("user_agent") @db.VarChar(255)
-  createdAt   DateTime  @default(now()) @map("created_at")
-  lastSeenAt  DateTime  @default(now()) @map("last_seen_at")
-  expiresAt   DateTime  @map("expires_at")
-  revokedAt   DateTime? @map("revoked_at")
+  id         String    @id @default(uuid()) @db.Char(36)
+  tokenHash  String    @unique @map("token_hash") @db.Char(64)
+  userId     String    @map("user_id") @db.Char(36)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  csrfToken  String    @map("csrf_token") @db.Char(43)
+  ipAddress  String?   @map("ip_address") @db.VarChar(45)
+  userAgent  String?   @map("user_agent") @db.VarChar(255)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  lastSeenAt DateTime  @default(now()) @map("last_seen_at")
+  expiresAt  DateTime  @map("expires_at")
+  revokedAt  DateTime? @map("revoked_at")
 
   @@index([userId])
   @@map("sessions")
@@ -65,11 +65,11 @@ model TotpRecoveryCode {
 }
 
 model LoginAttempt {
-  id          BigInt   @id @default(autoincrement())
-  username    String   @db.VarChar(64)
-  ipAddress   String?  @map("ip_address") @db.VarChar(45)
-  succeeded   Boolean
-  createdAt   DateTime @default(now()) @map("created_at")
+  id        BigInt   @id @default(autoincrement())
+  username  String   @db.VarChar(64)
+  ipAddress String?  @map("ip_address") @db.VarChar(45)
+  succeeded Boolean
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([username, createdAt])
   @@index([ipAddress, createdAt])
@@ -78,17 +78,194 @@ model LoginAttempt {
 
 // Append-only. Never cascade-deleted (MASTER_SPEC §14).
 model AuditLog {
-  id          BigInt   @id @default(autoincrement())
-  actorType   String   @map("actor_type") @db.VarChar(16)
-  actorId     String?  @map("actor_id") @db.VarChar(64)
-  action      String   @db.VarChar(80)
-  entityType  String?  @map("entity_type") @db.VarChar(40)
-  entityId    String?  @map("entity_id") @db.VarChar(64)
-  details     Json?
-  ipAddress   String?  @map("ip_address") @db.VarChar(45)
-  createdAt   DateTime @default(now()) @map("created_at")
+  id         BigInt   @id @default(autoincrement())
+  actorType  String   @map("actor_type") @db.VarChar(16)
+  actorId    String?  @map("actor_id") @db.VarChar(64)
+  action     String   @db.VarChar(80)
+  entityType String?  @map("entity_type") @db.VarChar(40)
+  entityId   String?  @map("entity_id") @db.VarChar(64)
+  details    Json?
+  ipAddress  String?  @map("ip_address") @db.VarChar(45)
+  createdAt  DateTime @default(now()) @map("created_at")
 
   @@index([entityType, entityId])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 2 — catalog, prices, integrations, notifications
+// ---------------------------------------------------------------------------
+
+enum ProductSource {
+  FIRESTORE // unutilmastam.uz Firestore app, read-only sync
+  SEED // owner-provided list (MASTER_SPEC §5), awaiting verification
+  OWNER // created by the owner in this app
+}
+
+enum Availability {
+  UNKNOWN
+  UNVERIFIED // a stock number exists at the source but nobody vouches for it
+  IN_STOCK
+  OUT_OF_STOCK
+}
+
+enum PriceType {
+  RETAIL
+  WHOLESALE
+}
+
+enum PriceStatus {
+  OWNER_UNCONFIRMED
+  CONFIRMED
+  SUPERSEDED
+}
+
+model Product {
+  id                 String         @id @default(uuid()) @db.Char(36)
+  source             ProductSource
+  externalId         String?        @map("external_id") @db.VarChar(64)
+  name               String         @db.VarChar(200)
+  description        String?        @db.Text
+  categoryName       String?        @map("category_name") @db.VarChar(120)
+  packageWeightGrams Int?           @map("package_weight_grams")
+  unitType           String?        @map("unit_type") @db.VarChar(32)
+  sku                String?        @db.VarChar(64)
+  isFrozen           Boolean        @default(true) @map("is_frozen")
+  availability       Availability   @default(UNKNOWN)
+  stockReported      Int?           @map("stock_reported")
+  hasSourceImage     Boolean        @default(false) @map("has_source_image")
+  salesDescription   String?        @map("sales_description") @db.Text
+  isActive           Boolean        @default(true) @map("is_active")
+  deactivatedAt      DateTime?      @map("deactivated_at")
+  supersededById     String?        @map("superseded_by_id") @db.Char(36)
+  lastSyncedAt       DateTime?      @map("last_synced_at")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+  prices             ProductPrice[]
+
+  @@unique([source, externalId])
+  @@index([isActive])
+  @@map("products")
+}
+
+// Price versions: never updated in place except to supersede. Amounts are integer so'm (A8).
+model ProductPrice {
+  id            String        @id @default(uuid()) @db.Char(36)
+  productId     String        @map("product_id") @db.Char(36)
+  product       Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
+  priceType     PriceType     @map("price_type")
+  amount        BigInt
+  currency      String        @default("UZS") @db.Char(3)
+  source        ProductSource
+  status        PriceStatus
+  validFrom     DateTime      @map("valid_from")
+  validTo       DateTime?     @map("valid_to")
+  confirmedById String?       @map("confirmed_by_id") @db.Char(36)
+  confirmedAt   DateTime?     @map("confirmed_at")
+  syncRunId     String?       @map("sync_run_id") @db.Char(36)
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  @@index([productId, priceType, validTo])
+  @@map("product_prices")
+}
+
+enum SyncStatus {
+  RUNNING
+  SUCCEEDED
+  FAILED
+  HELD // mass change detected; waits for the owner
+  APPLIED_AFTER_HOLD
+}
+
+enum SyncTrigger {
+  SCHEDULED
+  MANUAL
+  OWNER_APPROVED
+}
+
+model ProductSyncRun {
+  id               String        @id @default(uuid()) @db.Char(36)
+  source           ProductSource
+  trigger          SyncTrigger
+  status           SyncStatus
+  startedAt        DateTime      @map("started_at")
+  finishedAt       DateTime?     @map("finished_at")
+  sourceUpdatedAt  DateTime?     @map("source_updated_at")
+  fetchedCount     Int           @default(0) @map("fetched_count")
+  createdCount     Int           @default(0) @map("created_count")
+  updatedCount     Int           @default(0) @map("updated_count")
+  deactivatedCount Int           @default(0) @map("deactivated_count")
+  priceChangeCount Int           @default(0) @map("price_change_count")
+  invalidCount     Int           @default(0) @map("invalid_count")
+  heldReason       String?       @map("held_reason") @db.VarChar(255)
+  // Validation problems and the held diff summary; never credentials.
+  report           Json?
+  errorMessage     String?       @map("error_message") @db.VarChar(500)
+  actorUserId      String?       @map("actor_user_id") @db.Char(36)
+
+  @@index([startedAt])
+  @@map("product_sync_runs")
+}
+
+enum IntegrationStatus {
+  NOT_CONFIGURED
+  CONFIGURED // credentials present, never successfully called
+  CONNECTED // last real call succeeded
+  ERROR
+}
+
+model Integration {
+  key           String            @id @db.VarChar(40)
+  status        IntegrationStatus
+  lastCheckedAt DateTime?         @map("last_checked_at")
+  lastSuccessAt DateTime?         @map("last_success_at")
+  lastError     String?           @map("last_error") @db.VarChar(500)
+  // Non-secret settings only (interval, enabled flags). Secrets stay in env/files.
+  settings      Json?
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+
+  @@map("integrations")
+}
+
+enum NotificationSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model Notification {
+  id        String               @id @default(uuid()) @db.Char(36)
+  kind      String               @db.VarChar(60)
+  severity  NotificationSeverity
+  title     String               @db.VarChar(200)
+  body      String               @db.Text
+  link      String?              @db.VarChar(255)
+  // Same key while unread => no duplicate notification (e.g. repeated sync failures).
+  dedupeKey String?              @map("dedupe_key") @db.VarChar(120)
+  readAt    DateTime?            @map("read_at")
+  createdAt DateTime             @default(now()) @map("created_at")
+
+  @@index([readAt, createdAt])
+  @@index([dedupeKey])
+  @@map("notifications")
+}
+
+model SystemSetting {
+  key         String   @id @db.VarChar(80)
+  value       Json
+  updatedById String?  @map("updated_by_id") @db.Char(36)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
+
+// Named lease locks (catalog sync, cron worker). Expired leases can be taken over.
+model Lock {
+  name        String   @id @db.VarChar(80)
+  holder      String   @db.VarChar(80)
+  lockedUntil DateTime @map("locked_until")
+  acquiredAt  DateTime @map("acquired_at")
+
+  @@map("locks")
 }

@@ -53,4 +53,91 @@ export const t = {
     logout: 'Chiqish',
     security: 'Xavfsizlik',
   },
+  nav: {
+    home: 'Bosh sahifa',
+    catalog: 'Katalog',
+    integrations: 'Integratsiya',
+    notifications: 'Bildirishnomalar',
+  },
+  catalog: {
+    title: 'Mahsulotlar katalogi',
+    intro: 'Agentlar faqat siz tasdiqlagan narxlarni mijozga aytadi. Ulgurji narxlarni faqat siz kiritasiz.',
+    empty: "Katalog hozircha bo'sh.",
+    seed: "Boshlang'ich ro'yxatni yuklash (12 ta mahsulot)",
+    seedHint: "Siz bergan ro'yxat. Sayt bilan sinxronlangach, saytdagi ma'lumot ustun bo'ladi.",
+    showInactive: "O'chirilganlarni ham ko'rsatish",
+    retail: 'Chakana',
+    wholesale: 'Ulgurji',
+    noWholesale: 'Ulgurji narx kiritilmagan',
+    unconfirmed: 'Tasdiqlanmagan',
+    confirmed: 'Tasdiqlangan',
+    confirm: 'Tasdiqlash',
+    setWholesale: 'Ulgurji narxni saqlash',
+    setRetail: 'Chakana narxni saqlash',
+    amountPlaceholder: "Narx, so'm",
+    inactive: "O'chirilgan",
+    availability: {
+      UNKNOWN: "Mavjudligi noma'lum",
+      UNVERIFIED: 'Qoldiq tekshirilmagan',
+      IN_STOCK: 'Mavjud',
+      OUT_OF_STOCK: 'Mavjud emas',
+    } as Record<string, string>,
+    source: {
+      FIRESTORE: 'Saytdan',
+      SEED: "Boshlang'ich ro'yxat",
+      OWNER: 'Qo‘lda',
+    } as Record<string, string>,
+    stockReported: (n: number) => `Saytdagi qoldiq: ${n}`,
+  },
+  integrations: {
+    title: 'Sayt bilan integratsiya',
+    intro:
+      "Mahsulotlar va narxlar unutilmastam.uz ilovasi bazasidan (Firestore) faqat o'qiladi. Biz u yerga hech narsa yozmaymiz.",
+    status: {
+      NOT_CONFIGURED: 'Sozlanmagan',
+      CONFIGURED: 'Sozlangan, hali tekshirilmagan',
+      CONNECTED: 'Ulangan',
+      ERROR: 'Xatolik',
+    } as Record<string, string>,
+    notConfiguredHelp: "Ulash uchun Google xizmat hisobi kaliti kerak. Yo'riqnoma: docs/FIRESTORE_SETUP_UZ.md",
+    lastSuccess: 'Oxirgi muvaffaqiyatli sinxronlash',
+    lastChecked: 'Oxirgi tekshiruv',
+    lastError: 'Oxirgi xato',
+    never: 'hali yo‘q',
+    test: 'Ulanishni tekshirish',
+    syncNow: 'Hozir sinxronlash',
+    testOk: (n: number, bad: number) =>
+      `Ulanish ishlayapti: ${n} ta mahsulot o'qildi${bad ? `, ${bad} tasi noto'g'ri` : ''}.`,
+    settings: 'Avtomatik sinxronlash',
+    enabled: 'Yoqilgan',
+    interval: 'Har necha daqiqada',
+    save: 'Saqlash',
+    saved: 'Saqlandi',
+    runs: 'Oxirgi sinxronlashlar',
+    runStatus: {
+      RUNNING: 'Ishlayapti',
+      SUCCEEDED: 'Muvaffaqiyatli',
+      FAILED: 'Xato',
+      HELD: "To'xtatildi — tasdiq kutilmoqda",
+      APPLIED_AFTER_HOLD: 'Tasdiqdan keyin qo‘llandi',
+    } as Record<string, string>,
+    counts: (r: {
+      createdCount: number;
+      updatedCount: number;
+      priceChangeCount: number;
+      deactivatedCount: number;
+      invalidCount: number;
+    }) =>
+      `yangi ${r.createdCount} · o'zgargan ${r.updatedCount} · narx ${r.priceChangeCount} · o'chirilgan ${r.deactivatedCount} · noto'g'ri ${r.invalidCount}`,
+    apply: "O'zgarishlarni qo'llash",
+    applyConfirm: "Saytdagi joriy ma'lumotlar qayta o'qiladi va himoyasiz qo'llanadi. Davom etasizmi?",
+    heldChanges: "To'xtatilgan narx o'zgarishlari",
+    removed: "O'chiriladigan mahsulotlar",
+  },
+  notifications: {
+    title: 'Bildirishnomalar',
+    empty: "Bildirishnoma yo'q",
+    markAll: "Hammasini o'qilgan deb belgilash",
+    open: 'Ochish',
+  },
 } as const;

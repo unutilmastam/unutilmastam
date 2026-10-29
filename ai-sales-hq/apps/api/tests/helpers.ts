@@ -1,5 +1,5 @@
 import type { FastifyInstance, LightMyRequestResponse } from 'fastify';
-import { buildApp } from '../src/app';
+import { type AppDeps, buildApp } from '../src/app';
 import { loadConfig } from '../src/config';
 import { createDb, type Db } from '../src/lib/db';
 
@@ -11,6 +11,13 @@ export const ORIGIN = 'http://localhost:3000';
  * the pool may run the two statements on different connections.)
  */
 export async function resetDb(db: Db): Promise<void> {
+  await db.productPrice.deleteMany();
+  await db.product.deleteMany();
+  await db.productSyncRun.deleteMany();
+  await db.integration.deleteMany();
+  await db.notification.deleteMany();
+  await db.systemSetting.deleteMany();
+  await db.lock.deleteMany();
   await db.totpRecoveryCode.deleteMany();
   await db.session.deleteMany();
   await db.loginAttempt.deleteMany();
@@ -18,10 +25,14 @@ export async function resetDb(db: Db): Promise<void> {
   await db.user.deleteMany();
 }
 
-export async function makeApp(overrides: Record<string, string> = {}, now?: () => Date) {
+export async function makeApp(
+  overrides: Record<string, string> = {},
+  now?: () => Date,
+  extra: Partial<Pick<AppDeps, 'catalogSource'>> = {},
+) {
   const config = loadConfig({ ...process.env, ...overrides });
   const db = createDb(config.DATABASE_URL);
-  const app = await buildApp({ config, db, logger: false, now });
+  const app = await buildApp({ config, db, logger: false, now, ...extra });
   return { app, db, config };
 }
 
@@ -72,5 +83,37 @@ function safeJson(text: string) {
     return JSON.parse(text);
   } catch {
     return null;
+  }
+}
+
+/** Signs up the owner (no TOTP required in these tests) and returns a logged-in client. */
+export async function ownerClient(app: FastifyInstance): Promise<Client> {
+  const c = new Client(app);
+  await c.post('/api/v1/setup', {
+    setupToken: 'setup-token-for-tests-0123456789',
+    username: 'owner',
+    displayName: 'Ega',
+    password: 'Qovun-Termiz-2026',
+  });
+  const res = await c.post('/api/v1/auth/login', { username: 'owner', password: 'Qovun-Termiz-2026' });
+  if (res.status !== 200) throw new Error(`login failed: ${res.status}`);
+  return c;
+}
+
+/** In-memory stand-in for the Firestore catalog (never touches the network). */
+export class FakeCatalogSource {
+  readonly name = 'fake';
+  products: unknown[] = [];
+  categories: unknown[] = [];
+  failWith: Error | null = null;
+  calls = 0;
+
+  async fetchCatalog() {
+    this.calls++;
+    if (this.failWith) throw this.failWith;
+    return {
+      products: { value: JSON.stringify(this.products), updatedAtMs: 1_761_700_000_000 },
+      categories: { value: JSON.stringify(this.categories), updatedAtMs: null },
+    };
   }
 }

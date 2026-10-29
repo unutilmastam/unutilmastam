@@ -18,7 +18,7 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [ ] ⏳ Owner answers `HOSTING_CHECKLIST_UZ.md` (needed before Phase 10 deployment)
 - [ ] ⏳ Owner answers questions Q1–Q6 (PR description)
 
-## Phase 1 — Foundation + auth + CI ✅ (code done; CI pending)
+## Phase 1 — Foundation + auth + CI ✅
 - [x] npm workspaces `apps/api` (Fastify, Prisma 7) + `apps/web` (Next.js static export, Tailwind 4), strict TS, Biome lint/format
 - [x] Config validation (fail fast in production), `.env.example`, `.gitignore`
 - [x] Structured JSON logging with secret redaction, correlation IDs
@@ -28,18 +28,20 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [x] Sessions: httpOnly, Secure, SameSite=Strict, same origin as API; CSRF; login rate limit
 - [x] RBAC foundation (OWNER, STAFF), server-side checks only
 - [x] GitHub Actions `ai-sales-hq.yml` (`paths: ['ai-sales-hq/**']`, `working-directory: ai-sales-hq`): install, typecheck, lint, unit tests, integration tests with **MySQL 8 service container**, build, dependency audit, secret scan
-- [ ] Green CI run
+- [x] Green CI run ✅
 
-## Phase 2 — Database schema + Firestore product sync
-- [ ] Full schema (MASTER_SPEC §14 + A8/A10 split): Product, PriceVersion, ProductSyncRun, Integration, Store/Prospect, ContactPoint, SuppressionRecord, Order, OrderItem (price snapshot), Payment, Approval, Notification, SystemSetting, AIUsageRecord
-- [ ] Money as integer so'm everywhere; UTC timestamps; Asia/Tashkent helpers
-- [ ] Firestore adapter (Admin SDK, read-only SA) + mock adapter for CI
-- [ ] Parser for `app/products|categories|stores|orders|ledger` with strict validation; drop password/photo/IP
-- [ ] Upsert by external id, deactivate missing, price versions, mass-change guard (D-006)
-- [ ] Prices imported as RETAIL, `OWNER_UNCONFIRMED`; wholesale = unconfigured (D-005)
-- [ ] Seed: owner-provided catalog (MASTER_SPEC §5) marked "awaiting verification"
-- [ ] Integration settings page "Sayt bilan integratsiya": status, last sync, errors, manual sync, test connection
-- [ ] ⏳ Owner creates the read-only service account (Uzbek guide provided in this phase)
+## Phase 2 — Database schema + Firestore product sync ✅ (code done; CI pending)
+- [x] Schema: Product, ProductPrice (versions), ProductSyncRun, Integration, Notification, SystemSetting, Lock (prospects/orders tables come with Phases 5 and 7)
+- [x] Money as integer so'm (`BigInt`); UTC timestamps; UI shows Asia/Tashkent
+- [x] Firestore adapter over REST with service-account JWT, read-only (D-012) + fake source for tests
+- [x] Strict parser for `app/products` and `app/categories`; images reduced to a flag; invalid records reported
+- [x] Upsert by external id, deactivate missing, price versions, mass-change hold + owner apply (D-013)
+- [x] Synced retail prices `OWNER_UNCONFIRMED`; owner confirms; wholesale entered only by the owner (D-005)
+- [x] Seed: owner catalog (MASTER_SPEC §5), retired automatically by matching live products
+- [x] "Sayt bilan integratsiya" page: status (never CONNECTED without a real call), last sync, errors, test connection, manual sync, schedule setting, held-run review
+- [x] Catalog page (confirm prices, set wholesale), in-app notifications (sync failed/held, prices to confirm)
+- [x] Owner guide `docs/FIRESTORE_SETUP_UZ.md` (service account with Cloud Datastore Viewer only)
+- [ ] ⏳ Owner creates the read-only service account (only needed after deployment)
 - [ ] Green CI run
 
 ## Phase 3 — Director Control Center + agent lifecycle + cron worker
@@ -47,6 +49,7 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [ ] AuditLog row on every transition (actor, from, to, reason, time)
 - [ ] Job table with leases (`locked_until`, `attempts`, `run_at`, `idempotency_key`), backoff, dead-letter view
 - [ ] `worker --once`: DB lock, ≤ 50 s budget, state check before each job and between steps
+- [ ] Scheduled catalog sync job (interval from the integration settings)
 - [ ] Schedules (working days/hours, Asia/Tashkent), per-agent daily task limit, AI budget → `PAUSED / BUDGET_EXCEEDED`
 - [ ] Control Center UI (functional, mobile): list, details, start/pause/resume/stop/disable/re-enable, history, failures
 - [ ] Polling 5–10 s; UI shows only persisted state

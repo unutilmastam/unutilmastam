@@ -25,5 +25,6 @@
       "performance": { "noImgElement": "off" }
     }
   },
+  "overrides": [{ "includes": ["**/tests/**"], "linter": { "rules": { "suspicious": { "noExplicitAny": "off" } } } }],
   "assist": { "actions": { "source": { "organizeImports": "on" } } }
 }
