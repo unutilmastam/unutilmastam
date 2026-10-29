@@ -79,6 +79,61 @@ jobs:
       - name: Integration tests
         run: npm run test:integration -w @hq/api
 
+  e2e:
+    name: Browser smoke (Playwright, phone + iPad)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: hq_e2e
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/hq_e2e
+      APP_ORIGIN: http://127.0.0.1:3001
+      APP_SECRET_KEY: ci-only-e2e-key-0123456789abcdefghijkl
+      SETUP_TOKEN: e2e-setup-token-0123456789abcdef
+      E2E_SETUP_TOKEN: e2e-setup-token-0123456789abcdef
+      TOTP_REQUIRED: 'true'
+      LOG_LEVEL: warn
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ai-sales-hq/package-lock.json
+      - run: npm ci
+      - name: Build
+        env:
+          NODE_ENV: production
+        run: npm run build
+      - name: Migrate
+        working-directory: ai-sales-hq/apps/api
+        run: npx prisma migrate deploy
+      - name: Start server
+        working-directory: ai-sales-hq/apps/api
+        run: |
+          nohup node dist/server.js > server.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:3001/api/v1/ready && exit 0; sleep 1; done
+          cat server.log; exit 1
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Playwright
+        run: npx playwright test
+      - name: Upload traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: ai-sales-hq/test-results
+          retention-days: 7
+
   secrets:
     name: Secret scan
     runs-on: ubuntu-latest

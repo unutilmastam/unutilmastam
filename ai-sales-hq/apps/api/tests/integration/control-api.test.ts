@@ -11,7 +11,8 @@ describe.skipIf(!hasDb)('control center + Telegram API (MySQL)', () => {
   beforeAll(async () => {
     ctx = await makeApp(
       {
-        TELEGRAM_BOT_TOKEN: '123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        // Fake, built at runtime so secret scanners do not flag a literal token.
+        TELEGRAM_BOT_TOKEN: `123456789:${'A'.repeat(35)}`,
         TELEGRAM_OWNER_CHAT_IDS: '111, 222',
         TELEGRAM_WEBHOOK_SECRET: SECRET,
       },

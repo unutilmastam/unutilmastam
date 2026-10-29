@@ -14,7 +14,7 @@ Status values: **Accepted** · **Proposed** (default we will use unless the owne
 | D-008 | DB job queue + one-minute cron worker, ≤ 50 s budget | Accepted (A2), interval pending |
 | D-009 | Separate owner notification bot; never share `@UnutilmasTamBot`'s token | Accepted (A5) |
 | D-010 | Root PWA security issues are reported, not fixed, in this project | Accepted |
-| D-011 | Virtual office in SVG + CSS (A13), mapping logic ported from Smyagent | Proposed |
+| D-011 | Virtual office in SVG + CSS (A13), pose mapping in `domain/office.ts` | Accepted |
 | D-012 | Firestore read via REST + service-account JWT instead of the `firebase-admin` package | Accepted |
 | D-013 | Catalog sync safety: price versions, mass-change hold, seed retired by live data | Accepted |
 | D-014 | Worker, lifecycle and budget semantics (Phase 3) | Accepted |
@@ -105,9 +105,9 @@ As A2. If the plan's minimum cron interval is > 1 minute, the worker runs at the
 
 CLAUDE.md forbids changes outside `ai-sales-hq/`. Findings S1–S9 are reported to the owner in `PROJECT_AUDIT.md` §4; fixing them would be a separate, explicitly approved task.
 
-## D-011 — Virtual office SVG + CSS (Proposed)
+## D-011 — Virtual office SVG + CSS (Accepted, Phase 4)
 
-A13: SVG + CSS, no 3D, no Canvas game loop. Smyagent's tested pure mapping (`character_state`) is ported; figures show only persisted state.
+A13: SVG + CSS, no 3D, no Canvas game loop. One small SVG scene per room (instead of one large floor plan) so text stays legible at 375 px. The server computes each figure's pose from persisted facts (`domain/office.ts`, idea from Smyagent's `character_state`): *working* only when RUNNING with an active job or one finished in the last 2 minutes; idle, off-hours, lounge (paused), alert (error) and empty desk for the rest. Animations are CSS keyframes, disabled under `prefers-reduced-motion`. Polling every 10 s on the dashboard.
 
 ## D-012 — Firestore over REST, not `firebase-admin` (Accepted, Phase 2)
 

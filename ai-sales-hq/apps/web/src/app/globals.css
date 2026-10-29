@@ -1,24 +1,54 @@
 @import "tailwindcss";
 
-/* Design tokens: deep graphite, midnight navy, restrained champagne gold (MASTER_SPEC §6). */
+/*
+ * Design tokens (MASTER_SPEC §6): deep graphite, midnight navy, restrained champagne gold.
+ * Utilities read these variables, so a theme is just a different set of values.
+ */
 @theme {
-  --color-ink: #0e1116;
-  --color-graphite: #161a21;
-  --color-panel: #1c212a;
-  --color-line: #2a313c;
-  --color-navy: #13203a;
-  --color-mist: #9aa4b2;
+  --color-ink: #0d1015;
+  --color-graphite: #151920;
+  --color-panel: #1b2029;
+  --color-line: #29303b;
+  --color-navy: #14213b;
+  --color-mist: #98a2b0;
   --color-paper: #eef1f5;
   --color-gold: #c9a96a;
-  --color-gold-soft: #e3cf9f;
+  --color-gold-soft: #e2cf9f;
   --color-ok: #4fb286;
   --color-warn: #d6a54a;
   --color-bad: #d9675d;
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 :root {
   color-scheme: dark;
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 18px 40px -28px rgba(0, 0, 0, 0.9);
+  --office-floor: #10141a;
+  --office-wall: #2a313c;
+  --office-desk: #232a35;
+  --office-glow: rgba(201, 169, 106, 0.35);
+}
+
+/* Light theme: warm paper and navy ink; gold darkened for contrast (WCAG AA on white). */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-ink: #f6f3ee;
+  --color-graphite: #ffffff;
+  --color-panel: #f1ede6;
+  --color-line: #dfd8cc;
+  --color-navy: #e7ecf5;
+  --color-mist: #5d6673;
+  --color-paper: #151a22;
+  --color-gold: #8a6a2c;
+  --color-gold-soft: #a7834b;
+  --color-ok: #23825a;
+  --color-warn: #946411;
+  --color-bad: #b3433a;
+  --shadow-card: 0 1px 2px rgba(20, 26, 34, 0.04), 0 16px 32px -24px rgba(20, 26, 34, 0.35);
+  --office-floor: #faf8f4;
+  --office-wall: #d6cdbf;
+  --office-desk: #e6e0d6;
+  --office-glow: rgba(138, 106, 44, 0.25);
 }
 
 html,
@@ -27,11 +57,56 @@ body {
   color: var(--color-paper);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 :focus-visible {
   outline: 2px solid var(--color-gold);
   outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ---- Virtual office animations: subtle, and only for real states ---- */
+@keyframes office-type {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.5px);
+  }
+}
+@keyframes office-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes office-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.office-typing {
+  animation: office-type 0.9s ease-in-out infinite;
+  transform-box: fill-box;
+}
+.office-alert {
+  animation: office-pulse 1.4s ease-in-out infinite;
+}
+.office-screen-on {
+  animation: office-glow 2.4s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -39,6 +114,7 @@ body {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }

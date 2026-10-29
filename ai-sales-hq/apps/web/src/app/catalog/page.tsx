@@ -83,9 +83,9 @@ function Catalog({ me }: { me: Me }) {
           )}
         </Card>
       )}
-      <ul className="grid gap-3 md:grid-cols-2">
+      <ul className="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2">
         {products?.map((p) => (
-          <li key={p.id}>
+          <li key={p.id} className="min-w-0">
             <ProductCard p={p} canEdit={canEdit} act={act} />
           </li>
         ))}
@@ -187,8 +187,12 @@ function PriceForm({ onSubmit, label }: { onSubmit: (e: FormEvent<HTMLFormElemen
         aria-label={label}
         className="min-w-0 flex-1 rounded-xl border border-line bg-ink px-3 py-2 text-sm focus:border-gold/70 focus:outline-none"
       />
-      <button type="submit" className="rounded-xl border border-line px-3 py-2 text-xs hover:border-gold/50">
-        {label}
+      <button
+        type="submit"
+        aria-label={label}
+        className="shrink-0 rounded-xl border border-line px-3 py-2 text-xs hover:border-gold/50"
+      >
+        {t.agents.save}
       </button>
     </form>
   );

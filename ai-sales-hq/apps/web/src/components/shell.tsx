@@ -3,17 +3,19 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { type ReactNode, useEffect, useState } from 'react';
+import { Icon, type IconName } from '@/components/icons';
+import { ThemeToggle } from '@/components/theme';
 import { Alert, Brand, Spinner } from '@/components/ui';
 import { api, type Me } from '@/lib/api';
 import { useSession } from '@/lib/session';
 import { t } from '@/lib/strings';
 
-const NAV: { href: string; label: string; short?: string; icon: string; permission?: string }[] = [
-  { href: '/', label: t.nav.home, icon: '◇' },
-  { href: '/agents/', label: t.nav.agents, icon: '◎', permission: 'agents.view' },
-  { href: '/catalog/', label: t.nav.catalog, icon: '▤' },
-  { href: '/integrations/', label: t.nav.integrations, icon: '⇄', permission: 'integrations.manage' },
-  { href: '/notifications/', label: t.nav.notifications, short: t.nav.notificationsShort, icon: '◉' },
+const NAV: { href: string; label: string; short?: string; icon: IconName; permission?: string }[] = [
+  { href: '/', label: t.nav.home, icon: 'home' },
+  { href: '/agents/', label: t.nav.agents, icon: 'agents', permission: 'agents.view' },
+  { href: '/catalog/', label: t.nav.catalog, icon: 'catalog' },
+  { href: '/integrations/', label: t.nav.integrations, icon: 'link', permission: 'integrations.manage' },
+  { href: '/notifications/', label: t.nav.notifications, short: t.nav.notificationsShort, icon: 'bell' },
 ];
 
 /** Authenticated page frame: top bar on desktop, bottom navigation on phones. */
@@ -46,24 +48,29 @@ export function AppShell({ title, children }: { title: string; children: (me: Me
   return (
     <div className="min-h-dvh pb-20 md:pb-0">
       <header className="sticky top-0 z-10 border-b border-line bg-ink/90 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <Brand />
           <nav className="hidden gap-1 md:flex" aria-label="Asosiy menyu">
             {items.map((n) => (
               <NavLink key={n.href} {...n} active={path === n.href} badge={n.href === '/notifications/' ? unread : 0} />
             ))}
           </nav>
-          <button
-            type="button"
-            className="rounded-xl border border-line px-3 py-2 text-sm hover:border-gold/50"
-            onClick={() => api('/auth/logout', { method: 'POST' }).finally(() => router.replace('/login/'))}
-          >
-            {t.home.logout}
-          </button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle labels={t.theme} />
+            <button
+              type="button"
+              aria-label={t.home.logout}
+              title={t.home.logout}
+              className="grid size-10 place-items-center rounded-xl border border-line text-mist hover:border-gold/50 hover:text-paper"
+              onClick={() => api('/auth/logout', { method: 'POST' }).finally(() => router.replace('/login/'))}
+            >
+              <Icon name="logout" size={18} />
+            </button>
+          </div>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-6">
-        <h1 className="mb-5 text-2xl font-semibold">{title}</h1>
+      <main className="mx-auto max-w-6xl px-4 py-6">
+        <h1 className="mb-5 text-2xl font-semibold tracking-tight">{title}</h1>
         {children(me)}
       </main>
       <nav
@@ -77,10 +84,8 @@ export function AppShell({ title, children }: { title: string; children: (me: Me
             href={n.href}
             className={`relative flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] ${path === n.href ? 'text-gold' : 'text-mist'}`}
           >
-            <span aria-hidden className="text-base">
-              {n.icon}
-            </span>
-            {n.label}
+            <Icon name={n.icon} size={20} />
+            {n.short ?? n.label}
             {n.href === '/notifications/' && unread > 0 && (
               <Badge n={unread} className="absolute top-1.5 right-[28%]" />
             )}
@@ -114,7 +119,14 @@ function Badge({ n, className = '' }: { n: number; className?: string }) {
 }
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <section className={`rounded-2xl border border-line bg-graphite p-4 ${className}`}>{children}</section>;
+  return (
+    <section
+      className={`rounded-2xl border border-line bg-graphite p-4 ${className}`}
+      style={{ boxShadow: 'var(--shadow-card)' }}
+    >
+      {children}
+    </section>
+  );
 }
 
 export function Pill({ tone, children }: { tone: 'ok' | 'warn' | 'bad' | 'muted' | 'gold'; children: ReactNode }) {

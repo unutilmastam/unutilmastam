@@ -44,7 +44,7 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [ ] ⏳ Owner creates the read-only service account (only needed after deployment)
 - [x] Green CI run ✅
 
-## Phase 3 — Director Control Center + agent lifecycle + cron worker ✅ (code done; CI pending)
+## Phase 3 — Director Control Center + agent lifecycle + cron worker ✅
 - [x] A7 state machine (9 states incl. STOPPING) in `domain/agent-lifecycle.ts`; test covers all 81 state pairs
 - [x] AuditLog row on every transition (actor, from, to, reason); conditional updates prevent races
 - [x] Six agents (MASTER_SPEC §9); each may run only its own job types; agents of later phases stay DRAFT and cannot start
@@ -57,17 +57,17 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [x] Control Center UI: worker liveness, queue, per-agent state/reason/current job/limits/schedule, allowed actions only, stop-all; 5 s polling
 - [x] Owner Telegram bot (separate token): notification delivery as a system job (works even when agents are stopped), webhook with secret header + chat allow-list, `/status`, `/stop_all`; CONNECTED only after a real call
 - [ ] AI spend budget → `BUDGET_EXCEEDED` (hook is ready; AI usage arrives with Phase 6)
-- [ ] Green CI run
+- [x] Green CI run ✅ (after the Phase 4 push: a fake test token tripped gitleaks; now built at runtime)
 
-## Phase 4 — Premium interface + virtual office (real data)
-- [ ] Design system (graphite / midnight navy / champagne-gold), tokens, light + dark, accessible contrast
-- [ ] Centralized Uzbek Latin strings (RU optional later)
-- [ ] Responsive layouts: phone bottom navigation, iPad/desktop office-first
-- [ ] Virtual office: SVG + CSS, 6 rooms (HQ, Director, Research, Sales, Communication, Orders), click → agent view
-- [ ] Figures driven only by persisted state (ported mapping from Smyagent, D-011); `prefers-reduced-motion`
-- [ ] Dashboard (MASTER_SPEC §17) computed from DB; draft/approved/delivered values clearly separated
-- [ ] PWA manifest + service worker (static shell only), own origin
-- [ ] Playwright smoke at 375 px and iPad width in CI
+## Phase 4 — Premium interface + virtual office (real data) ✅ (code done; CI pending)
+- [x] Design system: graphite / midnight navy / champagne-gold tokens as CSS variables; dark and light themes (toggle, remembered locally, applied before first paint)
+- [x] Centralized Uzbek Latin strings (`apps/web/src/lib/strings.ts`)
+- [x] Responsive layouts: phone bottom navigation with line icons, desktop/iPad top navigation, dashboard with office-first layout on desktop
+- [x] Virtual office: SVG + CSS, 6 rooms (HQ, Director, Research, Sales, Communication, Orders); click → agent control
+- [x] Figures from persisted state only (`domain/office.ts`: working = RUNNING + active/recent job; unit-tested that no other state is drawn working); `prefers-reduced-motion`
+- [x] Dashboard (MASTER_SPEC §17) from DB: agents by state, tasks in progress, attention list, integration status (AI honestly NOT_CONFIGURED), last sync; prospect/order metrics shown as "Phase N", never as fake zeros
+- [x] PWA service worker: hashed static assets cache-first, pages network-first, `/api` never cached
+- [x] Playwright in CI at 375 px and iPad width: setup → login → mandatory 2FA → office → agent start/stop → catalog → integrations; checks for horizontal scroll (found and fixed a 3 px overflow on the catalog)
 - [ ] Green CI run
 
 ## Phase 5 — Customer discovery

@@ -17,6 +17,8 @@ import { AuthService } from './modules/auth/service';
 import { catalogRoutes } from './modules/catalog/routes';
 import { CatalogService } from './modules/catalog/service';
 import { CatalogSyncService } from './modules/catalog/sync';
+import { dashboardRoutes } from './modules/dashboard/routes';
+import { DashboardService } from './modules/dashboard/service';
 import { IntegrationService } from './modules/integrations/service';
 import { notificationRoutes } from './modules/notifications/routes';
 import { systemRoutes } from './modules/system/routes';
@@ -129,6 +131,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
       catalogRoutes(api, { catalog, sync, integrations });
       notificationRoutes(api, { db, now });
       agentRoutes(api, { db, agents, now });
+      dashboardRoutes(api, { dashboard: new DashboardService(db, now), agents });
       telegramRoutes(api, { telegram, config });
       api.setNotFoundHandler((req, reply) =>
         reply.code(404).send({ error: { code: 'not_found', message: 'Topilmadi', requestId: req.id } }),

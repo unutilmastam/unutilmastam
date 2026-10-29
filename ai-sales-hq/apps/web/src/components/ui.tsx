@@ -4,7 +4,10 @@ import { t } from '@/lib/strings';
 export function Brand() {
   return (
     <div className="flex items-center gap-3">
-      <div aria-hidden className="grid size-9 place-items-center rounded-xl border border-gold/40 bg-navy text-gold">
+      <div
+        aria-hidden
+        className="grid size-9 place-items-center rounded-xl border border-gold/40 bg-navy font-serif text-sm tracking-wider text-gold"
+      >
         UT
       </div>
       <div className="leading-tight">
@@ -19,7 +22,10 @@ export function AuthCard({ title, children }: { title: string; children: ReactNo
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-5 py-10">
       <Brand />
-      <section className="mt-8 rounded-2xl border border-line bg-graphite p-6 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.8)]">
+      <section
+        className="mt-8 rounded-2xl border border-line bg-graphite p-6"
+        style={{ boxShadow: 'var(--shadow-card)' }}
+      >
         <h1 className="mb-5 text-xl font-semibold">{title}</h1>
         {children}
       </section>
