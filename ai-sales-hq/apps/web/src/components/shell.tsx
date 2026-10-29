@@ -17,6 +17,7 @@ const NAV: { href: string; label: string; short?: string; icon: IconName; permis
   { href: '/prospects/', label: t.nav.prospects, icon: 'store', permission: 'prospects.view' },
   { href: '/outreach/', label: t.nav.outreach, icon: 'send', permission: 'prospects.view' },
   { href: '/orders/', label: t.nav.orders, icon: 'box', permission: 'orders.view' },
+  { href: '/site/', label: t.nav.site, icon: 'link', permission: 'integrations.manage', phone: false },
   { href: '/catalog/', label: t.nav.catalog, icon: 'catalog', phone: false },
   { href: '/discovery/', label: t.nav.discovery, icon: 'search', permission: 'prospects.view', phone: false },
   { href: '/integrations/', label: t.nav.integrations, icon: 'link', permission: 'integrations.manage', phone: false },

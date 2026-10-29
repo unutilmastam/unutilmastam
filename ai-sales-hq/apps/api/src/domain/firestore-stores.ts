@@ -81,6 +81,8 @@ export function parseStores(
     const r = u as Record<string, unknown>;
     const id = str(r.id, 64);
     if (r.userType !== 'store' || !id || !ID.test(id) || linkedUsers.has(id) || r.blocked === true) continue;
+    // v14.5: the owner rejected this registration on the website — not a prospect.
+    if (r.storeStatus === 'rejected') continue;
     const name = str(r.storeName) ?? null;
     if (!name) continue;
     out.push({

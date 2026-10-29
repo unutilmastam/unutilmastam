@@ -100,7 +100,7 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [x] Green CI run ✅
 - [ ] ⏳ Owner: Anthropic API key (optional; guide `docs/AI_SETUP_UZ.md`) — until then templates are used
 
-## Phase 7 — Order preparation + owner handoff + notifications (MVP complete) ✅ (code done; CI pending)
+## Phase 7 — Order preparation + owner handoff + notifications (MVP complete) ✅
 - [x] Order statuses (A10) enforced in one pure module (`domain/orders.ts`) with optimistic status updates and an event row + audit entry per transition; separate payment status UNPAID/PARTIAL/PAID with amount paid / due (D-018)
 - [x] Price snapshot per item (unit price, price id, source, RETAIL/WHOLESALE, time) from **confirmed** catalog prices only; totals in BigInt so'm on the server, client totals ignored
 - [x] `PRICE_CHANGED` when the catalog price moves before approval: checked at customer confirmation, at approval and every 10 minutes by the Order Manager agent (`orders.check_prices`); never silently recalculated — re-saving the items takes the new price and sends the order back to DRAFT
@@ -112,7 +112,15 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [x] Dashboard: orders awaiting review, draft / approved / delivered values and recorded payments kept apart; daily report counts
 - [x] UI: Buyurtmalar list with status filters, order page (items editor, details, actions by status, payments, history), "Buyurtma tuzish" on the prospect page; bottom bar on phones
 - [x] E2E: prospect → order → customer confirms → owner approves → payment → delivered (phone + iPad)
-- [ ] Green CI run → **MVP**
+- [x] Green CI run → **MVP** ✅
+
+## Phase 7b — Live website v14.5 integration ✅ (code done; CI pending)
+- [x] Live site code reviewed (owner's archive); data model in `docs/LIVE_SITE_V14_5.md`
+- [x] Split Firestore documents (`app/<key>__pN`) reassembled with the website's own consistency rule
+- [x] Website shop price `priceStore` → unconfirmed wholesale price; owner overrides kept until the site changes (D-019)
+- [x] Upload-URL images recognised; rejected store-owner registrations not imported
+- [x] "Sayt" page: live read-only overview (orders, debts, pending owners, products) — personal customers only counted
+- [ ] ⏳ Owner: service account key (`docs/FIRESTORE_SETUP_UZ.md`) after the agent is deployed on the hosting (Phase 10)
 
 ## Phase 8 — Optional channel adapters (only when credentials exist)
 - [ ] WhatsApp Business Platform adapter (NOT CONFIGURED by default)

@@ -59,6 +59,7 @@ For UI work: `npm run dev -w @hq/api` (port 3001) and `npm run dev -w @hq/web` (
 | POST | `/api/v1/catalog/prices/:id/confirm` | prices.confirm | confirm a current price |
 | POST | `/api/v1/catalog/products/:id/price` `{type, amount}` | prices.confirm | owner price (wholesale; retail only for non-website products) |
 | GET | `/api/v1/integrations/firestore` | integrations.manage | status, settings, last 10 sync runs |
+| GET | `/api/v1/integrations/firestore/overview` | integrations.manage | live read-only website overview (orders, debts, pending store owners, products) |
 | POST | `/api/v1/integrations/firestore/test` \| `/sync` \| `/settings` | integrations.manage | real connection test, manual sync, schedule |
 | POST | `/api/v1/integrations/firestore/runs/:id/apply` | integrations.manage | apply the latest held sync |
 | GET/POST | `/api/v1/notifications`, `/:id/read`, `/read-all` | system.view | in-app notifications |

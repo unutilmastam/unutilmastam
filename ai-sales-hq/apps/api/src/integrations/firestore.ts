@@ -11,7 +11,9 @@ export interface ServiceAccount {
 }
 
 export interface FirestoreDocument {
-  // The PWA stores each state key as {v: JSON string, t: client timestamp ms}.
+  // The PWA stores each state key as {v: JSON string, t: client timestamp ms}. Since v14.5 a key
+  // longer than 300 000 characters is split: app/<key> = {c: parts, t, len} and
+  // app/<key>__p0..N-1 = {v: piece, t}; it is reassembled here (D-019).
   value: string | null;
   updatedAtMs: number | null;
 }
@@ -27,11 +29,19 @@ export interface StoreListSnapshot {
   orders: FirestoreDocument;
 }
 
+/** Everything the "website today" overview reads (counts and business data only). */
+export interface SiteSnapshot extends StoreListSnapshot {
+  products: FirestoreDocument;
+  ledger: FirestoreDocument;
+}
+
 export interface CatalogSource {
   readonly name: string;
   fetchCatalog(): Promise<CatalogSnapshot>;
   // Existing store list for discovery (A4 source 1). Same read-only access.
   fetchStoreList(): Promise<StoreListSnapshot>;
+  // Live overview of the website for the owner (never stored).
+  fetchSite?(): Promise<SiteSnapshot>;
 }
 
 export class FirestoreError extends Error {
@@ -71,13 +81,44 @@ export function signJwt(sa: ServiceAccount, nowSeconds: number): string {
 
 /** Firestore REST field value -> JS (only the shapes the PWA writes). */
 export function decodeDocument(doc: unknown): FirestoreDocument {
+  const { value, t } = decodeFields(doc);
+  return { value, updatedAtMs: t };
+}
+
+export const MAX_PARTS = 64;
+const PART_SEP = '__p';
+
+/** Raw fields of an `app/*` document: a value, or the part count of a split one. */
+export function decodeFields(doc: unknown): { value: string | null; t: number | null; parts: number | null } {
   const fields = (doc as { fields?: Record<string, Record<string, unknown>> })?.fields ?? {};
+  const num = (f: Record<string, unknown> | undefined) => {
+    const n = f?.integerValue ?? f?.doubleValue;
+    return n !== undefined && Number.isFinite(Number(n)) ? Number(n) : null;
+  };
   const v = fields.v?.stringValue;
-  const t = fields.t?.integerValue ?? fields.t?.doubleValue;
+  const c = num(fields.c);
   return {
     value: typeof v === 'string' ? v : null,
-    updatedAtMs: t !== undefined && Number.isFinite(Number(t)) ? Number(t) : null,
+    t: num(fields.t),
+    parts: typeof v !== 'string' && c !== null && Number.isInteger(c) && c > 0 ? c : null,
   };
+}
+
+/**
+ * Joins the pieces of a split key exactly like the PWA does (js/2-sync.js tryAssemble): every
+ * piece must carry the meta document's timestamp, otherwise a write is in progress and the
+ * read is refused rather than mixing two versions.
+ */
+export function assembleParts(
+  key: string,
+  meta: { parts: number; t: number | null },
+  pieces: { value: string | null; t: number | null }[],
+): string {
+  if (meta.parts > MAX_PARTS) throw new FirestoreError(`app/${key}: too many parts (${meta.parts})`, 'response');
+  if (pieces.length !== meta.parts || pieces.some((p) => p.value === null || p.t !== meta.t)) {
+    throw new FirestoreError(`app/${key}: parts do not match (the website is saving); try again`, 'response');
+  }
+  return pieces.map((p) => p.value).join('');
 }
 
 export class FirestoreCatalogSource implements CatalogSource {
@@ -121,6 +162,22 @@ export class FirestoreCatalogSource implements CatalogSource {
   }
 
   async #getDocument(key: string): Promise<FirestoreDocument> {
+    const doc = await this.#getRaw(key);
+    if (doc === null) return { value: null, updatedAtMs: null };
+    const f = decodeFields(doc);
+    if (f.parts === null) return { value: f.value, updatedAtMs: f.t };
+    const parts = f.parts;
+    if (parts > MAX_PARTS) throw new FirestoreError(`app/${key}: too many parts (${parts})`, 'response');
+    const pieces = await Promise.all(
+      Array.from({ length: parts }, async (_, i) => {
+        const raw = await this.#getRaw(`${key}${PART_SEP}${i}`);
+        return raw === null ? { value: null, t: null } : decodeFields(raw);
+      }),
+    );
+    return { value: assembleParts(key, { parts, t: f.t }, pieces), updatedAtMs: f.t };
+  }
+
+  async #getRaw(key: string): Promise<unknown | null> {
     const token = await this.#accessToken();
     const url = `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(this.sa.project_id)}/databases/(default)/documents/app/${encodeURIComponent(key)}`;
     let res: Response;
@@ -133,12 +190,25 @@ export class FirestoreCatalogSource implements CatalogSource {
     } catch (e) {
       throw new FirestoreError(`Firestore request failed: ${(e as Error).message}`, 'network');
     }
-    if (res.status === 404) return { value: null, updatedAtMs: null };
+    if (res.status === 404) return null;
     if (res.status === 401 || res.status === 403) {
       throw new FirestoreError(`Firestore denied access (HTTP ${res.status}); check the Datastore Viewer role`, 'auth');
     }
     if (!res.ok) throw new FirestoreError(`Firestore answered HTTP ${res.status}`, 'response');
-    return decodeDocument(await res.json());
+    return res.json();
+  }
+
+  async fetchSite(): Promise<SiteSnapshot> {
+    const [products, stores, users, orders, ledger] = await Promise.all(
+      ['products', 'stores', 'users', 'orders', 'ledger'].map((k) => this.#getDocument(k)),
+    );
+    return {
+      products: products as FirestoreDocument,
+      stores: stores as FirestoreDocument,
+      users: users as FirestoreDocument,
+      orders: orders as FirestoreDocument,
+      ledger: ledger as FirestoreDocument,
+    };
   }
 
   async fetchStoreList(): Promise<StoreListSnapshot> {
@@ -163,5 +233,6 @@ export function firestoreSourceFromFile(path: string, fetchFn: FetchFn = fetch):
     name: 'firestore',
     fetchCatalog: () => new FirestoreCatalogSource(loadServiceAccount(path), fetchFn).fetchCatalog(),
     fetchStoreList: () => new FirestoreCatalogSource(loadServiceAccount(path), fetchFn).fetchStoreList(),
+    fetchSite: () => new FirestoreCatalogSource(loadServiceAccount(path), fetchFn).fetchSite(),
   };
 }

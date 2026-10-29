@@ -48,7 +48,8 @@ AI Sales HQ → **Integratsiya** sahifasi:
 
 1. Holat **"Sozlangan, hali tekshirilmagan"** bo'lishi kerak.
 2. **"Ulanishni tekshirish"** ni bosing → "Ulanish ishlayapti: N ta mahsulot o'qildi" chiqsa — tayyor, holat **"Ulangan"** bo'ladi.
-3. **"Hozir sinxronlash"** ni bosing → **Katalog** sahifasida mahsulotlar paydo bo'ladi. Har bir chakana narxni bir marta **"Tasdiqlash"** tugmasi bilan tasdiqlang. Ulgurji narxlarni o'zingiz kiritasiz.
+3. **"Hozir sinxronlash"** ni bosing → **Katalog** sahifasida mahsulotlar paydo bo'ladi. Har bir chakana narxni bir marta **"Tasdiqlash"** tugmasi bilan tasdiqlang. Saytda do'konlar uchun narx (ulgurji) qo'yilgan bo'lsa, u ham keladi — uni ham bir marta tasdiqlaysiz. Saytda bo'lmagan ulgurji narxni o'zingiz kiritasiz.
+4. **Ko'proq → Sayt** sahifasi: yangi buyurtmalar, do'konlar qarzi, tasdiq kutayotgan do'kon egalari — saytdan jonli o'qiladi (saytga hech narsa yozilmaydi).
 
 ### Xato chiqsa
 

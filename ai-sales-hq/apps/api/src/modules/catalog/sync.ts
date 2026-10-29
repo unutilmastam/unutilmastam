@@ -93,7 +93,9 @@ export class CatalogSyncService {
       createdCount: diff.create.length,
       updatedCount: diff.update.length,
       deactivatedCount: diff.deactivate.length,
-      priceChangeCount: diff.priceChanges.filter((c) => c.from !== null).length,
+      priceChangeCount:
+        diff.priceChanges.filter((c) => c.from !== null).length +
+        diff.wholesaleChanges.filter((c) => c.from !== null).length,
       invalidCount: parsed.invalid.length,
     };
     // Plain JSON for the report column.
@@ -104,6 +106,9 @@ export class CatalogSyncService {
           .filter((c) => c.from !== null)
           .slice(0, REPORT_LIMIT)
           .map((c) => ({ externalId: c.externalId, from: Number(c.from), to: Number(c.to) })),
+        wholesaleChanges: diff.wholesaleChanges
+          .slice(0, REPORT_LIMIT)
+          .map((c) => ({ externalId: c.externalId, from: c.from === null ? null : Number(c.from), to: Number(c.to) })),
         deactivated: diff.deactivate.slice(0, REPORT_LIMIT),
       }),
     ) as object;
@@ -144,14 +149,15 @@ export class CatalogSyncService {
       },
     });
     await resolveNotification(this.db, 'catalog-sync-held', this.now());
-    if (counts.priceChangeCount > 0 || counts.createdCount > 0) {
+    const newShopPrices = diff.wholesaleChanges.length;
+    if (counts.priceChangeCount > 0 || counts.createdCount > 0 || newShopPrices > 0) {
       await notify(
         this.db,
         {
           kind: 'catalog.prices_to_confirm',
           severity: 'INFO',
           title: 'Yangi narxlarni tasdiqlang',
-          body: `${counts.createdCount} ta yangi mahsulot, ${counts.priceChangeCount} ta narx o'zgarishi. Agentlar faqat tasdiqlangan narxlarni ishlatadi.`,
+          body: `${counts.createdCount} ta yangi mahsulot, ${counts.priceChangeCount} ta narx o'zgarishi, saytdan ${newShopPrices} ta ulgurji (do'kon) narx. Agentlar faqat tasdiqlangan narxlarni ishlatadi.`,
           link: '/catalog/',
           dedupeKey: 'catalog-prices-to-confirm',
         },
@@ -172,8 +178,17 @@ export class CatalogSyncService {
   async #existing(): Promise<ExistingProduct[]> {
     const rows = await this.db.product.findMany({
       where: { source: 'FIRESTORE' },
-      include: { prices: { where: { priceType: 'RETAIL', validTo: null, status: { not: 'SUPERSEDED' } } } },
+      include: {
+        prices: { where: { priceType: 'RETAIL', validTo: null, status: { not: 'SUPERSEDED' } } },
+      },
     });
+    // Latest shop price that came from the website (current or superseded), per product.
+    const site = await this.db.productPrice.findMany({
+      where: { productId: { in: rows.map((r) => r.id) }, priceType: 'WHOLESALE', source: 'FIRESTORE' },
+      orderBy: { validFrom: 'asc' },
+      select: { productId: true, amount: true },
+    });
+    const lastSite = new Map(site.map((s) => [s.productId, s.amount]));
     return rows.map((p) => ({
       id: p.id,
       externalId: p.externalId ?? '',
@@ -186,6 +201,7 @@ export class CatalogSyncService {
       hasSourceImage: p.hasSourceImage,
       isActive: p.isActive,
       currentRetailSom: p.prices[0]?.amount ?? null,
+      lastSiteWholesaleSom: lastSite.get(p.id) ?? null,
     }));
   }
 
@@ -245,6 +261,26 @@ export class CatalogSyncService {
             data: {
               productId,
               priceType: 'RETAIL',
+              amount: c.to,
+              source: 'FIRESTORE',
+              status: 'OWNER_UNCONFIRMED',
+              validFrom: now,
+              syncRunId: runId,
+            },
+          });
+        }
+        // Website shop price -> WHOLESALE price version, unconfirmed until the owner confirms (D-019).
+        for (const c of diff.wholesaleChanges) {
+          const productId = c.id ?? idByExternal.get(c.externalId);
+          if (!productId) continue;
+          await tx.productPrice.updateMany({
+            where: { productId, priceType: 'WHOLESALE', validTo: null },
+            data: { status: 'SUPERSEDED', validTo: now },
+          });
+          await tx.productPrice.create({
+            data: {
+              productId,
+              priceType: 'WHOLESALE',
               amount: c.to,
               source: 'FIRESTORE',
               status: 'OWNER_UNCONFIRMED',

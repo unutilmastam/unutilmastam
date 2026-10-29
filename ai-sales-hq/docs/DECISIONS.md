@@ -8,7 +8,7 @@ Status values: **Accepted** · **Proposed** (default we will use unless the owne
 | D-002 | Reuse Smyagent designs (queue, kill switch, auth, office mapping), not its Python code | Accepted |
 | D-003 | Separate application on its own subdomain `agent.unutilmastam.uz` | Proposed |
 | D-004 | Firestore integration = server-side Admin SDK, read-only service account, cron sync | Accepted (A3) |
-| D-005 | Wholesale prices are unconfigured; the PWA has only one price | Accepted (finding) |
+| D-005 | Wholesale prices are unconfigured; the PWA has only one price | Superseded by D-019 for the live v14.5 site |
 | D-006 | Firestore data is untrusted input | Accepted |
 | D-007 | MySQL 8 via the ORM; integer so'm | Accepted (A2, A8) |
 | D-008 | DB job queue + one-minute cron worker, ≤ 50 s budget | Accepted (A2), interval pending |
@@ -179,4 +179,14 @@ A3 asks for "server-side Firebase Admin SDK with a read-only service account". W
 - **Idempotency.** One open draft per prospect (create returns the existing one); the review notification is deduplicated per order; the price check job is keyed per 10-minute bucket.
 - **Availability.** The catalog has no verified stock data, so every line shows `UNKNOWN` and the owner decides (MASTER_SPEC §12).
 - **Dashboard figures.** Draft value, approved value, delivered value and recorded payments are separate; only recorded payments are money received.
+
+## D-019 — Integration with the live website v14.5 (Accepted)
+
+- **Which code.** The site running on hostmaster.uz is the modular v14.5 (`docs/LIVE_SITE_V14_5.md`), newer than the single file at the repo root. The integration follows the live version; neither copy is modified.
+- **Split documents.** Keys above 300 000 characters are stored in parts; the reader joins them exactly like the website (all parts must carry the meta timestamp) and fails the run otherwise — the next scheduled sync retries. At most 64 parts are accepted.
+- **Shop price.** `priceStore` (> 0) is the price the website shows to approved store owners. It is imported as a `WHOLESALE` price (source `FIRESTORE`, `OWNER_UNCONFIRMED` until the owner confirms once), like retail in D-005. A wholesale price the owner enters in AI Sales HQ is kept until the **website** value changes (compared with the last value read from the site), so the two never overwrite each other in a loop. Shop-price changes count towards the mass-change guard.
+- **Images.** `/uploads/…` URLs count as a product image (we still only record that one exists).
+- **Store owners.** Registrations the owner rejected on the website (`storeStatus: rejected`) are not imported as prospects; pending and approved ones are.
+- **Website overview ("Sayt" page).** A live, read-only view: new and today's orders, store vs personal order counts, recent store orders, store debts from the ledger, pending store-owner registrations, products with shop prices and out of stock, stores without a map location. Nothing from it is stored; personal customers appear only as counts. Owner-only (`integrations.manage`).
+- **Still read-only.** Nothing is written to Firestore or to the website's hosting folder. Orders prepared in AI Sales HQ stay in AI Sales HQ; the owner enters accepted orders on the website as before.
 

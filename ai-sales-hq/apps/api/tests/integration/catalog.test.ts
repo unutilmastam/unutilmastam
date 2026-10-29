@@ -26,6 +26,10 @@ describe.skipIf(!hasDb)('catalog + Firestore sync (MySQL)', () => {
   beforeEach(async () => {
     await resetDb(ctx.db);
     source.products = [];
+    source.stores = [];
+    source.users = [];
+    source.orders = [];
+    source.ledger = [];
     source.categories = [{ id: 'c1', name: 'Chuchvara' }];
     source.failWith = null;
     owner = await ownerClient(ctx.app);
@@ -52,6 +56,94 @@ describe.skipIf(!hasDb)('catalog + Firestore sync (MySQL)', () => {
     expect(status.lastSuccessfulSyncAt).not.toBeNull();
     const notes = (await owner.get('/api/v1/notifications')).json.items as any[];
     expect(notes.map((n) => n.kind)).toContain('catalog.prices_to_confirm');
+  });
+
+  it('v14.5 shop price (priceStore) becomes an unconfirmed wholesale price; owner override stays until the site changes', async () => {
+    source.products = [product('p1', 25000, { priceStore: 21000 }), product('p2', 16000)];
+    await sync();
+    let list = await products();
+    const p1 = list.find((p) => p.externalId === 'p1');
+    expect(p1.wholesale).toMatchObject({ amount: 21000, status: 'OWNER_UNCONFIRMED', source: 'FIRESTORE' });
+    expect(list.find((p) => p.externalId === 'p2').wholesale).toBeNull();
+
+    // Owner enters his own wholesale price in the app; an unchanged site value does not undo it.
+    await owner.post(`/api/v1/catalog/products/${p1.id}/price`, { type: 'WHOLESALE', amount: 20000 });
+    expect((await sync()).json).toMatchObject({ priceChangeCount: 0 });
+    list = await products();
+    expect(list.find((p) => p.externalId === 'p1').wholesale).toMatchObject({ amount: 20000, source: 'OWNER' });
+
+    // The site changes its shop price -> new unconfirmed version from the site.
+    source.products = [product('p1', 25000, { priceStore: 22000 }), product('p2', 16000)];
+    expect((await sync()).json).toMatchObject({ priceChangeCount: 1 });
+    list = await products();
+    expect(list.find((p) => p.externalId === 'p1').wholesale).toMatchObject({
+      amount: 22000,
+      status: 'OWNER_UNCONFIRMED',
+      source: 'FIRESTORE',
+    });
+  });
+
+  it('website overview: counts and business data only, personal customers are not listed', async () => {
+    source.products = [product('p1', 25000, { priceStore: 21000 }), product('p2', 16000, { stock: 0 })];
+    source.stores = [
+      { id: 's1', name: 'Baraka market', lat: 37.2, lng: 67.3 },
+      { id: 's2', name: 'Denov savdo', needsLocation: true },
+    ];
+    source.users = [
+      {
+        id: 'u1',
+        userType: 'store',
+        storeStatus: 'pending',
+        storeName: 'Yangi do‘kon',
+        name: 'Ali',
+        contact: '+998901112233',
+      },
+      { id: 'u2', userType: 'store', storeStatus: 'approved', storeName: 'Baraka market' },
+      { id: 'u3', userType: 'customer', name: 'Shaxsiy Mijoz', contact: '+998907778899' },
+    ];
+    const today = new Date().toISOString().slice(0, 10);
+    source.orders = [
+      {
+        id: 'o1',
+        orderType: 'dokon',
+        storeId: 's1',
+        storeName: 'Baraka market',
+        total: 250000,
+        status: 'yangi',
+        date: today,
+      },
+      {
+        id: 'o2',
+        orderType: 'shaxsiy',
+        customerName: 'Shaxsiy Mijoz',
+        total: 50000,
+        status: 'yetkazildi',
+        date: '2026-01-01',
+      },
+    ];
+    source.ledger = [
+      { id: 'l1', partyType: 'store', partyId: 's1', debt: 120000 },
+      { id: 'l2', partyType: 'store', partyId: 's1', debt: 30000 },
+      { id: 'l3', partyType: 'store', partyId: 's2', debt: 0 },
+    ];
+    const r = await owner.get('/api/v1/integrations/firestore/overview');
+    expect(r.status).toBe(200);
+    expect(r.json).toMatchObject({
+      products: { total: 2, withShopPrice: 1, outOfStock: 1 },
+      stores: { total: 2, withoutLocation: 1 },
+      storeOwners: { approved: 1, pending: 1, rejected: 0, pendingList: [{ id: 'u1', storeName: 'Yangi do‘kon' }] },
+      customers: 1,
+      orders: { total: 2, new: 1, storeOrders: 1, personalOrders: 1 },
+      debts: { totalSom: 150000, stores: 1, top: [{ storeId: 's1', name: 'Baraka market', debtSom: 150000 }] },
+    });
+    const text = JSON.stringify(r.json);
+    expect(text).not.toContain('Shaxsiy Mijoz');
+    expect(text).not.toContain('+998907778899');
+    expect(text).not.toContain('+998901112233');
+    // Read-only: nothing is stored from the overview.
+    expect(await ctx.db.prospect.count()).toBe(0);
+    source.failWith = new Error('Firestore denied access (HTTP 403)');
+    expect((await owner.get('/api/v1/integrations/firestore/overview')).status).toBe(502);
   });
 
   it('repeated sync is idempotent; price change creates a new version, removal deactivates', async () => {

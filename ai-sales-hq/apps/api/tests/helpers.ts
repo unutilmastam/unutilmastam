@@ -124,6 +124,7 @@ export class FakeCatalogSource {
   stores: unknown[] = [];
   users: unknown[] = [];
   orders: unknown[] = [];
+  ledger: unknown[] = [];
   failWith: Error | null = null;
   calls = 0;
 
@@ -133,6 +134,18 @@ export class FakeCatalogSource {
     return {
       products: { value: JSON.stringify(this.products), updatedAtMs: 1_761_700_000_000 },
       categories: { value: JSON.stringify(this.categories), updatedAtMs: null },
+    };
+  }
+
+  async fetchSite() {
+    if (this.failWith) throw this.failWith;
+    const doc = (v: unknown[]) => ({ value: JSON.stringify(v), updatedAtMs: 1_761_700_000_000 });
+    return {
+      products: doc(this.products),
+      stores: doc(this.stores),
+      users: doc(this.users),
+      orders: doc(this.orders),
+      ledger: doc(this.ledger),
     };
   }
 

@@ -12,6 +12,9 @@ export interface SourceProduct {
   packageWeightGrams: number | null;
   unitType: string | null;
   priceSom: bigint;
+  // Since v14.5 the website has a shop price `priceStore` (shown to approved store owners as
+  // "ulgurji"); 0 or missing means "no separate shop price" (D-019).
+  wholesaleSom: bigint | null;
   stockReported: number | null;
   hasSourceImage: boolean;
 }
@@ -118,6 +121,8 @@ export function parseProducts(json: string, categories: Map<string, string>): Pa
       continue;
     }
     const stock = wholeNumber(r.stock, 10_000_000);
+    // An invalid shop price is ignored rather than rejecting the product: the retail price still works.
+    const wholesale = wholeNumber(r.priceStore, MAX_PRICE_SOM);
     seen.add(id);
     products.push({
       externalId: id,
@@ -127,9 +132,12 @@ export function parseProducts(json: string, categories: Map<string, string>): Pa
       packageWeightGrams: gram === 0 ? null : gram,
       unitType: cleanText(r.unitType, 32),
       priceSom: BigInt(price),
+      wholesaleSom: typeof wholesale === 'number' && wholesale > 0 ? BigInt(wholesale) : null,
       stockReported: stock === 'invalid' ? null : stock,
-      // Images are base64 data URLs inside the document; we only record that one exists.
-      hasSourceImage: typeof r.image === 'string' && r.image.startsWith('data:image/'),
+      // Images are base64 data URLs (old) or files under /uploads/ (v14.5); we only record that one exists.
+      hasSourceImage:
+        typeof r.image === 'string' &&
+        (r.image.startsWith('data:image/') || /^(https?:\/\/|\/?uploads\/)/.test(r.image)),
     });
   }
 
@@ -158,12 +166,16 @@ export interface ExistingProduct {
   hasSourceImage: boolean;
   isActive: boolean;
   currentRetailSom: bigint | null;
+  // The last shop price read from the website (not the owner's own entry), to detect site changes.
+  lastSiteWholesaleSom: bigint | null;
 }
 
 export interface CatalogDiff {
   create: SourceProduct[];
   update: { id: string; next: SourceProduct; fields: string[] }[];
   priceChanges: { id: string | null; externalId: string; from: bigint | null; to: bigint }[];
+  // Shop price changed ON THE WEBSITE; an owner-entered wholesale price stays until the site changes.
+  wholesaleChanges: { id: string | null; externalId: string; from: bigint | null; to: bigint }[];
   reactivate: string[];
   deactivate: { id: string; externalId: string; name: string }[];
 }
@@ -181,14 +193,32 @@ const COMPARED_FIELDS = [
 export function diffCatalog(existing: ExistingProduct[], incoming: SourceProduct[]): CatalogDiff {
   const byExternal = new Map(existing.map((p) => [p.externalId, p]));
   const incomingIds = new Set(incoming.map((p) => p.externalId));
-  const diff: CatalogDiff = { create: [], update: [], priceChanges: [], reactivate: [], deactivate: [] };
+  const diff: CatalogDiff = {
+    create: [],
+    update: [],
+    priceChanges: [],
+    wholesaleChanges: [],
+    reactivate: [],
+    deactivate: [],
+  };
 
   for (const next of incoming) {
     const cur = byExternal.get(next.externalId);
     if (!cur) {
       diff.create.push(next);
       diff.priceChanges.push({ id: null, externalId: next.externalId, from: null, to: next.priceSom });
+      if (next.wholesaleSom !== null) {
+        diff.wholesaleChanges.push({ id: null, externalId: next.externalId, from: null, to: next.wholesaleSom });
+      }
       continue;
+    }
+    if (next.wholesaleSom !== null && next.wholesaleSom !== cur.lastSiteWholesaleSom) {
+      diff.wholesaleChanges.push({
+        id: cur.id,
+        externalId: next.externalId,
+        from: cur.lastSiteWholesaleSom,
+        to: next.wholesaleSom,
+      });
     }
     const fields = COMPARED_FIELDS.filter((f) => cur[f] !== next[f]);
     if (fields.length) diff.update.push({ id: cur.id, next, fields });
@@ -226,7 +256,9 @@ export function holdReason(existingActive: number, incomingCount: number, diff: 
     return "Manbada birorta ham to'g'ri mahsulot yo'q — barcha mahsulotlar o'chib ketishi mumkin edi";
   }
   if (existingActive < g.minCatalogSize) return null;
-  const changedPrices = diff.priceChanges.filter((c) => c.from !== null).length;
+  const changedPrices =
+    diff.priceChanges.filter((c) => c.from !== null).length +
+    diff.wholesaleChanges.filter((c) => c.from !== null).length;
   const affected = changedPrices + diff.deactivate.length;
   if (affected / existingActive > g.maxChangeShare) {
     return `Bir vaqtda juda ko'p o'zgarish: ${changedPrices} ta narx va ${diff.deactivate.length} ta o'chirilgan mahsulot (${existingActive} tadan)`;

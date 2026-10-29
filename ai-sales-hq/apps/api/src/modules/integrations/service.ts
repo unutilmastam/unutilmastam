@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { parseCategories, parseProducts } from '../../domain/catalog';
+import { toTashkent } from '../../domain/schedule';
+import { siteOverview } from '../../domain/site-overview';
 import type { CatalogSource } from '../../integrations/firestore';
 import type { Db } from '../../lib/db';
 import { AppError } from '../../lib/errors';
@@ -63,6 +65,34 @@ export class IntegrationService {
       lastSuccessfulSyncAt: lastSuccess?.finishedAt ?? null,
       runs,
     };
+  }
+
+  /** Live read of the website (read-only, nothing is stored) for the "Sayt" page (D-019). */
+  async siteOverview() {
+    const source = this.getSource();
+    if (!source?.fetchSite) throw new AppError(409, 'not_configured', 'Firestore integratsiyasi sozlanmagan');
+    try {
+      const s = await source.fetchSite();
+      await markIntegration(this.db, INTEGRATION_FIRESTORE, { ok: true, at: this.now() });
+      return {
+        readAt: this.now(),
+        sourceUpdatedAt: s.products.updatedAtMs ? new Date(s.products.updatedAtMs) : null,
+        ...siteOverview(
+          {
+            products: s.products.value,
+            stores: s.stores.value,
+            users: s.users.value,
+            orders: s.orders.value,
+            ledger: s.ledger.value,
+          },
+          toTashkent(this.now()).date,
+        ),
+      };
+    } catch (err) {
+      const message = redactText(err instanceof Error ? err.message : String(err));
+      await markIntegration(this.db, INTEGRATION_FIRESTORE, { ok: false, error: message, at: this.now() });
+      throw new AppError(502, 'firestore_failed', `Saytdan o'qib bo'lmadi: ${message}`);
+    }
   }
 
   async testFirestore(actorUserId: string) {

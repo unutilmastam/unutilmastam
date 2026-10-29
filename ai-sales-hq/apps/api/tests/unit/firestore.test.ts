@@ -89,4 +89,34 @@ describe('FirestoreCatalogSource', () => {
     const badKey = (async () => new Response('', { status: 400 })) as typeof fetch;
     await expect(new FirestoreCatalogSource(sa, badKey).fetchCatalog()).rejects.toMatchObject({ kind: 'auth' });
   });
+
+  it('reassembles a split document (v14.5: app/<key> = {c, t}, app/<key>__pN = {v, t})', async () => {
+    const big = JSON.stringify([
+      { id: 'p1', name: 'Manti' },
+      { id: 'p2', name: 'Tiftel' },
+    ]);
+    const half = Math.ceil(big.length / 2);
+    const part = (v: string, t = '9') => ({ fields: { v: { stringValue: v }, t: { integerValue: t } } });
+    const docs: Record<string, unknown> = {
+      products: {
+        fields: { c: { integerValue: '2' }, t: { integerValue: '9' }, len: { integerValue: String(big.length) } },
+      },
+      products__p0: part(big.slice(0, half)),
+      products__p1: part(big.slice(half)),
+      categories: doc('[]'),
+    };
+    const fake = (async (url: string) => {
+      if (url.includes('oauth2')) return Response.json({ access_token: 'tok' });
+      const key = decodeURIComponent(url.split('/app/')[1] ?? '');
+      return key in docs ? Response.json(docs[key]) : new Response('', { status: 404 });
+    }) as typeof fetch;
+    const snap = await new FirestoreCatalogSource(sa, fake).fetchCatalog();
+    expect(snap.products).toEqual({ value: big, updatedAtMs: 9 });
+
+    // A piece from another save (different t) is refused instead of mixing versions.
+    docs.products__p1 = part(big.slice(half), '8');
+    await expect(new FirestoreCatalogSource(sa, fake).fetchCatalog()).rejects.toMatchObject({ kind: 'response' });
+    delete docs.products__p1;
+    await expect(new FirestoreCatalogSource(sa, fake).fetchCatalog()).rejects.toMatchObject({ kind: 'response' });
+  });
 });

@@ -85,9 +85,10 @@ const existing = (over: Partial<ExistingProduct> & { externalId: string }): Exis
   hasSourceImage: false,
   isActive: true,
   currentRetailSom: 100n,
+  lastSiteWholesaleSom: null,
   ...over,
 });
-const incoming = (externalId: string, priceSom = 100n, name = 'N') => ({
+const incoming = (externalId: string, priceSom = 100n, name = 'N', wholesaleSom: bigint | null = null) => ({
   externalId,
   name,
   description: null,
@@ -95,6 +96,7 @@ const incoming = (externalId: string, priceSom = 100n, name = 'N') => ({
   packageWeightGrams: null,
   unitType: null,
   priceSom,
+  wholesaleSom,
   stockReported: null,
   hasSourceImage: false,
 });
@@ -122,7 +124,37 @@ describe('diffCatalog', () => {
 
   it('is empty when nothing changed', () => {
     const diff = diffCatalog([existing({ externalId: 'a' })], [incoming('a')]);
-    expect(diff).toEqual({ create: [], update: [], priceChanges: [], reactivate: [], deactivate: [] });
+    expect(diff).toEqual({
+      create: [],
+      update: [],
+      priceChanges: [],
+      wholesaleChanges: [],
+      reactivate: [],
+      deactivate: [],
+    });
+  });
+
+  it('website shop price (priceStore): new, changed, unchanged, removed', () => {
+    const diff = diffCatalog(
+      [
+        existing({ externalId: 'a' }),
+        existing({ externalId: 'b', lastSiteWholesaleSom: 80n }),
+        existing({ externalId: 'c', lastSiteWholesaleSom: 80n }),
+        existing({ externalId: 'd', lastSiteWholesaleSom: 80n }),
+      ],
+      [
+        incoming('a', 100n, 'N', 85n),
+        incoming('b', 100n, 'N', 90n),
+        incoming('c', 100n, 'N', 80n),
+        incoming('d', 100n, 'N', null),
+        incoming('e', 100n, 'N', 70n),
+      ],
+    );
+    expect(diff.wholesaleChanges).toEqual([
+      { id: 'id-a', externalId: 'a', from: null, to: 85n },
+      { id: 'id-b', externalId: 'b', from: 80n, to: 90n },
+      { id: null, externalId: 'e', from: null, to: 70n },
+    ]);
   });
 });
 
@@ -149,5 +181,24 @@ describe('holdReason (mass-change guard)', () => {
         ),
       ),
     ).toBeNull();
+  });
+});
+
+describe('v14.5 product fields', () => {
+  it('reads priceStore as the shop price and upload URLs as images', () => {
+    const { products, invalid } = parseProducts(
+      JSON.stringify([
+        { id: 'p1', name: 'Manti', gram: 500, price: 35000, priceStore: 30000, image: 'uploads/products/a.jpg' },
+        { id: 'p2', name: 'Tiftel', gram: 400, price: 28000, priceStore: 0, image: null },
+        { id: 'p3', name: 'Somsa', gram: 400, price: 20000, priceStore: 'abc' },
+      ]),
+      new Map(),
+    );
+    expect(invalid).toEqual([]);
+    expect(products.map((p) => [p.externalId, p.wholesaleSom, p.hasSourceImage])).toEqual([
+      ['p1', 30000n, true],
+      ['p2', null, false],
+      ['p3', null, false],
+    ]);
   });
 });

@@ -232,6 +232,11 @@ test.describe
       await expect(page.getByRole('alert').filter({ hasText: /sk-ant/ })).toBeVisible();
       await expect(page.getByText('Hali ulanmagan')).toBeVisible();
       await noHorizontalScroll(page);
+      // Website overview without the Firestore key: an honest error, no invented numbers.
+      await page.goto('/site/');
+      await expect(page.getByRole('alert').filter({ hasText: /sozlanmagan/ })).toBeVisible();
+      await noHorizontalScroll(page);
+      await page.goto('/integrations/');
       const before = await page.evaluate(() => document.documentElement.dataset.theme);
       await page.getByRole('button', { name: /mavzuga o'tish/ }).click();
       const after = await page.evaluate(() => document.documentElement.dataset.theme);

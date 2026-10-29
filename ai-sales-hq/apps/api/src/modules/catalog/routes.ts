@@ -48,6 +48,10 @@ export function catalogRoutes(
     serialize(await integrations.firestoreStatus()),
   );
 
+  app.get('/integrations/firestore/overview', { config: { access: 'integrations.manage' } }, async () =>
+    integrations.siteOverview(),
+  );
+
   app.post('/integrations/firestore/test', { config: { access: 'integrations.manage' } }, async (req) =>
     integrations.testFirestore(requireAuth(req).user.id),
   );
