@@ -1,0 +1,241 @@
+name: AI Sales HQ
+
+on:
+  push:
+    paths: ['ai-sales-hq/**']
+  pull_request:
+    paths: ['ai-sales-hq/**']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ai-sales-hq-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: ai-sales-hq
+
+jobs:
+  check:
+    name: Lint, typecheck, unit tests, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ai-sales-hq/package-lock.json
+      - run: npm ci
+      - name: Lint and format (Biome)
+        run: npm run check
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests (API)
+        run: npm run test:unit -w @hq/api
+      - name: Unit tests (web)
+        run: npm run test -w @hq/web
+      - name: Build
+        env:
+          NODE_ENV: production
+        run: npm run build
+      - name: Dependency audit (runtime, high+)
+        run: npm audit --omit=dev --audit-level=high
+
+  integration:
+    name: Integration tests (MySQL 8.0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: hq_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/hq_test
+      TEST_DATABASE_URL: mysql://root:root@127.0.0.1:3306/hq_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ai-sales-hq/package-lock.json
+      - run: npm ci
+      - name: Apply migrations
+        working-directory: ai-sales-hq/apps/api
+        run: npx prisma generate && npx prisma migrate deploy
+      - name: Schema matches migrations
+        working-directory: ai-sales-hq/apps/api
+        run: npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
+      - name: Integration tests
+        run: npm run test:integration -w @hq/api
+
+  e2e:
+    name: Browser smoke (Playwright, phone + iPad)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: hq_e2e
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/hq_e2e
+      APP_ORIGIN: http://127.0.0.1:3001
+      APP_SECRET_KEY: ci-only-e2e-key-0123456789abcdefghijkl
+      SETUP_TOKEN: e2e-setup-token-0123456789abcdef
+      E2E_SETUP_TOKEN: e2e-setup-token-0123456789abcdef
+      TOTP_REQUIRED: 'true'
+      LOG_LEVEL: warn
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ai-sales-hq/package-lock.json
+      - run: npm ci
+      - name: Build
+        env:
+          NODE_ENV: production
+        run: npm run build
+      # The browser tests run against the same bundle the hosting gets (D-020).
+      - name: Release bundle
+        run: scripts/build-release.sh "$RUNNER_TEMP/release" "${GITHUB_SHA::7}"
+      - name: Migrate (bundled runner, as on the hosting)
+        run: node "$RUNNER_TEMP/release/apps/api/dist/ops.js" migrate
+      - name: Start server (bundle)
+        run: |
+          cd "$RUNNER_TEMP/release"
+          nohup node apps/api/dist/server.js > server.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:3001/api/v1/ready && exit 0; sleep 1; done
+          cat server.log; exit 1
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Playwright
+        run: npx playwright test
+      - name: Upload traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: ai-sales-hq/test-results
+          retention-days: 7
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks (ai-sales-hq only)
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.24.2/gitleaks_8.24.2_linux_x64.tar.gz | tar -xz gitleaks
+          ./gitleaks dir . --no-banner --redact
+
+  # Builds the hosting bundle, rehearses a full cPanel deploy (settings file, backup, migrations,
+  # copy, start, cron run, restore), and on main publishes it to the `ai-sales-hq-release` branch,
+  # which cPanel "Git Version Control" pulls (docs/DEPLOY_UZ.md). Nothing is deployed to the hosting.
+  release:
+    name: Release bundle + deploy drill
+    needs: [check, integration, e2e, secrets]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: hq_deploy
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ai-sales-hq/package-lock.json
+      - run: npm ci
+      - name: Build
+        env:
+          NODE_ENV: production
+        run: npm run build
+      - name: Release bundle
+        run: scripts/build-release.sh release "${GITHUB_SHA::7}"
+      - name: Deploy drill (fake cPanel home)
+        run: |
+          export HOME="$RUNNER_TEMP/home" HQ_SKIP_HEALTHCHECK=1
+          mkdir -p "$HOME/nodevenv/ai-sales-hq-app/22/bin"
+          ln -s "$(command -v node)" "$HOME/nodevenv/ai-sales-hq-app/22/bin/node"
+          cp -r release "$HOME/repo"
+          cd "$HOME/repo"
+          # First run only creates the settings file and stops.
+          if bash deploy/deploy.sh; then echo "first run should stop for the settings file"; exit 1; fi
+          test -f "$HOME/ai-sales-hq-data/hq.env"
+          test "$(stat -c %a "$HOME/ai-sales-hq-data/hq.env")" = 600
+          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/; s/^DB_NAME=.*/DB_NAME=hq_deploy/; s/^DB_USER=.*/DB_USER=root/; s/^DB_PASSWORD=.*/DB_PASSWORD="root"/' "$HOME/ai-sales-hq-data/hq.env"
+          bash deploy/deploy.sh
+          bash deploy/deploy.sh | tee "$RUNNER_TEMP/second.log"
+          grep -q "Migrations: 0 applied" "$RUNNER_TEMP/second.log"
+          test -f "$HOME/ai-sales-hq-previous/VERSION"
+          cd "$HOME/ai-sales-hq-app"
+          PORT=3009 nohup node apps/api/dist/server.js > "$RUNNER_TEMP/app.log" 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:3009/api/v1/ready && break; sleep 1; done
+          curl -fsS http://127.0.0.1:3009/api/v1/ready || { cat "$RUNNER_TEMP/app.log"; exit 1; }
+          bash deploy/cron-worker.sh
+          grep -q "worker tick finished" "$HOME/ai-sales-hq-data/logs/worker.log"
+      - name: Backup and restore drill
+        run: |
+          export HOME="$RUNNER_TEMP/home"
+          cd "$HOME/ai-sales-hq-app"
+          bash deploy/backup.sh drill
+          f="$(ls -t "$HOME"/ai-sales-hq-backups/*-drill.sql.gz | head -1)"
+          before="$(mysql -h127.0.0.1 -uroot -proot -N -e 'SELECT COUNT(*) FROM hq_deploy.worker_runs')"
+          test "$before" -ge 1
+          mysql -h127.0.0.1 -uroot -proot -e 'DELETE FROM hq_deploy.worker_runs'
+          bash deploy/restore.sh "$f" --yes
+          after="$(mysql -h127.0.0.1 -uroot -proot -N -e 'SELECT COUNT(*) FROM hq_deploy.worker_runs')"
+          test "$after" = "$before"
+          bash deploy/rollback.sh
+      - name: Publish to the ai-sales-hq-release branch (main only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          url="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          rel="$RUNNER_TEMP/release-branch"
+          if git ls-remote --exit-code --heads "$url" ai-sales-hq-release >/dev/null; then
+            git clone --depth 1 --branch ai-sales-hq-release "$url" "$rel"
+          else
+            git init -b ai-sales-hq-release "$rel"
+            git -C "$rel" remote add origin "$url"
+          fi
+          rsync -a --delete --exclude .git release/ "$rel/"
+          cd "$rel"
+          git add -A
+          if git diff --cached --quiet; then echo "Nothing to publish"; exit 0; fi
+          git commit -q -m "AI Sales HQ release ${GITHUB_SHA::7}"
+          git push origin HEAD:ai-sales-hq-release

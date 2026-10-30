@@ -1,0 +1,548 @@
+@import "tailwindcss";
+
+/*
+ * Design system v2 (MASTER_SPEC §6): layered graphite surfaces, restrained champagne accent,
+ * Inter Variable with tabular numerals. Utilities read these variables, so a theme is just a
+ * different set of values. Self-hosted font (CSP 'self').
+ */
+@theme {
+  --color-ink: #090b0f;
+  --color-graphite: #0f1217;
+  --color-panel: #161a21;
+  --color-raised: #1c212a;
+  --color-line: #222832;
+  --color-line-strong: #2d3440;
+  --color-navy: #111a2c;
+  --color-faint: #5b6372;
+  --color-mist: #8e96a4;
+  --color-paper: #eceef2;
+  --color-gold: #d3b37a;
+  --color-gold-soft: #ead6ab;
+  --color-gold-deep: #a5864d;
+  --color-ok: #3fbf8f;
+  --color-warn: #e3aa52;
+  --color-bad: #ec6a5f;
+  --color-info: #79a8ff;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.125rem;
+}
+
+:root {
+  color-scheme: dark;
+  --app-glow: radial-gradient(1200px 520px at 15% -10%, rgba(211, 179, 122, 0.07), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(121, 168, 255, 0.05), transparent 55%);
+  --surface: linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.008));
+  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 1px 2px rgba(0, 0, 0, 0.35),
+    0 24px 48px -32px rgba(0, 0, 0, 0.9);
+  --shadow-pop: 0 18px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --gold-gradient: linear-gradient(180deg, #e4c993 0%, #cfae72 55%, #b8955a 100%);
+  --office-floor-a: #141922;
+  --office-floor-b: #10141b;
+  --office-grid: rgba(255, 255, 255, 0.045);
+  --office-desk-top: #2a313c;
+  --office-desk-left: #1d232c;
+  --office-desk-right: #232a34;
+  --office-screen-off: #0c0f14;
+  --office-wall: #151a22;
+}
+
+/* Light theme: porcelain surfaces, ink text, gold darkened for contrast (WCAG AA on white). */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-ink: #f4f2ee;
+  --color-graphite: #ffffff;
+  --color-panel: #f6f4f0;
+  --color-raised: #efece6;
+  --color-line: #e4dfd6;
+  --color-line-strong: #d4cdc0;
+  --color-navy: #e8edf6;
+  --color-faint: #8c919a;
+  --color-mist: #5c6370;
+  --color-paper: #12161d;
+  --color-gold: #8c6b2e;
+  --color-gold-soft: #a9854a;
+  --color-gold-deep: #6f5323;
+  --color-ok: #1f8a5d;
+  --color-warn: #9a6614;
+  --color-bad: #b9443a;
+  --color-info: #2f63c8;
+  --app-glow: radial-gradient(1200px 520px at 15% -10%, rgba(140, 107, 46, 0.08), transparent 60%);
+  --surface: linear-gradient(180deg, #ffffff, #fdfcfa);
+  --shadow-card: 0 1px 2px rgba(18, 22, 29, 0.05), 0 12px 32px -20px rgba(18, 22, 29, 0.22);
+  --shadow-pop: 0 18px 50px -12px rgba(18, 22, 29, 0.25);
+  --gold-gradient: linear-gradient(180deg, #a07c3c 0%, #8c6b2e 100%);
+  --office-floor-a: #f7f5f1;
+  --office-floor-b: #efebe4;
+  --office-grid: rgba(18, 22, 29, 0.06);
+  --office-desk-top: #e6e0d6;
+  --office-desk-left: #cfc7ba;
+  --office-desk-right: #dad3c7;
+  --office-screen-off: #c9c2b6;
+  --office-wall: #ebe6de;
+}
+
+html,
+body {
+  background-color: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01", "ss03";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-image: var(--app-glow);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-gold) 35%, transparent);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Surfaces */
+.surface {
+  background-color: var(--color-graphite);
+  background-image: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+.btn-gold {
+  background-image: var(--gold-gradient);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 1px 2px rgba(0, 0, 0, 0.3),
+    0 8px 20px -10px color-mix(in srgb, var(--color-gold) 70%, transparent);
+}
+.btn-gold:hover {
+  filter: brightness(1.06);
+}
+.glass {
+  background-color: color-mix(in srgb, var(--color-ink) 72%, transparent);
+  backdrop-filter: saturate(160%) blur(18px);
+  -webkit-backdrop-filter: saturate(160%) blur(18px);
+}
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+/* Compact controls used inside cards (the full-width Button lives in components/ui.tsx) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: 2.5rem;
+  padding: 0 0.875rem;
+  border-radius: 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s, filter 0.15s;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-secondary {
+  border: 1px solid var(--color-line);
+  background-color: var(--color-graphite);
+  color: var(--color-paper);
+}
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--color-line-strong);
+  background-color: var(--color-panel);
+}
+.btn-primary {
+  background-image: var(--gold-gradient);
+  color: #16120a;
+  font-weight: 600;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+.btn-gold-soft {
+  border: 1px solid color-mix(in srgb, var(--color-gold) 30%, transparent);
+  background-color: color-mix(in srgb, var(--color-gold) 8%, transparent);
+  color: var(--color-gold);
+}
+.btn-gold-soft:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--color-gold) 14%, transparent);
+}
+.btn-danger {
+  border: 1px solid color-mix(in srgb, var(--color-bad) 30%, transparent);
+  background-color: color-mix(in srgb, var(--color-bad) 7%, transparent);
+  color: var(--color-bad);
+}
+.btn-danger:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--color-bad) 13%, transparent);
+}
+.btn-danger-solid {
+  background-color: var(--color-bad);
+  color: #fff;
+  font-weight: 600;
+}
+.btn-tab-on {
+  border: 1px solid color-mix(in srgb, var(--color-gold) 45%, transparent);
+  background-color: color-mix(in srgb, var(--color-gold) 10%, transparent);
+  color: var(--color-gold);
+}
+.input,
+.input-area {
+  border: 1px solid var(--color-line);
+  background-color: var(--color-graphite);
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  color: var(--color-paper);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input {
+  min-height: 2.5rem;
+  padding: 0 0.75rem;
+}
+.input-area {
+  padding: 0.75rem;
+}
+.input:hover,
+.input-area:hover {
+  border-color: var(--color-line-strong);
+}
+.input:focus,
+.input-area:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--color-gold) 60%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-gold) 12%, transparent);
+}
+.input::placeholder,
+.input-area::placeholder {
+  color: var(--color-faint);
+}
+
+/* Native form controls follow the theme */
+input,
+select,
+textarea {
+  color: var(--color-paper);
+}
+select {
+  background-color: var(--color-graphite);
+}
+
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-gold) 80%, transparent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Skeleton shimmer for loading states */
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+.skeleton {
+  background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--color-paper) 6%, transparent) 50%,
+      transparent 100%
+    )
+    var(--color-panel);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* ---- Virtual office: subtle, and only for real states ---- */
+@keyframes office-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes office-ring {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes office-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes office-type {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+}
+.office-screen-on {
+  animation: office-breathe 2.6s ease-in-out infinite;
+}
+.office-ring {
+  animation: office-ring 3.2s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.office-alert {
+  animation: office-pulse 1.4s ease-in-out infinite;
+}
+@keyframes office-scroll {
+  to {
+    transform: translateY(-56px);
+  }
+}
+.office-scroll {
+  animation: office-scroll 7s linear infinite;
+}
+@keyframes office-meter {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+.office-meter {
+  animation: office-meter 1.8s linear infinite;
+}
+/* People in the office: small irregular loops, never in sync (delays set per person) */
+.p-breathe,
+.p-head-scan,
+.p-head-look,
+.p-head-stress,
+.p-type-l,
+.p-type-r,
+.p-mouse,
+.p-sip,
+.p-scratch,
+.p-swivel {
+  transform-box: fill-box;
+  will-change: transform;
+}
+.p-breathe {
+  transform-origin: 50% 100%;
+  animation: p-breathe 3.6s ease-in-out infinite;
+}
+@keyframes p-breathe {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  45% {
+    transform: scale(1.012, 1.022);
+  }
+}
+.p-head-scan {
+  transform-origin: 50% 90%;
+  animation: p-head-scan 9.5s ease-in-out infinite;
+}
+@keyframes p-head-scan {
+  0%,
+  14%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  20%,
+  34% {
+    transform: translate(-2.6px, 0.4px) rotate(-6deg);
+  }
+  40%,
+  52% {
+    transform: translate(0, 0.8px) rotate(0deg);
+  }
+  58%,
+  76% {
+    transform: translate(2.6px, 0.3px) rotate(6deg);
+  }
+  82%,
+  90% {
+    transform: translate(0, -0.6px) rotate(1deg);
+  }
+}
+.p-head-look {
+  transform-origin: 50% 90%;
+  animation: p-head-look 13s ease-in-out infinite;
+}
+@keyframes p-head-look {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  15%,
+  28% {
+    transform: translate(-3px, -1px) rotate(-9deg);
+  }
+  36%,
+  48% {
+    transform: translate(0, -2px) rotate(0deg);
+  }
+  58%,
+  70% {
+    transform: translate(3.2px, -0.5px) rotate(10deg);
+  }
+  80% {
+    transform: translate(0.5px, 0) rotate(2deg);
+  }
+}
+.p-head-stress {
+  transform-origin: 50% 90%;
+  animation: p-head-stress 3.2s ease-in-out infinite;
+}
+@keyframes p-head-stress {
+  0%,
+  100% {
+    transform: translate(0, 1.5px) rotate(-2deg);
+  }
+  50% {
+    transform: translate(0, 2.5px) rotate(3deg);
+  }
+}
+.p-type-l,
+.p-type-r {
+  transform-origin: 50% 0%;
+  animation: p-type 0.86s steps(1, end) infinite;
+}
+@keyframes p-type {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  12% {
+    transform: translateY(-1.2px);
+  }
+  24% {
+    transform: translateY(0);
+  }
+  41% {
+    transform: translateY(-0.9px);
+  }
+  55% {
+    transform: translateY(0);
+  }
+  68% {
+    transform: translateY(-1.4px);
+  }
+  80% {
+    transform: translateY(-0.3px);
+  }
+}
+.p-mouse {
+  animation: p-mouse 8.5s ease-in-out infinite;
+}
+@keyframes p-mouse {
+  0%,
+  58%,
+  100% {
+    transform: translate(0, 0);
+  }
+  64%,
+  86% {
+    transform: translate(6px, -1px);
+  }
+  70% {
+    transform: translate(6.6px, -1.4px);
+  }
+  78% {
+    transform: translate(5.6px, -0.8px);
+  }
+}
+.p-sip {
+  transform-origin: 50% 100%;
+  animation: p-sip 12s ease-in-out infinite;
+}
+@keyframes p-sip {
+  0%,
+  52%,
+  100% {
+    transform: translate(0, 34px);
+  }
+  62%,
+  74% {
+    transform: translate(-1px, 0) rotate(-6deg);
+  }
+  68% {
+    transform: translate(-1px, -1px) rotate(-14deg);
+  }
+  84% {
+    transform: translate(0, 34px);
+  }
+}
+.p-scratch {
+  transform-origin: 80% 90%;
+  animation: p-scratch 1.6s ease-in-out infinite;
+}
+@keyframes p-scratch {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg) translateY(-0.6px);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+  75% {
+    transform: rotate(-4deg) translateY(-0.4px);
+  }
+}
+.p-swivel {
+  transform-origin: 50% 100%;
+  animation: p-swivel 7s ease-in-out infinite alternate;
+}
+@keyframes p-swivel {
+  from {
+    transform: rotate(-1.6deg) translateX(-1px);
+  }
+  to {
+    transform: rotate(1.6deg) translateX(1px);
+  }
+}
+.p-lean-back {
+  transform: translateY(-1.5px) scale(0.985);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.p-lean-in {
+  transform: translateY(2.5px) scale(1.01);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.office-typing {
+  animation: office-type 0.9s ease-in-out infinite;
+  transform-box: fill-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

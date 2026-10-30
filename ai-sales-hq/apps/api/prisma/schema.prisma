@@ -1,0 +1,727 @@
+// Operational database for AI Sales HQ (MySQL 8, see docs/DECISIONS.md D-007).
+// Conventions: UTC DateTime columns, money as BigInt so'm, snake_case tables.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum Role {
+  OWNER
+  STAFF
+}
+
+model User {
+  id                String             @id @default(uuid()) @db.Char(36)
+  username          String             @unique @db.VarChar(64)
+  displayName       String             @map("display_name") @db.VarChar(120)
+  passwordHash      String             @map("password_hash") @db.VarChar(255)
+  role              Role
+  isActive          Boolean            @default(true) @map("is_active")
+  totpSecretEnc     String?            @map("totp_secret_enc") @db.VarChar(255)
+  totpPendingEnc    String?            @map("totp_pending_enc") @db.VarChar(255)
+  totpEnabledAt     DateTime?          @map("totp_enabled_at")
+  totpLastStep      BigInt?            @map("totp_last_step")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  sessions          Session[]
+  totpRecoveryCodes TotpRecoveryCode[]
+
+  @@map("users")
+}
+
+model Session {
+  id         String    @id @default(uuid()) @db.Char(36)
+  tokenHash  String    @unique @map("token_hash") @db.Char(64)
+  userId     String    @map("user_id") @db.Char(36)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  csrfToken  String    @map("csrf_token") @db.Char(43)
+  ipAddress  String?   @map("ip_address") @db.VarChar(45)
+  userAgent  String?   @map("user_agent") @db.VarChar(255)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  lastSeenAt DateTime  @default(now()) @map("last_seen_at")
+  expiresAt  DateTime  @map("expires_at")
+  revokedAt  DateTime? @map("revoked_at")
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model TotpRecoveryCode {
+  id        String    @id @default(uuid()) @db.Char(36)
+  userId    String    @map("user_id") @db.Char(36)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String    @map("code_hash") @db.VarChar(255)
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("totp_recovery_codes")
+}
+
+model LoginAttempt {
+  id        BigInt   @id @default(autoincrement())
+  username  String   @db.VarChar(64)
+  ipAddress String?  @map("ip_address") @db.VarChar(45)
+  succeeded Boolean
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([username, createdAt])
+  @@index([ipAddress, createdAt])
+  @@map("login_attempts")
+}
+
+// Append-only. Never cascade-deleted (MASTER_SPEC §14).
+model AuditLog {
+  id         BigInt   @id @default(autoincrement())
+  actorType  String   @map("actor_type") @db.VarChar(16)
+  actorId    String?  @map("actor_id") @db.VarChar(64)
+  action     String   @db.VarChar(80)
+  entityType String?  @map("entity_type") @db.VarChar(40)
+  entityId   String?  @map("entity_id") @db.VarChar(64)
+  details    Json?
+  ipAddress  String?  @map("ip_address") @db.VarChar(45)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 2 — catalog, prices, integrations, notifications
+// ---------------------------------------------------------------------------
+
+enum ProductSource {
+  FIRESTORE // unutilmastam.uz Firestore app, read-only sync
+  SEED // owner-provided list (MASTER_SPEC §5), awaiting verification
+  OWNER // created by the owner in this app
+}
+
+enum Availability {
+  UNKNOWN
+  UNVERIFIED // a stock number exists at the source but nobody vouches for it
+  IN_STOCK
+  OUT_OF_STOCK
+}
+
+enum PriceType {
+  RETAIL
+  WHOLESALE
+}
+
+enum PriceStatus {
+  OWNER_UNCONFIRMED
+  CONFIRMED
+  SUPERSEDED
+}
+
+model Product {
+  id                 String         @id @default(uuid()) @db.Char(36)
+  source             ProductSource
+  externalId         String?        @map("external_id") @db.VarChar(64)
+  name               String         @db.VarChar(200)
+  description        String?        @db.Text
+  categoryName       String?        @map("category_name") @db.VarChar(120)
+  packageWeightGrams Int?           @map("package_weight_grams")
+  unitType           String?        @map("unit_type") @db.VarChar(32)
+  sku                String?        @db.VarChar(64)
+  isFrozen           Boolean        @default(true) @map("is_frozen")
+  availability       Availability   @default(UNKNOWN)
+  stockReported      Int?           @map("stock_reported")
+  hasSourceImage     Boolean        @default(false) @map("has_source_image")
+  salesDescription   String?        @map("sales_description") @db.Text
+  isActive           Boolean        @default(true) @map("is_active")
+  deactivatedAt      DateTime?      @map("deactivated_at")
+  supersededById     String?        @map("superseded_by_id") @db.Char(36)
+  lastSyncedAt       DateTime?      @map("last_synced_at")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+  prices             ProductPrice[]
+
+  @@unique([source, externalId])
+  @@index([isActive])
+  @@map("products")
+}
+
+// Price versions: never updated in place except to supersede. Amounts are integer so'm (A8).
+model ProductPrice {
+  id            String        @id @default(uuid()) @db.Char(36)
+  productId     String        @map("product_id") @db.Char(36)
+  product       Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
+  priceType     PriceType     @map("price_type")
+  amount        BigInt
+  currency      String        @default("UZS") @db.Char(3)
+  source        ProductSource
+  status        PriceStatus
+  validFrom     DateTime      @map("valid_from")
+  validTo       DateTime?     @map("valid_to")
+  confirmedById String?       @map("confirmed_by_id") @db.Char(36)
+  confirmedAt   DateTime?     @map("confirmed_at")
+  syncRunId     String?       @map("sync_run_id") @db.Char(36)
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  @@index([productId, priceType, validTo])
+  @@map("product_prices")
+}
+
+enum SyncStatus {
+  RUNNING
+  SUCCEEDED
+  FAILED
+  HELD // mass change detected; waits for the owner
+  APPLIED_AFTER_HOLD
+}
+
+enum SyncTrigger {
+  SCHEDULED
+  MANUAL
+  OWNER_APPROVED
+}
+
+model ProductSyncRun {
+  id               String        @id @default(uuid()) @db.Char(36)
+  source           ProductSource
+  trigger          SyncTrigger
+  status           SyncStatus
+  startedAt        DateTime      @map("started_at")
+  finishedAt       DateTime?     @map("finished_at")
+  sourceUpdatedAt  DateTime?     @map("source_updated_at")
+  fetchedCount     Int           @default(0) @map("fetched_count")
+  createdCount     Int           @default(0) @map("created_count")
+  updatedCount     Int           @default(0) @map("updated_count")
+  deactivatedCount Int           @default(0) @map("deactivated_count")
+  priceChangeCount Int           @default(0) @map("price_change_count")
+  invalidCount     Int           @default(0) @map("invalid_count")
+  heldReason       String?       @map("held_reason") @db.VarChar(255)
+  // Validation problems and the held diff summary; never credentials.
+  report           Json?
+  errorMessage     String?       @map("error_message") @db.VarChar(500)
+  actorUserId      String?       @map("actor_user_id") @db.Char(36)
+
+  @@index([startedAt])
+  @@map("product_sync_runs")
+}
+
+enum IntegrationStatus {
+  NOT_CONFIGURED
+  CONFIGURED // credentials present, never successfully called
+  CONNECTED // last real call succeeded
+  ERROR
+}
+
+model Integration {
+  key           String            @id @db.VarChar(40)
+  status        IntegrationStatus
+  lastCheckedAt DateTime?         @map("last_checked_at")
+  lastSuccessAt DateTime?         @map("last_success_at")
+  lastError     String?           @map("last_error") @db.VarChar(500)
+  // Non-secret settings only (interval, enabled flags). Secrets stay in env/files.
+  settings      Json?
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+
+  @@map("integrations")
+}
+
+enum NotificationSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model Notification {
+  id             String               @id @default(uuid()) @db.Char(36)
+  kind           String               @db.VarChar(60)
+  severity       NotificationSeverity
+  title          String               @db.VarChar(200)
+  body           String               @db.Text
+  link           String?              @db.VarChar(255)
+  // Same key while unread => no duplicate notification (e.g. repeated sync failures).
+  dedupeKey      String?              @map("dedupe_key") @db.VarChar(120)
+  readAt         DateTime?            @map("read_at")
+  // Delivery to the owner Telegram bot (null = not sent yet).
+  telegramSentAt DateTime?            @map("telegram_sent_at")
+  createdAt      DateTime             @default(now()) @map("created_at")
+
+  @@index([readAt, createdAt])
+  @@index([dedupeKey])
+  @@map("notifications")
+}
+
+model SystemSetting {
+  key         String   @id @db.VarChar(80)
+  value       Json
+  updatedById String?  @map("updated_by_id") @db.Char(36)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
+
+// Named lease locks (catalog sync, cron worker). Expired leases can be taken over.
+model Lock {
+  name        String   @id @db.VarChar(80)
+  holder      String   @db.VarChar(80)
+  lockedUntil DateTime @map("locked_until")
+  acquiredAt  DateTime @map("acquired_at")
+
+  @@map("locks")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 3 — agents, lifecycle, jobs, cron worker
+// ---------------------------------------------------------------------------
+
+enum AgentState {
+  DRAFT
+  STOPPED
+  SCHEDULED
+  RUNNING
+  PAUSING
+  PAUSED
+  STOPPING
+  ERROR
+  DISABLED
+}
+
+model Agent {
+  id             String     @id @default(uuid()) @db.Char(36)
+  key            String     @unique @db.VarChar(40)
+  name           String     @db.VarChar(80)
+  state          AgentState @default(DRAFT)
+  stateReason    String?    @map("state_reason") @db.VarChar(40)
+  stateChangedAt DateTime   @map("state_changed_at")
+  errorMessage   String?    @map("error_message") @db.VarChar(500)
+  // Working days (ISO 1..7) and local Tashkent times.
+  workingDays    Json       @map("working_days")
+  startTime      String     @map("start_time") @db.Char(5)
+  endTime        String     @map("end_time") @db.Char(5)
+  dailyTaskLimit Int        @map("daily_task_limit")
+  // Permitted responsibilities / communication permissions (validated in code).
+  permissions    Json?
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+  jobs           Job[]
+
+  @@map("agents")
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  DEAD
+  CANCELLED
+}
+
+model Job {
+  id                String     @id @default(uuid()) @db.Char(36)
+  type              String     @db.VarChar(60)
+  agentId           String?    @map("agent_id") @db.Char(36)
+  agent             Agent?     @relation(fields: [agentId], references: [id], onDelete: Restrict)
+  status            JobStatus  @default(QUEUED)
+  payload           Json?
+  result            Json?
+  idempotencyKey    String?    @unique @map("idempotency_key") @db.VarChar(160)
+  runAt             DateTime   @map("run_at")
+  lockedUntil       DateTime?  @map("locked_until")
+  lockedBy          String?    @map("locked_by") @db.VarChar(80)
+  attempts          Int        @default(0)
+  maxAttempts       Int        @default(5) @map("max_attempts")
+  lastError         String?    @map("last_error") @db.VarChar(1000)
+  cancelRequestedAt DateTime?  @map("cancel_requested_at")
+  createdAt         DateTime   @map("created_at")
+  startedAt         DateTime?  @map("started_at")
+  finishedAt        DateTime?  @map("finished_at")
+  events            JobEvent[]
+
+  @@index([status, runAt])
+  @@index([agentId, status])
+  @@index([agentId, startedAt])
+  @@map("jobs")
+}
+
+model JobEvent {
+  id        BigInt   @id @default(autoincrement())
+  jobId     String   @map("job_id") @db.Char(36)
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  level     String   @db.VarChar(10)
+  message   String   @db.VarChar(1000)
+  createdAt DateTime @map("created_at")
+
+  @@index([jobId])
+  @@map("job_events")
+}
+
+// One row per cron invocation: liveness for the dashboard ("is cron running?").
+model WorkerRun {
+  id            String    @id @default(uuid()) @db.Char(36)
+  startedAt     DateTime  @map("started_at")
+  finishedAt    DateTime? @map("finished_at")
+  status        String    @db.VarChar(20)
+  jobsProcessed Int       @default(0) @map("jobs_processed")
+  transitions   Int       @default(0)
+  error         String?   @db.VarChar(1000)
+
+  @@index([startedAt])
+  @@map("worker_runs")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 5 — prospects, sources, contacts, suppression, provider usage
+// ---------------------------------------------------------------------------
+
+enum ProspectStage {
+  NEW
+  NEEDS_VERIFICATION
+  QUALIFIED
+  CONTACT_PENDING
+  CONTACTED
+  INTERESTED
+  NEGOTIATION
+  WON
+  LOST
+  DO_NOT_CONTACT
+}
+
+enum ProspectCategory {
+  SUPERMARKET
+  MINIMARKET
+  GROCERY
+  WHOLESALE
+  FOOD_RETAIL
+  OTHER
+}
+
+enum LocationQuality {
+  EXACT
+  APPROXIMATE
+  UNKNOWN
+}
+
+model Prospect {
+  id                 String           @id @default(uuid()) @db.Char(36)
+  name               String           @db.VarChar(200)
+  normalizedName     String           @map("normalized_name") @db.VarChar(200)
+  category           ProspectCategory @default(OTHER)
+  region             String           @default("Surxondaryo") @db.VarChar(60)
+  district           String?          @db.VarChar(60)
+  address            String?          @db.VarChar(300)
+  // Person's name (owner of the shop): personal data, masked before any AI call (A6).
+  contactPersonName  String?          @map("contact_person_name") @db.VarChar(120)
+  lat                Decimal?         @db.Decimal(9, 6)
+  lng                Decimal?         @db.Decimal(9, 6)
+  locationQuality    LocationQuality  @default(UNKNOWN) @map("location_quality")
+  googlePlaceId      String?          @unique @map("google_place_id") @db.VarChar(200)
+  rating             Decimal?         @db.Decimal(2, 1)
+  ratingCount        Int?             @map("rating_count")
+  stage              ProspectStage    @default(NEW)
+  isExistingCustomer Boolean          @default(false) @map("is_existing_customer")
+  score              Int?
+  scoreReasons       Json?            @map("score_reasons")
+  scoredAt           DateTime?        @map("scored_at")
+  assignedAgentKey   String?          @map("assigned_agent_key") @db.VarChar(40)
+  notes              String?          @db.Text
+  discoveredAt       DateTime         @map("discovered_at")
+  lastVerifiedAt     DateTime?        @map("last_verified_at")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  sources            ProspectSource[]
+  contacts           ContactPoint[]
+
+  @@index([stage])
+  @@index([district, normalizedName])
+  @@index([score])
+  @@map("prospects")
+}
+
+enum SourceType {
+  FIRESTORE_STORE
+  MANUAL
+  CSV
+  GOOGLE_PLACES
+}
+
+// Provenance of every piece of prospect data (MASTER_SPEC §10).
+model ProspectSource {
+  id          String     @id @default(uuid()) @db.Char(36)
+  prospectId  String     @map("prospect_id") @db.Char(36)
+  prospect    Prospect   @relation(fields: [prospectId], references: [id], onDelete: Restrict)
+  sourceType  SourceType @map("source_type")
+  externalId  String?    @map("external_id") @db.VarChar(200)
+  sourceUrl   String?    @map("source_url") @db.VarChar(500)
+  observedAt  DateTime   @map("observed_at")
+  // Google Places content may be cached only for a limited time (ToS); place_id is kept.
+  expiresAt   DateTime?  @map("expires_at")
+  evidence    Json?
+  createdById String?    @map("created_by_id") @db.Char(36)
+
+  @@unique([sourceType, externalId])
+  @@index([prospectId])
+  @@index([expiresAt])
+  @@map("prospect_sources")
+}
+
+enum ContactKind {
+  PHONE
+  TELEGRAM
+  EMAIL
+  WEBSITE
+}
+
+model ContactPoint {
+  id           String      @id @default(uuid()) @db.Char(36)
+  prospectId   String      @map("prospect_id") @db.Char(36)
+  prospect     Prospect    @relation(fields: [prospectId], references: [id], onDelete: Restrict)
+  kind         ContactKind
+  value        String      @db.VarChar(200)
+  sourceType   SourceType  @map("source_type")
+  isVerified   Boolean     @default(false) @map("is_verified")
+  verifiedAt   DateTime?   @map("verified_at")
+  verifiedById String?     @map("verified_by_id") @db.Char(36)
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  @@unique([prospectId, kind, value])
+  @@index([kind, value])
+  @@map("contact_points")
+}
+
+enum SuppressionKind {
+  PHONE
+  TELEGRAM
+  PLACE
+  PROSPECT
+}
+
+// Do-not-contact list; checked before any outreach on every channel (A9).
+model SuppressionRecord {
+  id          String          @id @default(uuid()) @db.Char(36)
+  kind        SuppressionKind
+  value       String          @db.VarChar(200)
+  reason      String          @db.VarChar(300)
+  createdById String?         @map("created_by_id") @db.Char(36)
+  createdAt   DateTime        @map("created_at")
+
+  @@unique([kind, value])
+  @@map("suppression_records")
+}
+
+// Paid external calls per provider and Tashkent day (budget caps, MASTER_SPEC §16/A4).
+model ProviderUsage {
+  id                String   @id @default(uuid()) @db.Char(36)
+  provider          String   @db.VarChar(40)
+  day               String   @db.Char(10)
+  requests          Int      @default(0)
+  estimatedMicroUsd BigInt   @default(0) @map("estimated_micro_usd")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@unique([provider, day])
+  @@map("provider_usage")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 6 — conversations, messages (assisted manual outreach), AI usage
+// ---------------------------------------------------------------------------
+
+enum Channel {
+  PHONE_CALL
+  SMS
+  TELEGRAM
+  IN_PERSON
+}
+
+enum MessageDirection {
+  OUTBOUND
+  INBOUND
+}
+
+enum MessageStatus {
+  DRAFT // prepared by the Communication agent or the owner
+  NEEDS_EDIT // failed the quality gate; owner must edit before use
+  SENT_MANUALLY // the owner opened tel:/sms:/t.me and confirmed it went out
+  RECEIVED // an inbound reply the owner recorded
+  DISCARDED
+}
+
+enum ContactOutcome {
+  INTERESTED
+  NO_ANSWER
+  CALL_BACK
+  NOT_INTERESTED
+  DO_NOT_CONTACT
+}
+
+model Conversation {
+  id            String    @id @default(uuid()) @db.Char(36)
+  prospectId    String    @unique @map("prospect_id") @db.Char(36)
+  // Owner's follow-up reminder (Tashkent date shown in the UI).
+  followUpAt    DateTime? @map("follow_up_at")
+  needsOwner    Boolean   @default(false) @map("needs_owner")
+  needsOwnerWhy String?   @map("needs_owner_why") @db.VarChar(300)
+  lastContactAt DateTime? @map("last_contact_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  messages      Message[]
+
+  @@index([needsOwner])
+  @@index([followUpAt])
+  @@map("conversations")
+}
+
+model Message {
+  id             String           @id @default(uuid()) @db.Char(36)
+  conversationId String           @map("conversation_id") @db.Char(36)
+  conversation   Conversation     @relation(fields: [conversationId], references: [id], onDelete: Restrict)
+  direction      MessageDirection
+  channel        Channel?
+  body           String           @db.Text
+  language       String           @default("uz") @db.VarChar(5)
+  status         MessageStatus
+  // Quality-gate findings (unknown prices, discounts, promises) shown to the owner.
+  checks         Json?
+  outcome        ContactOutcome?
+  agentKey       String?          @map("agent_key") @db.VarChar(40)
+  generatedBy    String?          @map("generated_by") @db.VarChar(60)
+  createdById    String?          @map("created_by_id") @db.Char(36)
+  approvedById   String?          @map("approved_by_id") @db.Char(36)
+  sentAt         DateTime?        @map("sent_at")
+  createdAt      DateTime         @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  @@index([conversationId, createdAt])
+  @@index([status, createdAt])
+  @@map("messages")
+}
+
+// One row per AI call: no prompt or message text, only accounting (MASTER_SPEC §16).
+model AiUsageRecord {
+  id           String   @id @default(uuid()) @db.Char(36)
+  provider     String   @db.VarChar(40)
+  model        String   @db.VarChar(60)
+  purpose      String   @db.VarChar(60)
+  agentKey     String?  @map("agent_key") @db.VarChar(40)
+  jobId        String?  @map("job_id") @db.Char(36)
+  inputTokens  Int      @map("input_tokens")
+  outputTokens Int      @map("output_tokens")
+  costMicroUsd BigInt   @map("cost_micro_usd")
+  ok           Boolean
+  error        String?  @db.VarChar(300)
+  createdAt    DateTime @map("created_at")
+
+  @@index([createdAt])
+  @@map("ai_usage_records")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 7 — orders, price snapshots, owner handoff, payments
+// ---------------------------------------------------------------------------
+
+enum OrderStatus {
+  DRAFT
+  NEEDS_INFORMATION
+  CUSTOMER_CONFIRMATION_PENDING
+  READY_FOR_OWNER_REVIEW
+  APPROVED_FOR_DELIVERY
+  DELIVERED
+  CLOSED
+  ON_HOLD
+  REJECTED
+  CANCELLED
+  PRICE_CHANGED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+}
+
+model Order {
+  id                   String        @id @default(uuid()) @db.Char(36)
+  number               String        @unique @db.VarChar(20)
+  prospectId           String        @map("prospect_id") @db.Char(36)
+  status               OrderStatus   @default(DRAFT)
+  // Server-computed from the items; never accepted from the client (MASTER_SPEC §12).
+  totalSom             BigInt        @default(0) @map("total_som")
+  currency             String        @default("UZS") @db.Char(3)
+  paymentStatus        PaymentStatus @default(UNPAID) @map("payment_status")
+  amountPaidSom        BigInt        @default(0) @map("amount_paid_som")
+  deliveryAddress      String?       @map("delivery_address") @db.VarChar(300)
+  contactPhone         String?       @map("contact_phone") @db.VarChar(20)
+  contactName          String?       @map("contact_name") @db.VarChar(120)
+  requestedDeliveryAt  DateTime?     @map("requested_delivery_at")
+  notes                String?       @db.Text
+  customerConfirmedAt  DateTime?     @map("customer_confirmed_at")
+  customerConfirmation String?       @map("customer_confirmation") @db.VarChar(500)
+  createdByAgentKey    String?       @map("created_by_agent_key") @db.VarChar(40)
+  createdById          String?       @map("created_by_id") @db.Char(36)
+  approvedById         String?       @map("approved_by_id") @db.Char(36)
+  approvedAt           DateTime?     @map("approved_at")
+  deliveredById        String?       @map("delivered_by_id") @db.Char(36)
+  deliveredAt          DateTime?     @map("delivered_at")
+  closedAt             DateTime?     @map("closed_at")
+  createdAt            DateTime      @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+  items                OrderItem[]
+  events               OrderEvent[]
+  payments             Payment[]
+
+  @@index([status])
+  @@index([prospectId])
+  @@map("orders")
+}
+
+// Price snapshot per line (A8): unit price, its source, type and time are frozen here.
+model OrderItem {
+  id                 String        @id @default(uuid()) @db.Char(36)
+  orderId            String        @map("order_id") @db.Char(36)
+  order              Order         @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  productId          String        @map("product_id") @db.Char(36)
+  productName        String        @map("product_name") @db.VarChar(200)
+  packageWeightGrams Int?          @map("package_weight_grams")
+  quantity           Int
+  priceType          PriceType     @map("price_type")
+  priceId            String        @map("price_id") @db.Char(36)
+  priceSource        ProductSource @map("price_source")
+  unitPriceSom       BigInt        @map("unit_price_som")
+  lineTotalSom       BigInt        @map("line_total_som")
+  snapshotAt         DateTime      @map("snapshot_at")
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+// Approval and status history (MASTER_SPEC §12 "approval history").
+model OrderEvent {
+  id         BigInt       @id @default(autoincrement())
+  orderId    String       @map("order_id") @db.Char(36)
+  order      Order        @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  fromStatus OrderStatus? @map("from_status")
+  toStatus   OrderStatus  @map("to_status")
+  actorType  String       @map("actor_type") @db.VarChar(16)
+  actorId    String?      @map("actor_id") @db.VarChar(64)
+  note       String?      @db.VarChar(500)
+  createdAt  DateTime     @map("created_at")
+
+  @@index([orderId])
+  @@map("order_events")
+}
+
+// Only the owner records payments (A10).
+model Payment {
+  id           String   @id @default(uuid()) @db.Char(36)
+  orderId      String   @map("order_id") @db.Char(36)
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  amountSom    BigInt   @map("amount_som")
+  note         String?  @db.VarChar(300)
+  recordedById String   @map("recorded_by_id") @db.Char(36)
+  createdAt    DateTime @map("created_at")
+
+  @@index([orderId])
+  @@map("payments")
+}

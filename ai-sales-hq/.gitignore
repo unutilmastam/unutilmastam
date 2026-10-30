@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.next/
+out/
+apps/api/src/generated/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+coverage/
+playwright-report/
+test-results/
+
+# CI release bundle (scripts/build-release.sh)
+/release/

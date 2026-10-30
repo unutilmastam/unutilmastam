@@ -1,0 +1,5 @@
+---
+# cPanel Git Version Control: "Deploy HEAD Commit" runs these tasks from the cloned repository.
+deployment:
+  tasks:
+    - /bin/bash deploy/deploy.sh
