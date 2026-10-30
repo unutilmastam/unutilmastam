@@ -25,6 +25,10 @@ declare module 'fastify' {
   interface FastifyRequest {
     auth: AuthContext | null;
   }
+  interface FastifyInstance {
+    // Every route with its declared access; read by the security tests (route permission matrix).
+    routeTable: { method: string; url: string; access: Access }[];
+  }
 }
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);

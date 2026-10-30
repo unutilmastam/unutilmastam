@@ -92,6 +92,15 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   });
 
   await app.register(cookie);
+  const routeTable: FastifyInstance['routeTable'] = [];
+  app.decorate('routeTable', routeTable);
+  app.addHook('onRoute', (r) => {
+    for (const method of [r.method].flat()) {
+      if (method === 'HEAD') continue;
+      routeTable.push({ method, url: r.url, access: r.config?.access ?? 'session' });
+    }
+  });
+
   await app.register(helmet, {
     contentSecurityPolicy: {
       directives: {

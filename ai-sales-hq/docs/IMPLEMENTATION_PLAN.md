@@ -128,11 +128,11 @@ Legend: `[x]` done · `[ ]` to do · `⏳` waiting on owner.
 - [ ] Email adapter
 - [ ] CONNECTED only after a successful real test call
 
-## Phase 9 — Hardening + E2E
-- [ ] Playwright E2E (MASTER_SPEC §19 scenario) in CI
-- [ ] Security tests (unauthorized access, disabled agents, duplicate jobs, opt-outs, unapproved discounts)
-- [ ] Dependency audit, headers/CSP review, log redaction review
-- [ ] SECURITY.md incl. ZRU-547 note (A9)
+## Phase 9 — Hardening + E2E ✅ (code done; CI pending)
+- [x] Playwright E2E (MASTER_SPEC §19 scenario) in CI, run against the release bundle
+- [x] Security tests: route permission matrix over every API route (anonymous 401, STAFF 403 on owner routes), CSRF, headers, error envelope (`tests/integration/security.test.ts`); disabled agents, duplicate jobs, opt-outs and unapproved discounts covered in `worker`/`orders`/`prospects`/`sales` tests
+- [x] Dependency audit in CI (`npm audit --omit=dev --audit-level=high`, 0 found), CSP/headers reviewed, log redaction tested
+- [x] `SECURITY.md` incl. ZRU-547 note (A9)
 
 ## Phase 10 — cPanel deployment guide + backups ✅ (code done; CI pending)
 - [x] `DEPLOYMENT_HOSTMASTER.md` (technical) + `DEPLOY_UZ.md` (Uzbek, from a phone, no Terminal)
