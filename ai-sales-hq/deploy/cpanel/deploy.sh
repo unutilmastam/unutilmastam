@@ -7,38 +7,59 @@ SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=lib.sh
 . "$SRC/deploy/lib.sh"
 
+mkdir -p "$DATA_DIR" "$BACKUP_DIR"
+chmod 700 "$DATA_DIR" "$BACKUP_DIR"
+# cPanel keeps no readable output of deploy tasks and its spinner never stops on failure, so the
+# owner reads the result here (File Manager, no hidden files). The scripts print no secrets.
+RESULT_FILE="$DATA_DIR/deploy-natija.txt"
+exec > >(tee "$RESULT_FILE") 2>&1
+STEP="Node.js ni topish"
+on_exit() {
+  local rc=$?
+  if [ "$rc" -ne 0 ] && [ "${FIRST_RUN:-}" != 1 ]; then
+    log "XATO: deploy \"$STEP\" qadamida to'xtadi (kod $rc). Ishlab turgan ilovaga tegilmadi."
+    log "Shu faylning hammasini skrinshot qilib yuboring."
+  fi
+}
+trap on_exit EXIT
+
 log "AI Sales HQ deploy: $(cat "$SRC/VERSION" 2>/dev/null | head -1)"
 find_node
 log "Node: $("$NODE" -v) ($NODE)"
 
-mkdir -p "$DATA_DIR" "$BACKUP_DIR"
-chmod 700 "$DATA_DIR" "$BACKUP_DIR"
 if [ ! -f "$ENV_FILE" ]; then
   "$NODE" "$SRC/deploy/new-env.js" > "$ENV_FILE"
   chmod 600 "$ENV_FILE"
   log "Sozlamalar fayli yaratildi: $ENV_FILE"
   log "File Manager orqali oching, DB_NAME, DB_USER, DB_PASSWORD ni yozing, saqlang va yana 'Deploy HEAD Commit' bosing."
+  FIRST_RUN=1
   exit 1
 fi
 chmod 600 "$ENV_FILE"
 
+STEP="Sozlamalarni tekshirish"
 log "1/6 Sozlamalarni tekshirish"
 "$NODE" "$SRC/apps/api/dist/ops.js" check-config
 
+STEP="Bazaning zaxira nusxasi"
 log "2/6 Bazaning zaxira nusxasi"
 /bin/bash "$SRC/deploy/backup.sh" pre-deploy
 
+STEP="Joriy versiyani saqlash"
 log "3/6 Joriy versiyani saqlash (orqaga qaytish uchun)"
 if [ -d "$APP_DIR/apps" ]; then sync_tree "$APP_DIR" "$PREV_DIR"; fi
 
+STEP="Migratsiyalar"
 log "4/6 Migratsiyalar"
 "$NODE" "$SRC/apps/api/dist/ops.js" migrate
 
+STEP="Fayllarni ko'chirish"
 log "5/6 Fayllarni ilova papkasiga ko'chirish va qayta ishga tushirish"
 sync_tree "$SRC" "$APP_DIR"
 mkdir -p "$APP_DIR/tmp"
 touch "$APP_DIR/tmp/restart.txt"
 
+STEP="Tekshiruv"
 log "6/6 Tekshiruv"
 ORIGIN="$(grep -E '^APP_ORIGIN=' "$ENV_FILE" | tail -1 | cut -d= -f2- | tr -d '"' || true)"
 if [ "${HQ_SKIP_HEALTHCHECK:-}" = 1 ]; then

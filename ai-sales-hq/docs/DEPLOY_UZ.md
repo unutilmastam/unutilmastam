@@ -7,7 +7,7 @@ Kompyuter, Terminal va `npm install` kerak emas. GitHub tayyor paketni o'zi yig'
 > Telefonda cPanel menyusi yashirin bo'lsa — yuqori chapdagi **☰**. Har bir bo'limni yuqoridagi **Search** ga nomini yozib topsa bo'ladi.
 > **Parol, kalit va `hq.env` ichidagi narsalarni hech kimga (Claude'ga ham) yubormang.**
 
-Hostingda tekshirilgan (2026-10-29, ega skrinshotlari): Node.js 22.22.0 bor, cron har 1 daqiqada ishlaydi, MySQL 8.0.44, subdomen yaratish mumkin. Hali tekshirilmagan: `mysqldump` va Git Version Control mavjudligi — biror qadamda xato chiqsa, xabarni menga yozing.
+Hostingda tekshirilgan (2026-10-29, ega skrinshotlari): Node.js 22.22.0 bor, cron har 1 daqiqada ishlaydi, MySQL 8.0.44, subdomen yaratish mumkin. Git Version Control bor (2026-10-30). Hali tekshirilmagan: `mysqldump` — biror qadamda xato chiqsa, xabarni menga yozing.
 
 ---
 
@@ -61,7 +61,7 @@ Hostingda tekshirilgan (2026-10-29, ega skrinshotlari): Node.js 22.22.0 bor, cro
 3. **Setup Node.js App** → ilova yonida **RESTART** ni bir marta bosing.
 4. Brauzerda: `https://agent.unutilmastam.uz/api/v1/ready` → `{"status":"ready","database":"ok"}` chiqsa — tayyor.
 
-Deploy natijasini ko'rish: **File Manager** → **Settings** → **Show Hidden Files** → `.cpanel/logs/` ichidagi eng yangi `..._git_deploy.log` fayli. Har bir qadam o'zbekcha yozilgan; xato bo'lsa, oxirgi qatorlarni menga yuboring (ularda parol yo'q).
+**Deploy natijasi:** cPanel'dagi "in progress" aylanib turgan belgisiga qaramang — deploy xato bilan tugasa ham u to'xtamaydi. Deploy 10–60 soniyada tugaydi. Natija har safar **File Manager → `ai-sales-hq-data` → `deploy-natija.txt`** fayliga o'zbekcha yoziladi: oxirida `TAYYOR` — hammasi joyida; `XATO: ... qadamida to'xtadi` — faylning hammasini skrinshot qilib menga yuboring (unda parol yo'q). Xato bo'lsa, ishlab turgan ilovaga tegilmaydi.
 
 ## 7. Egani yaratish (bir marta)
 
