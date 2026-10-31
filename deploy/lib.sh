@@ -22,15 +22,17 @@ find_node() {
   NODE="$n"
 }
 
-# Copies a folder tree; rsync when available, otherwise cp.
+# Copies a release tree; rsync when available, otherwise cp (hostmaster.uz has no rsync).
+# HQ_NO_RSYNC=1 forces the cp path (CI drill). Only parts present in $src are copied.
 sync_tree() {
-  local src="$1" dst="$2"
+  local src="$1" dst="$2" part
   mkdir -p "$dst"
-  if command -v rsync >/dev/null 2>&1; then
+  if [ -z "${HQ_NO_RSYNC:-}" ] && command -v rsync >/dev/null 2>&1; then
     rsync -a --delete --exclude '.git' --exclude 'tmp/' --exclude 'logs/' --exclude '*.log' "$src/" "$dst/"
   else
-    rm -rf "$dst/apps" "$dst/deploy"
-    cp -a "$src/apps" "$src/deploy" "$dst/"
-    cp -a "$src/package.json" "$src/VERSION" "$dst/" 2>/dev/null || true
+    for part in apps deploy package.json VERSION; do
+      rm -rf "${dst:?}/$part"
+      if [ -e "$src/$part" ]; then cp -a "$src/$part" "$dst/"; fi
+    done
   fi
 }
