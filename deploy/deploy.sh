@@ -11,8 +11,16 @@ mkdir -p "$DATA_DIR" "$BACKUP_DIR"
 chmod 700 "$DATA_DIR" "$BACKUP_DIR"
 # cPanel keeps no readable output of deploy tasks and its spinner never stops on failure, so the
 # owner reads the result here (File Manager, no hidden files). The scripts print no secrets.
+# The script re-runs itself through a plain pipe to tee. No process substitution: the cPanel deploy
+# task has no /dev/fd, so that failed before the first line (hosting log, 2026-10-31).
 RESULT_FILE="$DATA_DIR/deploy-natija.txt"
-exec > >(tee "$RESULT_FILE") 2>&1
+if [ -z "${HQ_DEPLOY_TEED:-}" ]; then
+  set +e
+  HQ_DEPLOY_TEED=1 /bin/bash "${BASH_SOURCE[0]}" "$@" 2>&1 | tee "$RESULT_FILE"
+  rc="${PIPESTATUS[0]}"
+  sync "$RESULT_FILE" 2>/dev/null || true
+  exit "$rc"
+fi
 STEP="Node.js ni topish"
 on_exit() {
   local rc=$?
