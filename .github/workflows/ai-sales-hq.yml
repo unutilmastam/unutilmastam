@@ -183,6 +183,8 @@ jobs:
         run: npm run build
       - name: Release bundle
         run: scripts/build-release.sh release "${GITHUB_SHA::7}"
+      - name: Deploy scripts avoid process substitution (no /dev/fd in the cPanel deploy task)
+        run: "! grep -nE '[<>]\\(' deploy/cpanel/*.sh"
       - name: Deploy drill (fake cPanel home)
         run: |
           export HOME="$RUNNER_TEMP/home" HQ_SKIP_HEALTHCHECK=1
