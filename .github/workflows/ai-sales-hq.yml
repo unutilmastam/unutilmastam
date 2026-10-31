@@ -189,6 +189,10 @@ jobs:
           mkdir -p "$HOME/nodevenv/ai-sales-hq-app/22/bin"
           ln -s "$(command -v node)" "$HOME/nodevenv/ai-sales-hq-app/22/bin/node"
           cp -r release "$HOME/repo"
+          # As on hostmaster.uz: no rsync, and cPanel's placeholder app already sits in the app folder.
+          export HQ_NO_RSYNC=1
+          mkdir -p "$HOME/ai-sales-hq-app/apps/api/dist"
+          echo 'require("http").createServer((q,s)=>s.end("It works!")).listen(process.env.PORT)' > "$HOME/ai-sales-hq-app/apps/api/dist/server.js"
           cd "$HOME/repo"
           # First run only creates the settings file and stops.
           if bash deploy/deploy.sh; then echo "first run should stop for the settings file"; exit 1; fi

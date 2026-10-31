@@ -47,7 +47,8 @@ log "2/6 Bazaning zaxira nusxasi"
 
 STEP="Joriy versiyani saqlash"
 log "3/6 Joriy versiyani saqlash (orqaga qaytish uchun)"
-if [ -d "$APP_DIR/apps" ]; then sync_tree "$APP_DIR" "$PREV_DIR"; fi
+# Only a real earlier release (it has VERSION); cPanel's own placeholder app is not worth keeping.
+if [ -f "$APP_DIR/VERSION" ]; then sync_tree "$APP_DIR" "$PREV_DIR"; else log "Oldingi versiya yo'q (birinchi o'rnatish)"; fi
 
 STEP="Migratsiyalar"
 log "4/6 Migratsiyalar"
